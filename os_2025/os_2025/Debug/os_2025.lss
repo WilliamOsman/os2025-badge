@@ -3,33 +3,33 @@ os_2025.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         00000bd0  00000000  00000000  00000094  2**1
+  0 .text         00000b3e  00000000  00000000  00000094  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .data         0000003e  00800060  00000bd0  00000c64  2**0
+  1 .data         0000003e  00800060  00000b3e  00000bd2  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  2 .bss          00000186  0080009e  0080009e  00000ca2  2**0
+  2 .bss          0000004e  0080009e  0080009e  00000c10  2**0
                   ALLOC
-  3 .comment      00000030  00000000  00000000  00000ca2  2**0
+  3 .comment      00000030  00000000  00000000  00000c10  2**0
                   CONTENTS, READONLY
-  4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000cd4  2**2
+  4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000c40  2**2
                   CONTENTS, READONLY
-  5 .debug_aranges 00000098  00000000  00000000  00000d10  2**0
+  5 .debug_aranges 00000098  00000000  00000000  00000c7c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_info   000015b4  00000000  00000000  00000da8  2**0
+  6 .debug_info   0000160d  00000000  00000000  00000d14  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_abbrev 000007ab  00000000  00000000  0000235c  2**0
+  7 .debug_abbrev 00000791  00000000  00000000  00002321  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   00000eb9  00000000  00000000  00002b07  2**0
+  8 .debug_line   00000e7f  00000000  00000000  00002ab2  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  00000194  00000000  00000000  000039c0  2**2
+  9 .debug_frame  00000194  00000000  00000000  00003934  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    000078f0  00000000  00000000  00003b54  2**0
+ 10 .debug_str    000078fd  00000000  00000000  00003ac8  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00001136  00000000  00000000  0000b444  2**0
+ 11 .debug_loc    000010d8  00000000  00000000  0000b3c5  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 00000168  00000000  00000000  0000c57a  2**0
+ 12 .debug_ranges 00000150  00000000  00000000  0000c49d  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_macro  000020ff  00000000  00000000  0000c6e2  2**0
+ 13 .debug_macro  0000210b  00000000  00000000  0000c5ed  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -63,7 +63,7 @@ Disassembly of section .text:
   2a:	10 e0       	ldi	r17, 0x00	; 0
   2c:	a0 e6       	ldi	r26, 0x60	; 96
   2e:	b0 e0       	ldi	r27, 0x00	; 0
-  30:	e0 ed       	ldi	r30, 0xD0	; 208
+  30:	ee e3       	ldi	r30, 0x3E	; 62
   32:	fb e0       	ldi	r31, 0x0B	; 11
   34:	02 c0       	rjmp	.+4      	; 0x3a <__do_copy_data+0x10>
   36:	05 90       	lpm	r0, Z+
@@ -73,7 +73,7 @@ Disassembly of section .text:
   3e:	d9 f7       	brne	.-10     	; 0x36 <__do_copy_data+0xc>
 
 00000040 <__do_clear_bss>:
-  40:	22 e0       	ldi	r18, 0x02	; 2
+  40:	20 e0       	ldi	r18, 0x00	; 0
   42:	ae e9       	ldi	r26, 0x9E	; 158
   44:	b0 e0       	ldi	r27, 0x00	; 0
   46:	01 c0       	rjmp	.+2      	; 0x4a <.do_clear_bss_start>
@@ -82,11 +82,11 @@ Disassembly of section .text:
   48:	1d 92       	st	X+, r1
 
 0000004a <.do_clear_bss_start>:
-  4a:	a4 32       	cpi	r26, 0x24	; 36
+  4a:	ac 3e       	cpi	r26, 0xEC	; 236
   4c:	b2 07       	cpc	r27, r18
   4e:	e1 f7       	brne	.-8      	; 0x48 <.do_clear_bss_loop>
-  50:	76 d4       	rcall	.+2284   	; 0x93e <main>
-  52:	bc c5       	rjmp	.+2936   	; 0xbcc <_exit>
+  50:	92 d4       	rcall	.+2340   	; 0x976 <main>
+  52:	73 c5       	rjmp	.+2790   	; 0xb3a <_exit>
 
 00000054 <__bad_interrupt>:
   54:	d5 cf       	rjmp	.-86     	; 0x0 <__vectors>
@@ -104,10 +104,10 @@ void init_bumpers(void){
   5c:	0f 92       	push	r0
   5e:	11 24       	eor	r1, r1
   60:	8f 93       	push	r24
-  62:	80 91 22 02 	lds	r24, 0x0222	; 0x800222 <tim_cnt_high>
+  62:	80 91 ea 00 	lds	r24, 0x00EA	; 0x8000ea <tim_cnt_high>
   66:	8f 5f       	subi	r24, 0xFF	; 255
-  68:	80 93 22 02 	sts	0x0222, r24	; 0x800222 <tim_cnt_high>
-  6c:	10 92 23 02 	sts	0x0223, r1	; 0x800223 <tim_cnt_low>
+  68:	80 93 ea 00 	sts	0x00EA, r24	; 0x8000ea <tim_cnt_high>
+  6c:	10 92 eb 00 	sts	0x00EB, r1	; 0x8000eb <tim_cnt_low>
   70:	8f 91       	pop	r24
   72:	0f 90       	pop	r0
   74:	0f be       	out	0x3f, r0	; 63
@@ -422,10 +422,10 @@ void init_adc(){
  20c:	8e 7f       	andi	r24, 0xFE	; 254
  20e:	80 bd       	out	0x20, r24	; 32
 
-	// Select reference = AVcc, channel = ADCn (05)
+	// Select reference = AVcc, channel = ADCn (05)
 	// REFS1:0 = 00 ? Vcc as ref
 	// MUX[5:0] = channel
-	ADMUX = (PHOTODIODE_ADC_CH); // ADC0ADC5
+	ADMUX = (PHOTODIODE_ADC_CH); // ADC0ADC5
  210:	17 b8       	out	0x07, r1	; 7
 
 	// Data alignment: for 10-bit read, clear ADLAR (left adjust);
@@ -511,12 +511,12 @@ inline void set_timer(uint16_t cnt){
 		cli();
  262:	f8 94       	cli
 		tim_cnt_low = (uint8_t)(cnt & 0xff);
- 264:	10 92 23 02 	sts	0x0223, r1	; 0x800223 <tim_cnt_low>
+ 264:	10 92 eb 00 	sts	0x00EB, r1	; 0x8000eb <tim_cnt_low>
 		TCNT0 = tim_cnt_low;
- 268:	90 91 23 02 	lds	r25, 0x0223	; 0x800223 <tim_cnt_low>
+ 268:	90 91 eb 00 	lds	r25, 0x00EB	; 0x8000eb <tim_cnt_low>
  26c:	92 bf       	out	0x32, r25	; 50
 		tim_cnt_high = cnt >> 8;
- 26e:	10 92 22 02 	sts	0x0222, r1	; 0x800222 <tim_cnt_high>
+ 26e:	10 92 ea 00 	sts	0x00EA, r1	; 0x8000ea <tim_cnt_high>
 		SREG = sreg;
  272:	8f bf       	out	0x3f, r24	; 63
 	uint8_t valid_clk_cnt = 0;
@@ -546,7 +546,7 @@ inline void set_timer(uint16_t cnt){
 	uint8_t valid_clk_cnt = 0;
 	
 	uint8_t current_bit = 0;
- 27a:	51 2c       	mov	r5, r1
+ 27a:	41 2c       	mov	r4, r1
 	uint16_t thresh_val = 0x7fff;
 	bool current_state = 0;
 	uint8_t state_flter = 0;
@@ -567,7 +567,7 @@ inline void set_timer(uint16_t cnt){
 	uint16_t low_val = 0xffff;
 	uint16_t thresh_val = 0x7fff;
 	bool current_state = 0;
- 280:	41 2c       	mov	r4, r1
+ 280:	31 2c       	mov	r3, r1
 	
 	bool auto_adjust = true;
 
@@ -603,8 +603,8 @@ inline void set_timer(uint16_t cnt){
 	uint16_t invalid_cycles = 5000;
 	
 	bool auto_adjust = true;
- 298:	33 24       	eor	r3, r3
- 29a:	33 94       	inc	r3
+ 298:	55 24       	eor	r5, r5
+ 29a:	53 94       	inc	r5
 
 bool user_program(void){
 	const uint32_t min_us128 = 1e6 / PHOTO_HZ_MAX / 128;
@@ -617,7 +617,7 @@ bool user_program(void){
  2a2:	f3 e1       	ldi	r31, 0x13	; 19
  2a4:	ff 2e       	mov	r15, r31
  2a6:	f0 2d       	mov	r31, r0
- 2a8:	81 c1       	rjmp	.+770    	; 0x5ac <__LOCK_REGION_LENGTH__+0x1ac>
+ 2a8:	80 c1       	rjmp	.+768    	; 0x5aa <__LOCK_REGION_LENGTH__+0x1aa>
 	while(invalid_cycles != 0){
 		
 		// fancy adc reading to get higher dynamic range
@@ -673,7 +673,7 @@ bool user_program(void){
 		
 		// automatic threshold to adapt to different lighting and screens
 		if(auto_adjust){
- 2d8:	33 20       	and	r3, r3
+ 2d8:	55 20       	and	r5, r5
  2da:	51 f1       	breq	.+84     	; 0x330 <__stack+0xd1>
 			if(new_sample < low_val){
  2dc:	0a 15       	cp	r16, r10
@@ -710,12 +710,12 @@ bool user_program(void){
  312:	d9 1e       	adc	r13, r25
 			}
 			low_val += 50;
- 314:	42 e3       	ldi	r20, 0x32	; 50
- 316:	a4 0e       	add	r10, r20
+ 314:	22 e3       	ldi	r18, 0x32	; 50
+ 316:	a2 0e       	add	r10, r18
  318:	b1 1c       	adc	r11, r1
 			high_val -= 50;
- 31a:	82 e3       	ldi	r24, 0x32	; 50
- 31c:	c8 1a       	sub	r12, r24
+ 31a:	32 e3       	ldi	r19, 0x32	; 50
+ 31c:	c3 1a       	sub	r12, r19
  31e:	d1 08       	sbc	r13, r1
 		
 			thresh_val = (high_val>>1) + (low_val>>1);
@@ -749,10 +749,10 @@ bool user_program(void){
  346:	87 2d       	mov	r24, r7
  348:	8f 71       	andi	r24, 0x1F	; 31
  34a:	11 f4       	brne	.+4      	; 0x350 <__stack+0xf1>
- 34c:	e4 2d       	mov	r30, r4
+ 34c:	a3 2d       	mov	r26, r3
  34e:	01 c0       	rjmp	.+2      	; 0x352 <__stack+0xf3>
 			current_state = 1;
- 350:	e1 e0       	ldi	r30, 0x01	; 1
+ 350:	a1 e0       	ldi	r26, 0x01	; 1
 		}
 		if(~state_flter & 0b11111){
  352:	87 2d       	mov	r24, r7
@@ -764,19 +764,19 @@ bool user_program(void){
  35e:	89 2b       	or	r24, r25
  360:	09 f0       	breq	.+2      	; 0x364 <__stack+0x105>
 			current_state = 0;
- 362:	e0 e0       	ldi	r30, 0x00	; 0
+ 362:	a0 e0       	ldi	r26, 0x00	; 0
 		}
 		
 		bool rising_edge = current_state & ~last_state;
- 364:	2e 2f       	mov	r18, r30
+ 364:	2a 2f       	mov	r18, r26
  366:	30 e0       	ldi	r19, 0x00	; 0
- 368:	84 2d       	mov	r24, r4
+ 368:	83 2d       	mov	r24, r3
  36a:	90 e0       	ldi	r25, 0x00	; 0
- 36c:	dc 01       	movw	r26, r24
- 36e:	a0 95       	com	r26
- 370:	b0 95       	com	r27
- 372:	a2 23       	and	r26, r18
- 374:	b3 23       	and	r27, r19
+ 36c:	fc 01       	movw	r30, r24
+ 36e:	e0 95       	com	r30
+ 370:	f0 95       	com	r31
+ 372:	e2 23       	and	r30, r18
+ 374:	f3 23       	and	r31, r19
 		bool falling_edge  = ~current_state & last_state;
  376:	a9 01       	movw	r20, r18
  378:	40 95       	com	r20
@@ -795,11 +795,11 @@ inline uint16_t get_timer(void){
  384:	f8 94       	cli
 		tim_cnt_low = TCNT0;
  386:	82 b7       	in	r24, 0x32	; 50
- 388:	80 93 23 02 	sts	0x0223, r24	; 0x800223 <tim_cnt_low>
+ 388:	80 93 eb 00 	sts	0x00EB, r24	; 0x8000eb <tim_cnt_low>
 		uint8_t low  = tim_cnt_low;
- 38c:	40 91 23 02 	lds	r20, 0x0223	; 0x800223 <tim_cnt_low>
+ 38c:	40 91 eb 00 	lds	r20, 0x00EB	; 0x8000eb <tim_cnt_low>
 		uint8_t high = tim_cnt_high;
- 390:	80 91 22 02 	lds	r24, 0x0222	; 0x800222 <tim_cnt_high>
+ 390:	80 91 ea 00 	lds	r24, 0x00EA	; 0x8000ea <tim_cnt_high>
 		SREG = sreg;
  394:	9f bf       	out	0x3f, r25	; 63
 		return ((uint16_t)(high) << 8) | low;
@@ -812,520 +812,515 @@ inline uint16_t get_timer(void){
 				
 		uint16_t edge_time = get_timer();
 		
-		if(current_state){	// led 0 always just shows the detected color
- 39e:	ee 23       	and	r30, r30
- 3a0:	21 f0       	breq	.+8      	; 0x3aa <__stack+0x14b>
+		if (auto_adjust){
+ 39e:	55 20       	and	r5, r5
+ 3a0:	49 f0       	breq	.+18     	; 0x3b4 <__stack+0x155>
+			if(current_state){	// led 0 always just shows the detected color
+ 3a2:	aa 23       	and	r26, r26
+ 3a4:	21 f0       	breq	.+8      	; 0x3ae <__stack+0x14f>
 }
 
 inline void led_on(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
- 3a2:	48 b3       	in	r20, 0x18	; 24
- 3a4:	4e 7f       	andi	r20, 0xFE	; 254
- 3a6:	48 bb       	out	0x18, r20	; 24
- 3a8:	03 c0       	rjmp	.+6      	; 0x3b0 <__stack+0x151>
+ 3a6:	48 b3       	in	r20, 0x18	; 24
+ 3a8:	4e 7f       	andi	r20, 0xFE	; 254
+ 3aa:	48 bb       	out	0x18, r20	; 24
+ 3ac:	03 c0       	rjmp	.+6      	; 0x3b4 <__stack+0x155>
 }
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
- 3aa:	48 b3       	in	r20, 0x18	; 24
- 3ac:	41 60       	ori	r20, 0x01	; 1
- 3ae:	48 bb       	out	0x18, r20	; 24
-		}
-		else{
-			led_off(0);
+ 3ae:	48 b3       	in	r20, 0x18	; 24
+ 3b0:	41 60       	ori	r20, 0x01	; 1
+ 3b2:	48 bb       	out	0x18, r20	; 24
+			else{
+				led_off(0);
+			}
 		}
 		
 		if(valid_clk_cnt < 10){
- 3b0:	4b 81       	ldd	r20, Y+3	; 0x03
- 3b2:	4a 30       	cpi	r20, 0x0A	; 10
- 3b4:	18 f4       	brcc	.+6      	; 0x3bc <__stack+0x15d>
+ 3b4:	4b 81       	ldd	r20, Y+3	; 0x03
+ 3b6:	4a 30       	cpi	r20, 0x0A	; 10
+ 3b8:	18 f4       	brcc	.+6      	; 0x3c0 <__stack+0x161>
 			invalid_cycles--;
- 3b6:	41 e0       	ldi	r20, 0x01	; 1
- 3b8:	e4 1a       	sub	r14, r20
- 3ba:	f1 08       	sbc	r15, r1
+ 3ba:	41 e0       	ldi	r20, 0x01	; 1
+ 3bc:	e4 1a       	sub	r14, r20
+ 3be:	f1 08       	sbc	r15, r1
 		}
 		
 		// attempt to sync to the clk
 		if(valid_clk_cnt < 10 && rising_edge){
- 3bc:	4b 81       	ldd	r20, Y+3	; 0x03
- 3be:	4a 30       	cpi	r20, 0x0A	; 10
- 3c0:	08 f0       	brcs	.+2      	; 0x3c4 <__stack+0x165>
- 3c2:	52 c0       	rjmp	.+164    	; 0x468 <__LOCK_REGION_LENGTH__+0x68>
- 3c4:	10 97       	sbiw	r26, 0x00	; 0
- 3c6:	09 f4       	brne	.+2      	; 0x3ca <__stack+0x16b>
- 3c8:	4f c0       	rjmp	.+158    	; 0x468 <__LOCK_REGION_LENGTH__+0x68>
+ 3c0:	4b 81       	ldd	r20, Y+3	; 0x03
+ 3c2:	4a 30       	cpi	r20, 0x0A	; 10
+ 3c4:	08 f0       	brcs	.+2      	; 0x3c8 <__stack+0x169>
+ 3c6:	52 c0       	rjmp	.+164    	; 0x46c <__LOCK_REGION_LENGTH__+0x6c>
+ 3c8:	30 97       	sbiw	r30, 0x00	; 0
+ 3ca:	09 f4       	brne	.+2      	; 0x3ce <__stack+0x16f>
+ 3cc:	4f c0       	rjmp	.+158    	; 0x46c <__LOCK_REGION_LENGTH__+0x6c>
 inline void set_timer(uint16_t cnt){
 	#ifdef ATTINY84
 		TCNT1 = cnt;
 	#endif
 	#ifdef ATTINY85
 		uint8_t sreg = SREG;
- 3ca:	2f b7       	in	r18, 0x3f	; 63
+ 3ce:	2f b7       	in	r18, 0x3f	; 63
 		cli();
- 3cc:	f8 94       	cli
+ 3d0:	f8 94       	cli
 		tim_cnt_low = (uint8_t)(cnt & 0xff);
- 3ce:	10 92 23 02 	sts	0x0223, r1	; 0x800223 <tim_cnt_low>
+ 3d2:	10 92 eb 00 	sts	0x00EB, r1	; 0x8000eb <tim_cnt_low>
 		TCNT0 = tim_cnt_low;
- 3d2:	30 91 23 02 	lds	r19, 0x0223	; 0x800223 <tim_cnt_low>
- 3d6:	32 bf       	out	0x32, r19	; 50
+ 3d6:	30 91 eb 00 	lds	r19, 0x00EB	; 0x8000eb <tim_cnt_low>
+ 3da:	32 bf       	out	0x32, r19	; 50
 		tim_cnt_high = cnt >> 8;
- 3d8:	10 92 22 02 	sts	0x0222, r1	; 0x800222 <tim_cnt_high>
+ 3dc:	10 92 ea 00 	sts	0x00EA, r1	; 0x8000ea <tim_cnt_high>
 		SREG = sreg;
- 3dc:	2f bf       	out	0x3f, r18	; 63
+ 3e0:	2f bf       	out	0x3f, r18	; 63
 		}
 		
 		// attempt to sync to the clk
 		if(valid_clk_cnt < 10 && rising_edge){
 			set_timer(0);	// reset timer for next edge
 			if(edge_time < min_us128 || edge_time > max_us128*2){
- 3de:	9c 01       	movw	r18, r24
- 3e0:	22 58       	subi	r18, 0x82	; 130
- 3e2:	31 09       	sbc	r19, r1
- 3e4:	23 3b       	cpi	r18, 0xB3	; 179
- 3e6:	3b 40       	sbci	r19, 0x0B	; 11
- 3e8:	08 f0       	brcs	.+2      	; 0x3ec <__stack+0x18d>
- 3ea:	dc c0       	rjmp	.+440    	; 0x5a4 <__LOCK_REGION_LENGTH__+0x1a4>
+ 3e2:	9c 01       	movw	r18, r24
+ 3e4:	22 58       	subi	r18, 0x82	; 130
+ 3e6:	31 09       	sbc	r19, r1
+ 3e8:	23 3b       	cpi	r18, 0xB3	; 179
+ 3ea:	3b 40       	sbci	r19, 0x0B	; 11
+ 3ec:	08 f0       	brcs	.+2      	; 0x3f0 <__stack+0x191>
+ 3ee:	d9 c0       	rjmp	.+434    	; 0x5a2 <__LOCK_REGION_LENGTH__+0x1a2>
 				valid_clk_cnt = 0;
 				continue;
 			}
 			uint16_t edge_variance = edge_time > clk_period_us128 ? edge_time-clk_period_us128 : clk_period_us128-edge_time;
- 3ec:	29 81       	ldd	r18, Y+1	; 0x01
- 3ee:	3a 81       	ldd	r19, Y+2	; 0x02
- 3f0:	28 17       	cp	r18, r24
- 3f2:	39 07       	cpc	r19, r25
- 3f4:	30 f4       	brcc	.+12     	; 0x402 <__LOCK_REGION_LENGTH__+0x2>
- 3f6:	29 81       	ldd	r18, Y+1	; 0x01
- 3f8:	3a 81       	ldd	r19, Y+2	; 0x02
- 3fa:	bc 01       	movw	r22, r24
- 3fc:	62 1b       	sub	r22, r18
- 3fe:	73 0b       	sbc	r23, r19
- 400:	04 c0       	rjmp	.+8      	; 0x40a <__LOCK_REGION_LENGTH__+0xa>
- 402:	69 81       	ldd	r22, Y+1	; 0x01
- 404:	7a 81       	ldd	r23, Y+2	; 0x02
- 406:	68 1b       	sub	r22, r24
- 408:	79 0b       	sbc	r23, r25
+ 3f0:	29 81       	ldd	r18, Y+1	; 0x01
+ 3f2:	3a 81       	ldd	r19, Y+2	; 0x02
+ 3f4:	28 17       	cp	r18, r24
+ 3f6:	39 07       	cpc	r19, r25
+ 3f8:	30 f4       	brcc	.+12     	; 0x406 <__LOCK_REGION_LENGTH__+0x6>
+ 3fa:	29 81       	ldd	r18, Y+1	; 0x01
+ 3fc:	3a 81       	ldd	r19, Y+2	; 0x02
+ 3fe:	bc 01       	movw	r22, r24
+ 400:	62 1b       	sub	r22, r18
+ 402:	73 0b       	sbc	r23, r19
+ 404:	04 c0       	rjmp	.+8      	; 0x40e <__LOCK_REGION_LENGTH__+0xe>
+ 406:	69 81       	ldd	r22, Y+1	; 0x01
+ 408:	7a 81       	ldd	r23, Y+2	; 0x02
+ 40a:	68 1b       	sub	r22, r24
+ 40c:	79 0b       	sbc	r23, r25
 			clk_period_us128 = (clk_period_us128/4) * 3 + edge_time/4;
- 40a:	29 81       	ldd	r18, Y+1	; 0x01
- 40c:	3a 81       	ldd	r19, Y+2	; 0x02
- 40e:	36 95       	lsr	r19
- 410:	27 95       	ror	r18
+ 40e:	29 81       	ldd	r18, Y+1	; 0x01
+ 410:	3a 81       	ldd	r19, Y+2	; 0x02
  412:	36 95       	lsr	r19
  414:	27 95       	ror	r18
- 416:	a9 01       	movw	r20, r18
- 418:	44 0f       	add	r20, r20
- 41a:	55 1f       	adc	r21, r21
- 41c:	24 0f       	add	r18, r20
- 41e:	35 1f       	adc	r19, r21
- 420:	ac 01       	movw	r20, r24
- 422:	56 95       	lsr	r21
- 424:	47 95       	ror	r20
+ 416:	36 95       	lsr	r19
+ 418:	27 95       	ror	r18
+ 41a:	a9 01       	movw	r20, r18
+ 41c:	44 0f       	add	r20, r20
+ 41e:	55 1f       	adc	r21, r21
+ 420:	24 0f       	add	r18, r20
+ 422:	35 1f       	adc	r19, r21
+ 424:	ac 01       	movw	r20, r24
  426:	56 95       	lsr	r21
  428:	47 95       	ror	r20
- 42a:	24 0f       	add	r18, r20
- 42c:	35 1f       	adc	r19, r21
- 42e:	3a 83       	std	Y+2, r19	; 0x02
- 430:	29 83       	std	Y+1, r18	; 0x01
+ 42a:	56 95       	lsr	r21
+ 42c:	47 95       	ror	r20
+ 42e:	24 0f       	add	r18, r20
+ 430:	35 1f       	adc	r19, r21
+ 432:	3a 83       	std	Y+2, r19	; 0x02
+ 434:	29 83       	std	Y+1, r18	; 0x01
 			if(edge_variance > edge_time>>4){	// variance is over 1/16 of the expected time
- 432:	92 95       	swap	r25
- 434:	82 95       	swap	r24
- 436:	8f 70       	andi	r24, 0x0F	; 15
- 438:	89 27       	eor	r24, r25
- 43a:	9f 70       	andi	r25, 0x0F	; 15
+ 436:	92 95       	swap	r25
+ 438:	82 95       	swap	r24
+ 43a:	8f 70       	andi	r24, 0x0F	; 15
  43c:	89 27       	eor	r24, r25
- 43e:	86 17       	cp	r24, r22
- 440:	97 07       	cpc	r25, r23
- 442:	08 f4       	brcc	.+2      	; 0x446 <__LOCK_REGION_LENGTH__+0x46>
- 444:	b1 c0       	rjmp	.+354    	; 0x5a8 <__LOCK_REGION_LENGTH__+0x1a8>
+ 43e:	9f 70       	andi	r25, 0x0F	; 15
+ 440:	89 27       	eor	r24, r25
+ 442:	86 17       	cp	r24, r22
+ 444:	97 07       	cpc	r25, r23
+ 446:	08 f4       	brcc	.+2      	; 0x44a <__LOCK_REGION_LENGTH__+0x4a>
+ 448:	ae c0       	rjmp	.+348    	; 0x5a6 <__LOCK_REGION_LENGTH__+0x1a6>
 				valid_clk_cnt = 0;
 				continue;
 			}
 			valid_clk_cnt++;
- 446:	8b 81       	ldd	r24, Y+3	; 0x03
- 448:	8f 5f       	subi	r24, 0xFF	; 255
- 44a:	8b 83       	std	Y+3, r24	; 0x03
+ 44a:	8b 81       	ldd	r24, Y+3	; 0x03
+ 44c:	8f 5f       	subi	r24, 0xFF	; 255
+ 44e:	8b 83       	std	Y+3, r24	; 0x03
 			if(valid_clk_cnt >= 10){
- 44c:	8a 30       	cpi	r24, 0x0A	; 10
- 44e:	08 f4       	brcc	.+2      	; 0x452 <__LOCK_REGION_LENGTH__+0x52>
- 450:	ac c0       	rjmp	.+344    	; 0x5aa <__LOCK_REGION_LENGTH__+0x1aa>
+ 450:	8a 30       	cpi	r24, 0x0A	; 10
+ 452:	08 f4       	brcc	.+2      	; 0x456 <__LOCK_REGION_LENGTH__+0x56>
+ 454:	a9 c0       	rjmp	.+338    	; 0x5a8 <__LOCK_REGION_LENGTH__+0x1a8>
+}
+
+inline void led_off(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
-			LED1_PORT &= ~(LED1_OFFSET);
-			break;
-		case 0x1:
-			LED2_PORT &= ~(LED2_OFFSET);
- 452:	88 b3       	in	r24, 0x18	; 24
- 454:	8d 7f       	andi	r24, 0xFD	; 253
- 456:	88 bb       	out	0x18, r24	; 24
-			}
+			LED1_PORT |= (LED1_OFFSET);
+ 456:	88 b3       	in	r24, 0x18	; 24
+ 458:	81 60       	ori	r24, 0x01	; 1
+ 45a:	88 bb       	out	0x18, r24	; 24
 			valid_clk_cnt++;
 			if(valid_clk_cnt >= 10){
-				led_on(1);	// signify sync, now we're ready for data
+				led_off(0);
+				//led_on(1);	// signify sync, now we're ready for data
 				auto_adjust = 0;	// no longer try to adapt to brightness
 				clk_period_us128 = clk_period_us128/2;	// use half of the total period to get a single bit time
- 458:	89 81       	ldd	r24, Y+1	; 0x01
- 45a:	9a 81       	ldd	r25, Y+2	; 0x02
- 45c:	96 95       	lsr	r25
- 45e:	87 95       	ror	r24
- 460:	9a 83       	std	Y+2, r25	; 0x02
- 462:	89 83       	std	Y+1, r24	; 0x01
-				continue;
+ 45c:	89 81       	ldd	r24, Y+1	; 0x01
+ 45e:	9a 81       	ldd	r25, Y+2	; 0x02
+ 460:	96 95       	lsr	r25
+ 462:	87 95       	ror	r24
+ 464:	9a 83       	std	Y+2, r25	; 0x02
+ 466:	89 83       	std	Y+1, r24	; 0x01
 			}
 			valid_clk_cnt++;
 			if(valid_clk_cnt >= 10){
-				led_on(1);	// signify sync, now we're ready for data
+				led_off(0);
+				//led_on(1);	// signify sync, now we're ready for data
 				auto_adjust = 0;	// no longer try to adapt to brightness
- 464:	31 2c       	mov	r3, r1
+ 468:	51 2c       	mov	r5, r1
 				clk_period_us128 = clk_period_us128/2;	// use half of the total period to get a single bit time
 				//clk_period_us128 += clk_period_us128/16;
 			}
 			continue;
- 466:	a1 c0       	rjmp	.+322    	; 0x5aa <__LOCK_REGION_LENGTH__+0x1aa>
+ 46a:	9e c0       	rjmp	.+316    	; 0x5a8 <__LOCK_REGION_LENGTH__+0x1a8>
 		}
 		
 		if(valid_clk_cnt < 10){
- 468:	4b 81       	ldd	r20, Y+3	; 0x03
- 46a:	4a 30       	cpi	r20, 0x0A	; 10
- 46c:	08 f4       	brcc	.+2      	; 0x470 <__LOCK_REGION_LENGTH__+0x70>
- 46e:	9d c0       	rjmp	.+314    	; 0x5aa <__LOCK_REGION_LENGTH__+0x1aa>
+ 46c:	4b 81       	ldd	r20, Y+3	; 0x03
+ 46e:	4a 30       	cpi	r20, 0x0A	; 10
+ 470:	08 f4       	brcc	.+2      	; 0x474 <__LOCK_REGION_LENGTH__+0x74>
+ 472:	9a c0       	rjmp	.+308    	; 0x5a8 <__LOCK_REGION_LENGTH__+0x1a8>
 			continue;
 		}
 		
 		if(edge_time > clk_period_us128*16){
- 470:	49 81       	ldd	r20, Y+1	; 0x01
- 472:	5a 81       	ldd	r21, Y+2	; 0x02
- 474:	42 95       	swap	r20
- 476:	52 95       	swap	r21
- 478:	50 7f       	andi	r21, 0xF0	; 240
- 47a:	54 27       	eor	r21, r20
- 47c:	40 7f       	andi	r20, 0xF0	; 240
+ 474:	49 81       	ldd	r20, Y+1	; 0x01
+ 476:	5a 81       	ldd	r21, Y+2	; 0x02
+ 478:	42 95       	swap	r20
+ 47a:	52 95       	swap	r21
+ 47c:	50 7f       	andi	r21, 0xF0	; 240
  47e:	54 27       	eor	r21, r20
- 480:	48 17       	cp	r20, r24
- 482:	59 07       	cpc	r21, r25
- 484:	08 f4       	brcc	.+2      	; 0x488 <__LOCK_REGION_LENGTH__+0x88>
- 486:	96 c0       	rjmp	.+300    	; 0x5b4 <__LOCK_REGION_LENGTH__+0x1b4>
+ 480:	40 7f       	andi	r20, 0xF0	; 240
+ 482:	54 27       	eor	r21, r20
+ 484:	48 17       	cp	r20, r24
+ 486:	59 07       	cpc	r21, r25
+ 488:	08 f4       	brcc	.+2      	; 0x48c <__LOCK_REGION_LENGTH__+0x8c>
+ 48a:	93 c0       	rjmp	.+294    	; 0x5b2 <__LOCK_REGION_LENGTH__+0x1b2>
 		
 		// decode the data
 		
 		
 		// start condition is data being on for longer than 3 periods then a falling edge
 		switch(data_started){
- 488:	4c 81       	ldd	r20, Y+4	; 0x04
- 48a:	41 30       	cpi	r20, 0x01	; 1
- 48c:	f9 f0       	breq	.+62     	; 0x4cc <__LOCK_REGION_LENGTH__+0xcc>
- 48e:	18 f0       	brcs	.+6      	; 0x496 <__LOCK_REGION_LENGTH__+0x96>
- 490:	42 30       	cpi	r20, 0x02	; 2
- 492:	61 f1       	breq	.+88     	; 0x4ec <__LOCK_REGION_LENGTH__+0xec>
- 494:	44 c0       	rjmp	.+136    	; 0x51e <__LOCK_REGION_LENGTH__+0x11e>
+ 48c:	4c 81       	ldd	r20, Y+4	; 0x04
+ 48e:	41 30       	cpi	r20, 0x01	; 1
+ 490:	f9 f0       	breq	.+62     	; 0x4d0 <__LOCK_REGION_LENGTH__+0xd0>
+ 492:	18 f0       	brcs	.+6      	; 0x49a <__LOCK_REGION_LENGTH__+0x9a>
+ 494:	42 30       	cpi	r20, 0x02	; 2
+ 496:	61 f1       	breq	.+88     	; 0x4f0 <__LOCK_REGION_LENGTH__+0xf0>
+ 498:	41 c0       	rjmp	.+130    	; 0x51c <__LOCK_REGION_LENGTH__+0x11c>
 			case 0:	// wait for high pulse
 				if(falling_edge){
- 496:	01 15       	cp	r16, r1
- 498:	11 05       	cpc	r17, r1
- 49a:	59 f0       	breq	.+22     	; 0x4b2 <__LOCK_REGION_LENGTH__+0xb2>
+ 49a:	01 15       	cp	r16, r1
+ 49c:	11 05       	cpc	r17, r1
+ 49e:	59 f0       	breq	.+22     	; 0x4b6 <__LOCK_REGION_LENGTH__+0xb6>
 inline void set_timer(uint16_t cnt){
 	#ifdef ATTINY84
 		TCNT1 = cnt;
 	#endif
 	#ifdef ATTINY85
 		uint8_t sreg = SREG;
- 49c:	4f b7       	in	r20, 0x3f	; 63
+ 4a0:	4f b7       	in	r20, 0x3f	; 63
 		cli();
- 49e:	f8 94       	cli
+ 4a2:	f8 94       	cli
 		tim_cnt_low = (uint8_t)(cnt & 0xff);
- 4a0:	10 92 23 02 	sts	0x0223, r1	; 0x800223 <tim_cnt_low>
+ 4a4:	10 92 eb 00 	sts	0x00EB, r1	; 0x8000eb <tim_cnt_low>
 		TCNT0 = tim_cnt_low;
- 4a4:	50 91 23 02 	lds	r21, 0x0223	; 0x800223 <tim_cnt_low>
- 4a8:	52 bf       	out	0x32, r21	; 50
+ 4a8:	50 91 eb 00 	lds	r21, 0x00EB	; 0x8000eb <tim_cnt_low>
+ 4ac:	52 bf       	out	0x32, r21	; 50
 		tim_cnt_high = cnt >> 8;
- 4aa:	10 92 22 02 	sts	0x0222, r1	; 0x800222 <tim_cnt_high>
+ 4ae:	10 92 ea 00 	sts	0x00EA, r1	; 0x8000ea <tim_cnt_high>
 		SREG = sreg;
- 4ae:	4f bf       	out	0x3f, r20	; 63
- 4b0:	36 c0       	rjmp	.+108    	; 0x51e <__LOCK_REGION_LENGTH__+0x11e>
+ 4b2:	4f bf       	out	0x3f, r20	; 63
+ 4b4:	33 c0       	rjmp	.+102    	; 0x51c <__LOCK_REGION_LENGTH__+0x11c>
 		switch(data_started){
 			case 0:	// wait for high pulse
 				if(falling_edge){
 					set_timer(0);	// reset timer
 				}
 				else if(current_state && edge_time > clk_period_us128*3){
- 4b2:	ee 23       	and	r30, r30
- 4b4:	a1 f1       	breq	.+104    	; 0x51e <__LOCK_REGION_LENGTH__+0x11e>
- 4b6:	49 81       	ldd	r20, Y+1	; 0x01
- 4b8:	5a 81       	ldd	r21, Y+2	; 0x02
- 4ba:	ba 01       	movw	r22, r20
- 4bc:	66 0f       	add	r22, r22
- 4be:	77 1f       	adc	r23, r23
- 4c0:	46 0f       	add	r20, r22
- 4c2:	57 1f       	adc	r21, r23
- 4c4:	48 17       	cp	r20, r24
- 4c6:	59 07       	cpc	r21, r25
- 4c8:	40 f1       	brcs	.+80     	; 0x51a <__LOCK_REGION_LENGTH__+0x11a>
- 4ca:	29 c0       	rjmp	.+82     	; 0x51e <__LOCK_REGION_LENGTH__+0x11e>
+ 4b6:	aa 23       	and	r26, r26
+ 4b8:	89 f1       	breq	.+98     	; 0x51c <__LOCK_REGION_LENGTH__+0x11c>
+ 4ba:	49 81       	ldd	r20, Y+1	; 0x01
+ 4bc:	5a 81       	ldd	r21, Y+2	; 0x02
+ 4be:	ba 01       	movw	r22, r20
+ 4c0:	66 0f       	add	r22, r22
+ 4c2:	77 1f       	adc	r23, r23
+ 4c4:	46 0f       	add	r20, r22
+ 4c6:	57 1f       	adc	r21, r23
+ 4c8:	48 17       	cp	r20, r24
+ 4ca:	59 07       	cpc	r21, r25
+ 4cc:	28 f1       	brcs	.+74     	; 0x518 <__LOCK_REGION_LENGTH__+0x118>
+ 4ce:	26 c0       	rjmp	.+76     	; 0x51c <__LOCK_REGION_LENGTH__+0x11c>
 					data_started = 1;
 				}
 				break;
 			case 1:	// wait for falling edge
 				if(falling_edge){
- 4cc:	01 15       	cp	r16, r1
- 4ce:	11 05       	cpc	r17, r1
- 4d0:	31 f1       	breq	.+76     	; 0x51e <__LOCK_REGION_LENGTH__+0x11e>
+ 4d0:	01 15       	cp	r16, r1
+ 4d2:	11 05       	cpc	r17, r1
+ 4d4:	19 f1       	breq	.+70     	; 0x51c <__LOCK_REGION_LENGTH__+0x11c>
 inline void set_timer(uint16_t cnt){
 	#ifdef ATTINY84
 		TCNT1 = cnt;
 	#endif
 	#ifdef ATTINY85
 		uint8_t sreg = SREG;
- 4d2:	4f b7       	in	r20, 0x3f	; 63
+ 4d6:	4f b7       	in	r20, 0x3f	; 63
 		cli();
- 4d4:	f8 94       	cli
+ 4d8:	f8 94       	cli
 		tim_cnt_low = (uint8_t)(cnt & 0xff);
- 4d6:	10 92 23 02 	sts	0x0223, r1	; 0x800223 <tim_cnt_low>
+ 4da:	10 92 eb 00 	sts	0x00EB, r1	; 0x8000eb <tim_cnt_low>
 		TCNT0 = tim_cnt_low;
- 4da:	50 91 23 02 	lds	r21, 0x0223	; 0x800223 <tim_cnt_low>
- 4de:	52 bf       	out	0x32, r21	; 50
+ 4de:	50 91 eb 00 	lds	r21, 0x00EB	; 0x8000eb <tim_cnt_low>
+ 4e2:	52 bf       	out	0x32, r21	; 50
 		tim_cnt_high = cnt >> 8;
- 4e0:	10 92 22 02 	sts	0x0222, r1	; 0x800222 <tim_cnt_high>
+ 4e4:	10 92 ea 00 	sts	0x00EA, r1	; 0x8000ea <tim_cnt_high>
 		SREG = sreg;
- 4e4:	4f bf       	out	0x3f, r20	; 63
+ 4e8:	4f bf       	out	0x3f, r20	; 63
 				}
 				break;
 			case 1:	// wait for falling edge
 				if(falling_edge){
 					set_timer(0);
 					data_started = 2;
- 4e6:	42 e0       	ldi	r20, 0x02	; 2
- 4e8:	4c 83       	std	Y+4, r20	; 0x04
- 4ea:	19 c0       	rjmp	.+50     	; 0x51e <__LOCK_REGION_LENGTH__+0x11e>
+ 4ea:	42 e0       	ldi	r20, 0x02	; 2
+ 4ec:	4c 83       	std	Y+4, r20	; 0x04
+ 4ee:	16 c0       	rjmp	.+44     	; 0x51c <__LOCK_REGION_LENGTH__+0x11c>
 				}
 				break;
 			case 2:	// skip first bit to get into the actual data
 				if(edge_time > clk_period_us128>>1){
- 4ec:	49 81       	ldd	r20, Y+1	; 0x01
- 4ee:	5a 81       	ldd	r21, Y+2	; 0x02
- 4f0:	56 95       	lsr	r21
- 4f2:	47 95       	ror	r20
- 4f4:	48 17       	cp	r20, r24
- 4f6:	59 07       	cpc	r21, r25
- 4f8:	90 f4       	brcc	.+36     	; 0x51e <__LOCK_REGION_LENGTH__+0x11e>
+ 4f0:	49 81       	ldd	r20, Y+1	; 0x01
+ 4f2:	5a 81       	ldd	r21, Y+2	; 0x02
+ 4f4:	56 95       	lsr	r21
+ 4f6:	47 95       	ror	r20
+ 4f8:	48 17       	cp	r20, r24
+ 4fa:	59 07       	cpc	r21, r25
+ 4fc:	78 f4       	brcc	.+30     	; 0x51c <__LOCK_REGION_LENGTH__+0x11c>
 inline void set_timer(uint16_t cnt){
 	#ifdef ATTINY84
 		TCNT1 = cnt;
 	#endif
 	#ifdef ATTINY85
 		uint8_t sreg = SREG;
- 4fa:	4f b7       	in	r20, 0x3f	; 63
+ 4fe:	4f b7       	in	r20, 0x3f	; 63
 		cli();
- 4fc:	f8 94       	cli
+ 500:	f8 94       	cli
 		tim_cnt_low = (uint8_t)(cnt & 0xff);
- 4fe:	10 92 23 02 	sts	0x0223, r1	; 0x800223 <tim_cnt_low>
+ 502:	10 92 eb 00 	sts	0x00EB, r1	; 0x8000eb <tim_cnt_low>
 		TCNT0 = tim_cnt_low;
- 502:	50 91 23 02 	lds	r21, 0x0223	; 0x800223 <tim_cnt_low>
- 506:	52 bf       	out	0x32, r21	; 50
+ 506:	50 91 eb 00 	lds	r21, 0x00EB	; 0x8000eb <tim_cnt_low>
+ 50a:	52 bf       	out	0x32, r21	; 50
 		tim_cnt_high = cnt >> 8;
- 508:	10 92 22 02 	sts	0x0222, r1	; 0x800222 <tim_cnt_high>
+ 50c:	10 92 ea 00 	sts	0x00EA, r1	; 0x8000ea <tim_cnt_high>
 		SREG = sreg;
- 50c:	4f bf       	out	0x3f, r20	; 63
-			break;
-		case 0x1:
-			LED2_PORT &= ~(LED2_OFFSET);
-			break;
-		case 0x2:
-			LED3_PORT &= ~(LED3_OFFSET);
- 50e:	48 b3       	in	r20, 0x18	; 24
- 510:	4b 7f       	andi	r20, 0xFB	; 251
- 512:	48 bb       	out	0x18, r20	; 24
+ 510:	4f bf       	out	0x3f, r20	; 63
 				}
 				break;
 			case 2:	// skip first bit to get into the actual data
 				if(edge_time > clk_period_us128>>1){
 					set_timer(0);
 					data_started = 3;
- 514:	43 e0       	ldi	r20, 0x03	; 3
- 516:	4c 83       	std	Y+4, r20	; 0x04
- 518:	02 c0       	rjmp	.+4      	; 0x51e <__LOCK_REGION_LENGTH__+0x11e>
+ 512:	43 e0       	ldi	r20, 0x03	; 3
+ 514:	4c 83       	std	Y+4, r20	; 0x04
+ 516:	02 c0       	rjmp	.+4      	; 0x51c <__LOCK_REGION_LENGTH__+0x11c>
 			case 0:	// wait for high pulse
 				if(falling_edge){
 					set_timer(0);	// reset timer
 				}
 				else if(current_state && edge_time > clk_period_us128*3){
 					data_started = 1;
- 51a:	41 e0       	ldi	r20, 0x01	; 1
- 51c:	4c 83       	std	Y+4, r20	; 0x04
+ 518:	41 e0       	ldi	r20, 0x01	; 1
+ 51a:	4c 83       	std	Y+4, r20	; 0x04
 					data_started = 3;
-					led_on(2);
+					//led_on(2);
 				}
 				break;
 		}
 		if(data_started!=3) continue;
- 51e:	4c 81       	ldd	r20, Y+4	; 0x04
- 520:	43 30       	cpi	r20, 0x03	; 3
- 522:	09 f0       	breq	.+2      	; 0x526 <__LOCK_REGION_LENGTH__+0x126>
- 524:	42 c0       	rjmp	.+132    	; 0x5aa <__LOCK_REGION_LENGTH__+0x1aa>
+ 51c:	4c 81       	ldd	r20, Y+4	; 0x04
+ 51e:	43 30       	cpi	r20, 0x03	; 3
+ 520:	09 f0       	breq	.+2      	; 0x524 <__LOCK_REGION_LENGTH__+0x124>
+ 522:	42 c0       	rjmp	.+132    	; 0x5a8 <__LOCK_REGION_LENGTH__+0x1a8>
 		
 		// reset timer on all edges to half a bit period
 		if(rising_edge || falling_edge){
- 526:	ab 2b       	or	r26, r27
- 528:	11 f4       	brne	.+4      	; 0x52e <__LOCK_REGION_LENGTH__+0x12e>
- 52a:	01 2b       	or	r16, r17
- 52c:	81 f0       	breq	.+32     	; 0x54e <__LOCK_REGION_LENGTH__+0x14e>
+ 524:	ef 2b       	or	r30, r31
+ 526:	11 f4       	brne	.+4      	; 0x52c <__LOCK_REGION_LENGTH__+0x12c>
+ 528:	01 2b       	or	r16, r17
+ 52a:	81 f0       	breq	.+32     	; 0x54c <__LOCK_REGION_LENGTH__+0x14c>
 			guess_centers = 0;
 			set_timer(clk_period_us128/2);
- 52e:	89 81       	ldd	r24, Y+1	; 0x01
- 530:	9a 81       	ldd	r25, Y+2	; 0x02
- 532:	96 95       	lsr	r25
- 534:	87 95       	ror	r24
+ 52c:	89 81       	ldd	r24, Y+1	; 0x01
+ 52e:	9a 81       	ldd	r25, Y+2	; 0x02
+ 530:	96 95       	lsr	r25
+ 532:	87 95       	ror	r24
 inline void set_timer(uint16_t cnt){
 	#ifdef ATTINY84
 		TCNT1 = cnt;
 	#endif
 	#ifdef ATTINY85
 		uint8_t sreg = SREG;
- 536:	2f b7       	in	r18, 0x3f	; 63
+ 534:	2f b7       	in	r18, 0x3f	; 63
 		cli();
- 538:	f8 94       	cli
+ 536:	f8 94       	cli
 		tim_cnt_low = (uint8_t)(cnt & 0xff);
- 53a:	80 93 23 02 	sts	0x0223, r24	; 0x800223 <tim_cnt_low>
+ 538:	80 93 eb 00 	sts	0x00EB, r24	; 0x8000eb <tim_cnt_low>
 		TCNT0 = tim_cnt_low;
- 53e:	80 91 23 02 	lds	r24, 0x0223	; 0x800223 <tim_cnt_low>
- 542:	82 bf       	out	0x32, r24	; 50
+ 53c:	80 91 eb 00 	lds	r24, 0x00EB	; 0x8000eb <tim_cnt_low>
+ 540:	82 bf       	out	0x32, r24	; 50
 		tim_cnt_high = cnt >> 8;
- 544:	90 93 22 02 	sts	0x0222, r25	; 0x800222 <tim_cnt_high>
+ 542:	90 93 ea 00 	sts	0x00EA, r25	; 0x8000ea <tim_cnt_high>
 		SREG = sreg;
- 548:	2f bf       	out	0x3f, r18	; 63
+ 546:	2f bf       	out	0x3f, r18	; 63
 		}
 		if(data_started!=3) continue;
 		
 		// reset timer on all edges to half a bit period
 		if(rising_edge || falling_edge){
 			guess_centers = 0;
- 54a:	1d 82       	std	Y+5, r1	; 0x05
+ 548:	1d 82       	std	Y+5, r1	; 0x05
 			set_timer(clk_period_us128/2);
 			continue;
- 54c:	2e c0       	rjmp	.+92     	; 0x5aa <__LOCK_REGION_LENGTH__+0x1aa>
+ 54a:	2e c0       	rjmp	.+92     	; 0x5a8 <__LOCK_REGION_LENGTH__+0x1a8>
 		}
 		
 		if(edge_time > clk_period_us128){	// center of a data bit, save data
- 54e:	49 81       	ldd	r20, Y+1	; 0x01
- 550:	5a 81       	ldd	r21, Y+2	; 0x02
- 552:	48 17       	cp	r20, r24
- 554:	59 07       	cpc	r21, r25
- 556:	10 f5       	brcc	.+68     	; 0x59c <__LOCK_REGION_LENGTH__+0x19c>
+ 54c:	49 81       	ldd	r20, Y+1	; 0x01
+ 54e:	5a 81       	ldd	r21, Y+2	; 0x02
+ 550:	48 17       	cp	r20, r24
+ 552:	59 07       	cpc	r21, r25
+ 554:	10 f5       	brcc	.+68     	; 0x59a <__LOCK_REGION_LENGTH__+0x19a>
 			guess_centers++;
- 558:	8d 81       	ldd	r24, Y+5	; 0x05
- 55a:	8f 5f       	subi	r24, 0xFF	; 255
- 55c:	8d 83       	std	Y+5, r24	; 0x05
+ 556:	8d 81       	ldd	r24, Y+5	; 0x05
+ 558:	8f 5f       	subi	r24, 0xFF	; 255
+ 55a:	8d 83       	std	Y+5, r24	; 0x05
 inline void set_timer(uint16_t cnt){
 	#ifdef ATTINY84
 		TCNT1 = cnt;
 	#endif
 	#ifdef ATTINY85
 		uint8_t sreg = SREG;
- 55e:	8f b7       	in	r24, 0x3f	; 63
+ 55c:	8f b7       	in	r24, 0x3f	; 63
 		cli();
- 560:	f8 94       	cli
+ 55e:	f8 94       	cli
 		tim_cnt_low = (uint8_t)(cnt & 0xff);
- 562:	10 92 23 02 	sts	0x0223, r1	; 0x800223 <tim_cnt_low>
+ 560:	10 92 eb 00 	sts	0x00EB, r1	; 0x8000eb <tim_cnt_low>
 		TCNT0 = tim_cnt_low;
- 566:	90 91 23 02 	lds	r25, 0x0223	; 0x800223 <tim_cnt_low>
- 56a:	92 bf       	out	0x32, r25	; 50
+ 564:	90 91 eb 00 	lds	r25, 0x00EB	; 0x8000eb <tim_cnt_low>
+ 568:	92 bf       	out	0x32, r25	; 50
 		tim_cnt_high = cnt >> 8;
- 56c:	10 92 22 02 	sts	0x0222, r1	; 0x800222 <tim_cnt_high>
+ 56a:	10 92 ea 00 	sts	0x00EA, r1	; 0x8000ea <tim_cnt_high>
 		SREG = sreg;
- 570:	8f bf       	out	0x3f, r24	; 63
+ 56e:	8f bf       	out	0x3f, r24	; 63
 		}
 		
 		if(edge_time > clk_period_us128){	// center of a data bit, save data
 			guess_centers++;
 			set_timer(0);	// reset for next bit
 			data_buf[current_byte] |= current_state<<current_bit;
- 572:	a6 2d       	mov	r26, r6
- 574:	b0 e0       	ldi	r27, 0x00	; 0
- 576:	05 2c       	mov	r0, r5
- 578:	02 c0       	rjmp	.+4      	; 0x57e <__LOCK_REGION_LENGTH__+0x17e>
- 57a:	22 0f       	add	r18, r18
- 57c:	33 1f       	adc	r19, r19
- 57e:	0a 94       	dec	r0
- 580:	e2 f7       	brpl	.-8      	; 0x57a <__LOCK_REGION_LENGTH__+0x17a>
- 582:	ae 55       	subi	r26, 0x5E	; 94
- 584:	bf 4f       	sbci	r27, 0xFF	; 255
- 586:	8c 91       	ld	r24, X
- 588:	28 2b       	or	r18, r24
- 58a:	2c 93       	st	X, r18
+ 570:	e6 2d       	mov	r30, r6
+ 572:	f0 e0       	ldi	r31, 0x00	; 0
+ 574:	04 2c       	mov	r0, r4
+ 576:	02 c0       	rjmp	.+4      	; 0x57c <__LOCK_REGION_LENGTH__+0x17c>
+ 578:	22 0f       	add	r18, r18
+ 57a:	33 1f       	adc	r19, r19
+ 57c:	0a 94       	dec	r0
+ 57e:	e2 f7       	brpl	.-8      	; 0x578 <__LOCK_REGION_LENGTH__+0x178>
+ 580:	ee 55       	subi	r30, 0x5E	; 94
+ 582:	ff 4f       	sbci	r31, 0xFF	; 255
+ 584:	80 81       	ld	r24, Z
+ 586:	28 2b       	or	r18, r24
+ 588:	20 83       	st	Z, r18
 			current_bit++;
- 58c:	53 94       	inc	r5
+ 58a:	43 94       	inc	r4
 			if(current_bit > 5){
- 58e:	95 e0       	ldi	r25, 0x05	; 5
- 590:	95 15       	cp	r25, r5
- 592:	20 f4       	brcc	.+8      	; 0x59c <__LOCK_REGION_LENGTH__+0x19c>
+ 58c:	95 e0       	ldi	r25, 0x05	; 5
+ 58e:	94 15       	cp	r25, r4
+ 590:	20 f4       	brcc	.+8      	; 0x59a <__LOCK_REGION_LENGTH__+0x19a>
 				if(!current_state){
- 594:	ee 23       	and	r30, r30
- 596:	71 f0       	breq	.+28     	; 0x5b4 <__LOCK_REGION_LENGTH__+0x1b4>
+ 592:	aa 23       	and	r26, r26
+ 594:	71 f0       	breq	.+28     	; 0x5b2 <__LOCK_REGION_LENGTH__+0x1b2>
 					// bit 5 should always be 1 for keeping clock sync
 					// if its not, we had a failure somewhere or are complete, exit programming mode
 					break;
 				}
 				current_bit = 0;
 				current_byte++;
- 598:	63 94       	inc	r6
+ 596:	63 94       	inc	r6
 				if(!current_state){
 					// bit 5 should always be 1 for keeping clock sync
 					// if its not, we had a failure somewhere or are complete, exit programming mode
 					break;
 				}
 				current_bit = 0;
- 59a:	51 2c       	mov	r5, r1
+ 598:	41 2c       	mov	r4, r1
 				current_byte++;
 			}
 		}
 		
 		if(guess_centers > 8){
- 59c:	4d 81       	ldd	r20, Y+5	; 0x05
- 59e:	49 30       	cpi	r20, 0x09	; 9
- 5a0:	20 f0       	brcs	.+8      	; 0x5aa <__LOCK_REGION_LENGTH__+0x1aa>
- 5a2:	08 c0       	rjmp	.+16     	; 0x5b4 <__LOCK_REGION_LENGTH__+0x1b4>
+ 59a:	2d 81       	ldd	r18, Y+5	; 0x05
+ 59c:	29 30       	cpi	r18, 0x09	; 9
+ 59e:	20 f0       	brcs	.+8      	; 0x5a8 <__LOCK_REGION_LENGTH__+0x1a8>
+ 5a0:	08 c0       	rjmp	.+16     	; 0x5b2 <__LOCK_REGION_LENGTH__+0x1b2>
 		
 		// attempt to sync to the clk
 		if(valid_clk_cnt < 10 && rising_edge){
 			set_timer(0);	// reset timer for next edge
 			if(edge_time < min_us128 || edge_time > max_us128*2){
 				valid_clk_cnt = 0;
- 5a4:	1b 82       	std	Y+3, r1	; 0x03
- 5a6:	01 c0       	rjmp	.+2      	; 0x5aa <__LOCK_REGION_LENGTH__+0x1aa>
+ 5a2:	1b 82       	std	Y+3, r1	; 0x03
+ 5a4:	01 c0       	rjmp	.+2      	; 0x5a8 <__LOCK_REGION_LENGTH__+0x1a8>
 				continue;
 			}
 			uint16_t edge_variance = edge_time > clk_period_us128 ? edge_time-clk_period_us128 : clk_period_us128-edge_time;
 			clk_period_us128 = (clk_period_us128/4) * 3 + edge_time/4;
 			if(edge_variance > edge_time>>4){	// variance is over 1/16 of the expected time
 				valid_clk_cnt = 0;
- 5a8:	1b 82       	std	Y+3, r1	; 0x03
+ 5a6:	1b 82       	std	Y+3, r1	; 0x03
 		}
 		if(data_started!=3) continue;
 		
 		// reset timer on all edges to half a bit period
 		if(rising_edge || falling_edge){
 			guess_centers = 0;
- 5aa:	4e 2e       	mov	r4, r30
+ 5a8:	3a 2e       	mov	r3, r26
 	uint8_t data_started = 0;
 	uint8_t guess_centers = 0;
 	
 	set_timer(0);	// reset timer for next edge
 		
 	while(invalid_cycles != 0){
- 5ac:	e1 14       	cp	r14, r1
- 5ae:	f1 04       	cpc	r15, r1
- 5b0:	09 f0       	breq	.+2      	; 0x5b4 <__LOCK_REGION_LENGTH__+0x1b4>
- 5b2:	7b ce       	rjmp	.-778    	; 0x2aa <__stack+0x4b>
+ 5aa:	e1 14       	cp	r14, r1
+ 5ac:	f1 04       	cpc	r15, r1
+ 5ae:	09 f0       	breq	.+2      	; 0x5b2 <__LOCK_REGION_LENGTH__+0x1b2>
+ 5b0:	7c ce       	rjmp	.-776    	; 0x2aa <__stack+0x4b>
 			break;
 		}
 		
 	}
 	
 	if(data_started != 3){
- 5b4:	8c 81       	ldd	r24, Y+4	; 0x04
- 5b6:	83 30       	cpi	r24, 0x03	; 3
- 5b8:	51 f5       	brne	.+84     	; 0x60e <__LOCK_REGION_LENGTH__+0x20e>
+ 5b2:	3c 81       	ldd	r19, Y+4	; 0x04
+ 5b4:	33 30       	cpi	r19, 0x03	; 3
+ 5b6:	09 f0       	breq	.+2      	; 0x5ba <__LOCK_REGION_LENGTH__+0x1ba>
+ 5b8:	46 c0       	rjmp	.+140    	; 0x646 <__LOCK_REGION_LENGTH__+0x246>
 	
 	// validate data
 	
@@ -1339,1358 +1334,1248 @@ inline void set_timer(uint16_t cnt){
  5c2:	c8 01       	movw	r24, r16
  5c4:	66 e0       	ldi	r22, 0x06	; 6
  5c6:	70 e0       	ldi	r23, 0x00	; 0
- 5c8:	da d2       	rcall	.+1460   	; 0xb7e <__divmodhi4>
+ 5c8:	91 d2       	rcall	.+1314   	; 0xaec <__divmodhi4>
  5ca:	89 2b       	or	r24, r25
- 5cc:	11 f5       	brne	.+68     	; 0x612 <__LOCK_REGION_LENGTH__+0x212>
+ 5cc:	f1 f5       	brne	.+124    	; 0x64a <__LOCK_REGION_LENGTH__+0x24a>
 		return 0;	// not a full frame detected
 	}
 	if(current_bit != 6){
- 5ce:	96 e0       	ldi	r25, 0x06	; 6
- 5d0:	59 12       	cpse	r5, r25
- 5d2:	21 c0       	rjmp	.+66     	; 0x616 <__LOCK_REGION_LENGTH__+0x216>
+ 5ce:	46 e0       	ldi	r20, 0x06	; 6
+ 5d0:	44 12       	cpse	r4, r20
+ 5d2:	3d c0       	rjmp	.+122    	; 0x64e <__LOCK_REGION_LENGTH__+0x24e>
 		return 0;	// didn't end on a full vertical line (minus the stop bit)
 	}
 	if((current_byte+1) / FRAME_WIDTH > MAX_FRAMES){
- 5d4:	06 38       	cpi	r16, 0x86	; 134
- 5d6:	41 e0       	ldi	r20, 0x01	; 1
- 5d8:	14 07       	cpc	r17, r20
- 5da:	fc f4       	brge	.+62     	; 0x61a <__LOCK_REGION_LENGTH__+0x21a>
+ 5d4:	0e 34       	cpi	r16, 0x4E	; 78
+ 5d6:	11 05       	cpc	r17, r1
+ 5d8:	e4 f5       	brge	.+120    	; 0x652 <__LOCK_REGION_LENGTH__+0x252>
 	
 	// good enough, probably not worth trying to do any real data validation
 	
 	// copy to eeprom
 	
 	EEPROM_write(0, 0);	// 0x0 is used as the frame count, set to zero while writing
- 5dc:	60 e0       	ldi	r22, 0x00	; 0
- 5de:	80 e0       	ldi	r24, 0x00	; 0
- 5e0:	4d dd       	rcall	.-1382   	; 0x7c <EEPROM_write>
+ 5da:	60 e0       	ldi	r22, 0x00	; 0
+ 5dc:	80 e0       	ldi	r24, 0x00	; 0
+ 5de:	4e dd       	rcall	.-1380   	; 0x7c <EEPROM_write>
 	
 	for(uint8_t i = 0; i < current_byte+1; i++){
- 5e2:	f1 2c       	mov	r15, r1
- 5e4:	07 c0       	rjmp	.+14     	; 0x5f4 <__LOCK_REGION_LENGTH__+0x1f4>
+ 5e0:	f1 2c       	mov	r15, r1
+ 5e2:	07 c0       	rjmp	.+14     	; 0x5f2 <__LOCK_REGION_LENGTH__+0x1f2>
 		EEPROM_write(i+1, data_buf[i]);
- 5e6:	f3 94       	inc	r15
- 5e8:	fc 01       	movw	r30, r24
- 5ea:	ee 55       	subi	r30, 0x5E	; 94
- 5ec:	ff 4f       	sbci	r31, 0xFF	; 255
- 5ee:	60 81       	ld	r22, Z
- 5f0:	8f 2d       	mov	r24, r15
- 5f2:	44 dd       	rcall	.-1400   	; 0x7c <EEPROM_write>
+ 5e4:	f3 94       	inc	r15
+ 5e6:	fc 01       	movw	r30, r24
+ 5e8:	ee 55       	subi	r30, 0x5E	; 94
+ 5ea:	ff 4f       	sbci	r31, 0xFF	; 255
+ 5ec:	60 81       	ld	r22, Z
+ 5ee:	8f 2d       	mov	r24, r15
+ 5f0:	45 dd       	rcall	.-1398   	; 0x7c <EEPROM_write>
 	
 	// copy to eeprom
 	
 	EEPROM_write(0, 0);	// 0x0 is used as the frame count, set to zero while writing
 	
 	for(uint8_t i = 0; i < current_byte+1; i++){
- 5f4:	8f 2d       	mov	r24, r15
- 5f6:	90 e0       	ldi	r25, 0x00	; 0
- 5f8:	80 17       	cp	r24, r16
- 5fa:	91 07       	cpc	r25, r17
- 5fc:	a4 f3       	brlt	.-24     	; 0x5e6 <__LOCK_REGION_LENGTH__+0x1e6>
+ 5f2:	8f 2d       	mov	r24, r15
+ 5f4:	90 e0       	ldi	r25, 0x00	; 0
+ 5f6:	80 17       	cp	r24, r16
+ 5f8:	91 07       	cpc	r25, r17
+ 5fa:	a4 f3       	brlt	.-24     	; 0x5e4 <__LOCK_REGION_LENGTH__+0x1e4>
 		EEPROM_write(i+1, data_buf[i]);
 	}
 	
 	// now write the size
 	EEPROM_write(0, (current_byte+1)/FRAME_WIDTH);
- 5fe:	c8 01       	movw	r24, r16
- 600:	66 e0       	ldi	r22, 0x06	; 6
- 602:	70 e0       	ldi	r23, 0x00	; 0
- 604:	bc d2       	rcall	.+1400   	; 0xb7e <__divmodhi4>
- 606:	80 e0       	ldi	r24, 0x00	; 0
- 608:	39 dd       	rcall	.-1422   	; 0x7c <EEPROM_write>
+ 5fc:	c8 01       	movw	r24, r16
+ 5fe:	66 e0       	ldi	r22, 0x06	; 6
+ 600:	70 e0       	ldi	r23, 0x00	; 0
+ 602:	74 d2       	rcall	.+1256   	; 0xaec <__divmodhi4>
+ 604:	80 e0       	ldi	r24, 0x00	; 0
+ 606:	3a dd       	rcall	.-1420   	; 0x7c <EEPROM_write>
+	
+	for(uint8_t i = 0; i<3; i++){
+ 608:	80 e0       	ldi	r24, 0x00	; 0
+ 60a:	19 c0       	rjmp	.+50     	; 0x63e <__LOCK_REGION_LENGTH__+0x23e>
+			break;
+		case 0x1:
+			LED2_PORT &= ~(LED2_OFFSET);
+			break;
+		case 0x2:
+			LED3_PORT &= ~(LED3_OFFSET);
+ 60c:	98 b3       	in	r25, 0x18	; 24
+ 60e:	9b 7f       	andi	r25, 0xFB	; 251
+ 610:	98 bb       	out	0x18, r25	; 24
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+ 612:	9f ef       	ldi	r25, 0xFF	; 255
+ 614:	21 ee       	ldi	r18, 0xE1	; 225
+ 616:	34 e0       	ldi	r19, 0x04	; 4
+ 618:	91 50       	subi	r25, 0x01	; 1
+ 61a:	20 40       	sbci	r18, 0x00	; 0
+ 61c:	30 40       	sbci	r19, 0x00	; 0
+ 61e:	e1 f7       	brne	.-8      	; 0x618 <__LOCK_REGION_LENGTH__+0x218>
+ 620:	00 c0       	rjmp	.+0      	; 0x622 <__LOCK_REGION_LENGTH__+0x222>
+ 622:	00 00       	nop
+			break;
+		case 0x1:
+			LED2_PORT |= (LED2_OFFSET);
+			break;
+		case 0x2:
+			LED3_PORT |= (LED3_OFFSET);
+ 624:	98 b3       	in	r25, 0x18	; 24
+ 626:	94 60       	ori	r25, 0x04	; 4
+ 628:	98 bb       	out	0x18, r25	; 24
+ 62a:	4f ef       	ldi	r20, 0xFF	; 255
+ 62c:	91 ee       	ldi	r25, 0xE1	; 225
+ 62e:	24 e0       	ldi	r18, 0x04	; 4
+ 630:	41 50       	subi	r20, 0x01	; 1
+ 632:	90 40       	sbci	r25, 0x00	; 0
+ 634:	20 40       	sbci	r18, 0x00	; 0
+ 636:	e1 f7       	brne	.-8      	; 0x630 <__LOCK_REGION_LENGTH__+0x230>
+ 638:	00 c0       	rjmp	.+0      	; 0x63a <__LOCK_REGION_LENGTH__+0x23a>
+ 63a:	00 00       	nop
+	}
+	
+	// now write the size
+	EEPROM_write(0, (current_byte+1)/FRAME_WIDTH);
+	
+	for(uint8_t i = 0; i<3; i++){
+ 63c:	8f 5f       	subi	r24, 0xFF	; 255
+ 63e:	83 30       	cpi	r24, 0x03	; 3
+ 640:	28 f3       	brcs	.-54     	; 0x60c <__LOCK_REGION_LENGTH__+0x20c>
+		_delay_ms(200);
+		led_off(2);
+		_delay_ms(200);
+	}
 	
 	return 1;
- 60a:	81 e0       	ldi	r24, 0x01	; 1
- 60c:	07 c0       	rjmp	.+14     	; 0x61c <__LOCK_REGION_LENGTH__+0x21c>
+ 642:	81 e0       	ldi	r24, 0x01	; 1
+ 644:	07 c0       	rjmp	.+14     	; 0x654 <__LOCK_REGION_LENGTH__+0x254>
 		}
 		
 	}
 	
 	if(data_started != 3){
 		return 0;
- 60e:	80 e0       	ldi	r24, 0x00	; 0
- 610:	05 c0       	rjmp	.+10     	; 0x61c <__LOCK_REGION_LENGTH__+0x21c>
+ 646:	80 e0       	ldi	r24, 0x00	; 0
+ 648:	05 c0       	rjmp	.+10     	; 0x654 <__LOCK_REGION_LENGTH__+0x254>
 	// validate data
 	
 	// check we got data to fill a whole number of frames
 	
 	if((current_byte + 1) % FRAME_WIDTH != 0){
 		return 0;	// not a full frame detected
- 612:	80 e0       	ldi	r24, 0x00	; 0
- 614:	03 c0       	rjmp	.+6      	; 0x61c <__LOCK_REGION_LENGTH__+0x21c>
+ 64a:	80 e0       	ldi	r24, 0x00	; 0
+ 64c:	03 c0       	rjmp	.+6      	; 0x654 <__LOCK_REGION_LENGTH__+0x254>
 	}
 	if(current_bit != 6){
 		return 0;	// didn't end on a full vertical line (minus the stop bit)
- 616:	80 e0       	ldi	r24, 0x00	; 0
- 618:	01 c0       	rjmp	.+2      	; 0x61c <__LOCK_REGION_LENGTH__+0x21c>
+ 64e:	80 e0       	ldi	r24, 0x00	; 0
+ 650:	01 c0       	rjmp	.+2      	; 0x654 <__LOCK_REGION_LENGTH__+0x254>
 	}
 	if((current_byte+1) / FRAME_WIDTH > MAX_FRAMES){
 		return 0;	// too many frames
- 61a:	80 e0       	ldi	r24, 0x00	; 0
-	
-	// now write the size
-	EEPROM_write(0, (current_byte+1)/FRAME_WIDTH);
+ 652:	80 e0       	ldi	r24, 0x00	; 0
+		led_off(2);
+		_delay_ms(200);
+	}
 	
 	return 1;
 }
- 61c:	0f 90       	pop	r0
- 61e:	0f 90       	pop	r0
- 620:	0f 90       	pop	r0
- 622:	0f 90       	pop	r0
- 624:	0f 90       	pop	r0
- 626:	df 91       	pop	r29
- 628:	cf 91       	pop	r28
- 62a:	1f 91       	pop	r17
- 62c:	0f 91       	pop	r16
- 62e:	ff 90       	pop	r15
- 630:	ef 90       	pop	r14
- 632:	df 90       	pop	r13
- 634:	cf 90       	pop	r12
- 636:	bf 90       	pop	r11
- 638:	af 90       	pop	r10
- 63a:	9f 90       	pop	r9
- 63c:	8f 90       	pop	r8
- 63e:	7f 90       	pop	r7
- 640:	6f 90       	pop	r6
- 642:	5f 90       	pop	r5
- 644:	4f 90       	pop	r4
- 646:	3f 90       	pop	r3
- 648:	2f 90       	pop	r2
- 64a:	08 95       	ret
+ 654:	0f 90       	pop	r0
+ 656:	0f 90       	pop	r0
+ 658:	0f 90       	pop	r0
+ 65a:	0f 90       	pop	r0
+ 65c:	0f 90       	pop	r0
+ 65e:	df 91       	pop	r29
+ 660:	cf 91       	pop	r28
+ 662:	1f 91       	pop	r17
+ 664:	0f 91       	pop	r16
+ 666:	ff 90       	pop	r15
+ 668:	ef 90       	pop	r14
+ 66a:	df 90       	pop	r13
+ 66c:	cf 90       	pop	r12
+ 66e:	bf 90       	pop	r11
+ 670:	af 90       	pop	r10
+ 672:	9f 90       	pop	r9
+ 674:	8f 90       	pop	r8
+ 676:	7f 90       	pop	r7
+ 678:	6f 90       	pop	r6
+ 67a:	5f 90       	pop	r5
+ 67c:	4f 90       	pop	r4
+ 67e:	3f 90       	pop	r3
+ 680:	2f 90       	pop	r2
+ 682:	08 95       	ret
 
-0000064c <load_frames>:
+00000684 <load_frames>:
 
 void load_frames(void){
- 64c:	1f 93       	push	r17
- 64e:	cf 93       	push	r28
- 650:	df 93       	push	r29
+ 684:	1f 93       	push	r17
+ 686:	cf 93       	push	r28
+ 688:	df 93       	push	r29
 	// load eeprom or default data into the frame buffer for displaying
 	data_frame_count = EEPROM_read(0x0);
- 652:	80 e0       	ldi	r24, 0x00	; 0
- 654:	1f dd       	rcall	.-1474   	; 0x94 <EEPROM_read>
- 656:	80 93 a1 00 	sts	0x00A1, r24	; 0x8000a1 <data_frame_count>
+ 68a:	80 e0       	ldi	r24, 0x00	; 0
+ 68c:	03 dd       	rcall	.-1530   	; 0x94 <EEPROM_read>
+ 68e:	80 93 a1 00 	sts	0x00A1, r24	; 0x8000a1 <data_frame_count>
 	
 	if(data_frame_count != 0xff && data_frame_count != 0x0){
- 65a:	81 50       	subi	r24, 0x01	; 1
- 65c:	8e 3f       	cpi	r24, 0xFE	; 254
- 65e:	40 f0       	brcs	.+16     	; 0x670 <load_frames+0x24>
- 660:	18 c0       	rjmp	.+48     	; 0x692 <load_frames+0x46>
+ 692:	81 50       	subi	r24, 0x01	; 1
+ 694:	8e 3f       	cpi	r24, 0xFE	; 254
+ 696:	40 f0       	brcs	.+16     	; 0x6a8 <load_frames+0x24>
+ 698:	18 c0       	rjmp	.+48     	; 0x6ca <load_frames+0x46>
 		// eeprom data exists, use it
 		for(uint8_t i = 0; i < data_frame_count*FRAME_WIDTH; i++){
 			data_buf[i] = EEPROM_read(i+1);
- 662:	1f 5f       	subi	r17, 0xFF	; 255
- 664:	81 2f       	mov	r24, r17
- 666:	16 dd       	rcall	.-1492   	; 0x94 <EEPROM_read>
- 668:	ce 55       	subi	r28, 0x5E	; 94
- 66a:	df 4f       	sbci	r29, 0xFF	; 255
- 66c:	88 83       	st	Y, r24
- 66e:	01 c0       	rjmp	.+2      	; 0x672 <load_frames+0x26>
- 670:	10 e0       	ldi	r17, 0x00	; 0
+ 69a:	1f 5f       	subi	r17, 0xFF	; 255
+ 69c:	81 2f       	mov	r24, r17
+ 69e:	fa dc       	rcall	.-1548   	; 0x94 <EEPROM_read>
+ 6a0:	ce 55       	subi	r28, 0x5E	; 94
+ 6a2:	df 4f       	sbci	r29, 0xFF	; 255
+ 6a4:	88 83       	st	Y, r24
+ 6a6:	01 c0       	rjmp	.+2      	; 0x6aa <load_frames+0x26>
+ 6a8:	10 e0       	ldi	r17, 0x00	; 0
 	// load eeprom or default data into the frame buffer for displaying
 	data_frame_count = EEPROM_read(0x0);
 	
 	if(data_frame_count != 0xff && data_frame_count != 0x0){
 		// eeprom data exists, use it
 		for(uint8_t i = 0; i < data_frame_count*FRAME_WIDTH; i++){
- 672:	c1 2f       	mov	r28, r17
- 674:	d0 e0       	ldi	r29, 0x00	; 0
- 676:	80 91 a1 00 	lds	r24, 0x00A1	; 0x8000a1 <data_frame_count>
- 67a:	90 e0       	ldi	r25, 0x00	; 0
- 67c:	9c 01       	movw	r18, r24
- 67e:	22 0f       	add	r18, r18
- 680:	33 1f       	adc	r19, r19
- 682:	82 0f       	add	r24, r18
- 684:	93 1f       	adc	r25, r19
- 686:	88 0f       	add	r24, r24
- 688:	99 1f       	adc	r25, r25
- 68a:	c8 17       	cp	r28, r24
- 68c:	d9 07       	cpc	r29, r25
- 68e:	4c f3       	brlt	.-46     	; 0x662 <load_frames+0x16>
- 690:	1d c0       	rjmp	.+58     	; 0x6cc <load_frames+0x80>
+ 6aa:	c1 2f       	mov	r28, r17
+ 6ac:	d0 e0       	ldi	r29, 0x00	; 0
+ 6ae:	80 91 a1 00 	lds	r24, 0x00A1	; 0x8000a1 <data_frame_count>
+ 6b2:	90 e0       	ldi	r25, 0x00	; 0
+ 6b4:	9c 01       	movw	r18, r24
+ 6b6:	22 0f       	add	r18, r18
+ 6b8:	33 1f       	adc	r19, r19
+ 6ba:	82 0f       	add	r24, r18
+ 6bc:	93 1f       	adc	r25, r19
+ 6be:	88 0f       	add	r24, r24
+ 6c0:	99 1f       	adc	r25, r25
+ 6c2:	c8 17       	cp	r28, r24
+ 6c4:	d9 07       	cpc	r29, r25
+ 6c6:	4c f3       	brlt	.-46     	; 0x69a <load_frames+0x16>
+ 6c8:	1d c0       	rjmp	.+58     	; 0x704 <load_frames+0x80>
 		}
 		return;
 	}
 	
 	// no or bad eeprom, use default
 	data_frame_count = default_data_size;
- 692:	50 91 9c 00 	lds	r21, 0x009C	; 0x80009c <default_data_size>
- 696:	50 93 a1 00 	sts	0x00A1, r21	; 0x8000a1 <data_frame_count>
+ 6ca:	50 91 9c 00 	lds	r21, 0x009C	; 0x80009c <default_data_size>
+ 6ce:	50 93 a1 00 	sts	0x00A1, r21	; 0x8000a1 <data_frame_count>
 	for(uint8_t i = 0; i < data_frame_count*FRAME_WIDTH; i++){
- 69a:	40 e0       	ldi	r20, 0x00	; 0
- 69c:	09 c0       	rjmp	.+18     	; 0x6b0 <load_frames+0x64>
+ 6d2:	40 e0       	ldi	r20, 0x00	; 0
+ 6d4:	09 c0       	rjmp	.+18     	; 0x6e8 <load_frames+0x64>
 		data_buf[i] = default_data[i];
- 69e:	f9 01       	movw	r30, r18
- 6a0:	e0 5a       	subi	r30, 0xA0	; 160
- 6a2:	ff 4f       	sbci	r31, 0xFF	; 255
- 6a4:	80 81       	ld	r24, Z
- 6a6:	f9 01       	movw	r30, r18
- 6a8:	ee 55       	subi	r30, 0x5E	; 94
- 6aa:	ff 4f       	sbci	r31, 0xFF	; 255
- 6ac:	80 83       	st	Z, r24
+ 6d6:	f9 01       	movw	r30, r18
+ 6d8:	e0 5a       	subi	r30, 0xA0	; 160
+ 6da:	ff 4f       	sbci	r31, 0xFF	; 255
+ 6dc:	80 81       	ld	r24, Z
+ 6de:	f9 01       	movw	r30, r18
+ 6e0:	ee 55       	subi	r30, 0x5E	; 94
+ 6e2:	ff 4f       	sbci	r31, 0xFF	; 255
+ 6e4:	80 83       	st	Z, r24
 		return;
 	}
 	
 	// no or bad eeprom, use default
 	data_frame_count = default_data_size;
 	for(uint8_t i = 0; i < data_frame_count*FRAME_WIDTH; i++){
- 6ae:	4f 5f       	subi	r20, 0xFF	; 255
- 6b0:	24 2f       	mov	r18, r20
- 6b2:	30 e0       	ldi	r19, 0x00	; 0
- 6b4:	85 2f       	mov	r24, r21
- 6b6:	90 e0       	ldi	r25, 0x00	; 0
- 6b8:	bc 01       	movw	r22, r24
- 6ba:	66 0f       	add	r22, r22
- 6bc:	77 1f       	adc	r23, r23
- 6be:	86 0f       	add	r24, r22
- 6c0:	97 1f       	adc	r25, r23
- 6c2:	88 0f       	add	r24, r24
- 6c4:	99 1f       	adc	r25, r25
- 6c6:	28 17       	cp	r18, r24
- 6c8:	39 07       	cpc	r19, r25
- 6ca:	4c f3       	brlt	.-46     	; 0x69e <load_frames+0x52>
+ 6e6:	4f 5f       	subi	r20, 0xFF	; 255
+ 6e8:	24 2f       	mov	r18, r20
+ 6ea:	30 e0       	ldi	r19, 0x00	; 0
+ 6ec:	85 2f       	mov	r24, r21
+ 6ee:	90 e0       	ldi	r25, 0x00	; 0
+ 6f0:	bc 01       	movw	r22, r24
+ 6f2:	66 0f       	add	r22, r22
+ 6f4:	77 1f       	adc	r23, r23
+ 6f6:	86 0f       	add	r24, r22
+ 6f8:	97 1f       	adc	r25, r23
+ 6fa:	88 0f       	add	r24, r24
+ 6fc:	99 1f       	adc	r25, r25
+ 6fe:	28 17       	cp	r18, r24
+ 700:	39 07       	cpc	r19, r25
+ 702:	4c f3       	brlt	.-46     	; 0x6d6 <load_frames+0x52>
 		data_buf[i] = default_data[i];
 	}
 }
- 6cc:	df 91       	pop	r29
- 6ce:	cf 91       	pop	r28
- 6d0:	1f 91       	pop	r17
- 6d2:	08 95       	ret
+ 704:	df 91       	pop	r29
+ 706:	cf 91       	pop	r28
+ 708:	1f 91       	pop	r17
+ 70a:	08 95       	ret
 
-000006d4 <animate_left>:
-	#else
-		//round up by default
-		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
-	#endif
-
-	__builtin_avr_delay_cycles(__ticks_dc);
- 6d4:	ef e3       	ldi	r30, 0x3F	; 63
- 6d6:	fc e9       	ldi	r31, 0x9C	; 156
- 6d8:	31 97       	sbiw	r30, 0x01	; 1
- 6da:	f1 f7       	brne	.-4      	; 0x6d8 <animate_left+0x4>
- 6dc:	00 c0       	rjmp	.+0      	; 0x6de <animate_left+0xa>
- 6de:	00 00       	nop
+0000070c <animate_left>:
+ 70c:	ef e3       	ldi	r30, 0x3F	; 63
+ 70e:	fc e9       	ldi	r31, 0x9C	; 156
+ 710:	31 97       	sbiw	r30, 0x01	; 1
+ 712:	f1 f7       	brne	.-4      	; 0x710 <animate_left+0x4>
+ 714:	00 c0       	rjmp	.+0      	; 0x716 <animate_left+0xa>
+ 716:	00 00       	nop
 	
 #ifdef DISPLAY_MODE_WORD
 	_delay_ms(20);
 	// all frames up to a blank one
 	
 	uint8_t word_end = data_frame_count;
- 6e0:	60 91 a1 00 	lds	r22, 0x00A1	; 0x8000a1 <data_frame_count>
+ 718:	60 91 a1 00 	lds	r22, 0x00A1	; 0x8000a1 <data_frame_count>
 	for (uint8_t f=frame+1; f < data_frame_count; f++) {
- 6e4:	51 e0       	ldi	r21, 0x01	; 1
- 6e6:	58 0f       	add	r21, r24
- 6e8:	1c c0       	rjmp	.+56     	; 0x722 <animate_left+0x4e>
+ 71c:	51 e0       	ldi	r21, 0x01	; 1
+ 71e:	58 0f       	add	r21, r24
+ 720:	1c c0       	rjmp	.+56     	; 0x75a <animate_left+0x4e>
 		uint8_t blank_cnt = 0;
 		//uint8_t *cur_frame = &(data_buf[f*FRAME_WIDTH]);
 		for (uint8_t c = 0; c < FRAME_WIDTH; c++) {
 			//if ((cur_frame[c] & 0x1f) == 0) {
 			uint8_t line = data_buf[c + f*FRAME_WIDTH];
- 6ea:	25 2f       	mov	r18, r21
- 6ec:	30 e0       	ldi	r19, 0x00	; 0
- 6ee:	f9 01       	movw	r30, r18
- 6f0:	ee 0f       	add	r30, r30
- 6f2:	ff 1f       	adc	r31, r31
- 6f4:	e2 0f       	add	r30, r18
- 6f6:	f3 1f       	adc	r31, r19
- 6f8:	ee 0f       	add	r30, r30
- 6fa:	ff 1f       	adc	r31, r31
- 6fc:	e9 0f       	add	r30, r25
- 6fe:	f1 1d       	adc	r31, r1
- 700:	ee 55       	subi	r30, 0x5E	; 94
- 702:	ff 4f       	sbci	r31, 0xFF	; 255
- 704:	20 81       	ld	r18, Z
+ 722:	25 2f       	mov	r18, r21
+ 724:	30 e0       	ldi	r19, 0x00	; 0
+ 726:	f9 01       	movw	r30, r18
+ 728:	ee 0f       	add	r30, r30
+ 72a:	ff 1f       	adc	r31, r31
+ 72c:	e2 0f       	add	r30, r18
+ 72e:	f3 1f       	adc	r31, r19
+ 730:	ee 0f       	add	r30, r30
+ 732:	ff 1f       	adc	r31, r31
+ 734:	e9 0f       	add	r30, r25
+ 736:	f1 1d       	adc	r31, r1
+ 738:	ee 55       	subi	r30, 0x5E	; 94
+ 73a:	ff 4f       	sbci	r31, 0xFF	; 255
+ 73c:	20 81       	ld	r18, Z
 			if ((line & 0x1f) == 0) {
- 706:	2f 71       	andi	r18, 0x1F	; 31
- 708:	11 f4       	brne	.+4      	; 0x70e <animate_left+0x3a>
+ 73e:	2f 71       	andi	r18, 0x1F	; 31
+ 740:	11 f4       	brne	.+4      	; 0x746 <animate_left+0x3a>
 				blank_cnt++;
- 70a:	4f 5f       	subi	r20, 0xFF	; 255
- 70c:	01 c0       	rjmp	.+2      	; 0x710 <animate_left+0x3c>
+ 742:	4f 5f       	subi	r20, 0xFF	; 255
+ 744:	01 c0       	rjmp	.+2      	; 0x748 <animate_left+0x3c>
 			} else {
 				blank_cnt = 0;
- 70e:	40 e0       	ldi	r20, 0x00	; 0
+ 746:	40 e0       	ldi	r20, 0x00	; 0
 	
 	uint8_t word_end = data_frame_count;
 	for (uint8_t f=frame+1; f < data_frame_count; f++) {
 		uint8_t blank_cnt = 0;
 		//uint8_t *cur_frame = &(data_buf[f*FRAME_WIDTH]);
 		for (uint8_t c = 0; c < FRAME_WIDTH; c++) {
- 710:	9f 5f       	subi	r25, 0xFF	; 255
- 712:	02 c0       	rjmp	.+4      	; 0x718 <animate_left+0x44>
- 714:	90 e0       	ldi	r25, 0x00	; 0
- 716:	40 e0       	ldi	r20, 0x00	; 0
- 718:	96 30       	cpi	r25, 0x06	; 6
- 71a:	38 f3       	brcs	.-50     	; 0x6ea <animate_left+0x16>
+ 748:	9f 5f       	subi	r25, 0xFF	; 255
+ 74a:	02 c0       	rjmp	.+4      	; 0x750 <animate_left+0x44>
+ 74c:	90 e0       	ldi	r25, 0x00	; 0
+ 74e:	40 e0       	ldi	r20, 0x00	; 0
+ 750:	96 30       	cpi	r25, 0x06	; 6
+ 752:	38 f3       	brcs	.-50     	; 0x722 <animate_left+0x16>
 				blank_cnt++;
 			} else {
 				blank_cnt = 0;
 			}
 		}
 		if (blank_cnt >= FRAME_WIDTH) {
- 71c:	46 30       	cpi	r20, 0x06	; 6
- 71e:	20 f4       	brcc	.+8      	; 0x728 <animate_left+0x54>
+ 754:	46 30       	cpi	r20, 0x06	; 6
+ 756:	20 f4       	brcc	.+8      	; 0x760 <animate_left+0x54>
 #ifdef DISPLAY_MODE_WORD
 	_delay_ms(20);
 	// all frames up to a blank one
 	
 	uint8_t word_end = data_frame_count;
 	for (uint8_t f=frame+1; f < data_frame_count; f++) {
- 720:	5f 5f       	subi	r21, 0xFF	; 255
- 722:	56 17       	cp	r21, r22
- 724:	b8 f3       	brcs	.-18     	; 0x714 <animate_left+0x40>
- 726:	01 c0       	rjmp	.+2      	; 0x72a <animate_left+0x56>
+ 758:	5f 5f       	subi	r21, 0xFF	; 255
+ 75a:	56 17       	cp	r21, r22
+ 75c:	b8 f3       	brcs	.-18     	; 0x74c <animate_left+0x40>
+ 75e:	01 c0       	rjmp	.+2      	; 0x762 <animate_left+0x56>
 			} else {
 				blank_cnt = 0;
 			}
 		}
 		if (blank_cnt >= FRAME_WIDTH) {
 			word_end = f;
- 728:	65 2f       	mov	r22, r21
+ 760:	65 2f       	mov	r22, r21
 			break;
 		}
 	}
 	
 	uint8_t col_min = frame*FRAME_WIDTH;
- 72a:	98 2f       	mov	r25, r24
- 72c:	99 0f       	add	r25, r25
- 72e:	89 0f       	add	r24, r25
- 730:	78 2f       	mov	r23, r24
- 732:	77 0f       	add	r23, r23
+ 762:	98 2f       	mov	r25, r24
+ 764:	99 0f       	add	r25, r25
+ 766:	89 0f       	add	r24, r25
+ 768:	78 2f       	mov	r23, r24
+ 76a:	77 0f       	add	r23, r23
 	uint8_t col_max = word_end*FRAME_WIDTH;
- 734:	86 2f       	mov	r24, r22
- 736:	88 0f       	add	r24, r24
- 738:	86 0f       	add	r24, r22
- 73a:	58 2f       	mov	r21, r24
- 73c:	55 0f       	add	r21, r21
+ 76c:	86 2f       	mov	r24, r22
+ 76e:	88 0f       	add	r24, r24
+ 770:	86 0f       	add	r24, r22
+ 772:	58 2f       	mov	r21, r24
+ 774:	55 0f       	add	r21, r21
 	for (uint8_t col = col_max; col > col_min; col--) {
- 73e:	88 c0       	rjmp	.+272    	; 0x850 <animate_left+0x17c>
+ 776:	88 c0       	rjmp	.+272    	; 0x888 <animate_left+0x17c>
 		uint8_t column = data_buf[col-1];
- 740:	e5 2f       	mov	r30, r21
- 742:	f0 e0       	ldi	r31, 0x00	; 0
- 744:	ef 55       	subi	r30, 0x5F	; 95
- 746:	ff 4f       	sbci	r31, 0xFF	; 255
- 748:	40 81       	ld	r20, Z
+ 778:	e5 2f       	mov	r30, r21
+ 77a:	f0 e0       	ldi	r31, 0x00	; 0
+ 77c:	ef 55       	subi	r30, 0x5F	; 95
+ 77e:	ff 4f       	sbci	r31, 0xFF	; 255
+ 780:	40 81       	ld	r20, Z
 		
 		// write to LEDs
 		for(uint8_t l = 0; l < NUM_LEDS; l++){
- 74a:	90 e0       	ldi	r25, 0x00	; 0
- 74c:	4c c0       	rjmp	.+152    	; 0x7e6 <animate_left+0x112>
+ 782:	90 e0       	ldi	r25, 0x00	; 0
+ 784:	4c c0       	rjmp	.+152    	; 0x81e <animate_left+0x112>
 			if((column>>l) & 0b1){
- 74e:	24 2f       	mov	r18, r20
- 750:	30 e0       	ldi	r19, 0x00	; 0
- 752:	09 2e       	mov	r0, r25
- 754:	02 c0       	rjmp	.+4      	; 0x75a <animate_left+0x86>
- 756:	35 95       	asr	r19
- 758:	27 95       	ror	r18
- 75a:	0a 94       	dec	r0
- 75c:	e2 f7       	brpl	.-8      	; 0x756 <animate_left+0x82>
- 75e:	20 ff       	sbrs	r18, 0
- 760:	21 c0       	rjmp	.+66     	; 0x7a4 <animate_left+0xd0>
+ 786:	24 2f       	mov	r18, r20
+ 788:	30 e0       	ldi	r19, 0x00	; 0
+ 78a:	09 2e       	mov	r0, r25
+ 78c:	02 c0       	rjmp	.+4      	; 0x792 <animate_left+0x86>
+ 78e:	35 95       	asr	r19
+ 790:	27 95       	ror	r18
+ 792:	0a 94       	dec	r0
+ 794:	e2 f7       	brpl	.-8      	; 0x78e <animate_left+0x82>
+ 796:	20 ff       	sbrs	r18, 0
+ 798:	21 c0       	rjmp	.+66     	; 0x7dc <animate_left+0xd0>
 	/* Return data from data register */
 	return EEDR;
 }
 
 inline void led_on(uint8_t led_num){
 	switch(led_num){
- 762:	92 30       	cpi	r25, 0x02	; 2
- 764:	99 f0       	breq	.+38     	; 0x78c <animate_left+0xb8>
- 766:	28 f4       	brcc	.+10     	; 0x772 <animate_left+0x9e>
- 768:	99 23       	and	r25, r25
- 76a:	41 f0       	breq	.+16     	; 0x77c <animate_left+0xa8>
- 76c:	91 30       	cpi	r25, 0x01	; 1
- 76e:	51 f0       	breq	.+20     	; 0x784 <animate_left+0xb0>
- 770:	39 c0       	rjmp	.+114    	; 0x7e4 <animate_left+0x110>
- 772:	93 30       	cpi	r25, 0x03	; 3
- 774:	79 f0       	breq	.+30     	; 0x794 <animate_left+0xc0>
- 776:	94 30       	cpi	r25, 0x04	; 4
- 778:	89 f0       	breq	.+34     	; 0x79c <animate_left+0xc8>
- 77a:	34 c0       	rjmp	.+104    	; 0x7e4 <animate_left+0x110>
+ 79a:	92 30       	cpi	r25, 0x02	; 2
+ 79c:	99 f0       	breq	.+38     	; 0x7c4 <animate_left+0xb8>
+ 79e:	28 f4       	brcc	.+10     	; 0x7aa <animate_left+0x9e>
+ 7a0:	99 23       	and	r25, r25
+ 7a2:	41 f0       	breq	.+16     	; 0x7b4 <animate_left+0xa8>
+ 7a4:	91 30       	cpi	r25, 0x01	; 1
+ 7a6:	51 f0       	breq	.+20     	; 0x7bc <animate_left+0xb0>
+ 7a8:	39 c0       	rjmp	.+114    	; 0x81c <animate_left+0x110>
+ 7aa:	93 30       	cpi	r25, 0x03	; 3
+ 7ac:	79 f0       	breq	.+30     	; 0x7cc <animate_left+0xc0>
+ 7ae:	94 30       	cpi	r25, 0x04	; 4
+ 7b0:	89 f0       	breq	.+34     	; 0x7d4 <animate_left+0xc8>
+ 7b2:	34 c0       	rjmp	.+104    	; 0x81c <animate_left+0x110>
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
- 77c:	88 b3       	in	r24, 0x18	; 24
- 77e:	8e 7f       	andi	r24, 0xFE	; 254
- 780:	88 bb       	out	0x18, r24	; 24
- 782:	30 c0       	rjmp	.+96     	; 0x7e4 <animate_left+0x110>
+ 7b4:	88 b3       	in	r24, 0x18	; 24
+ 7b6:	8e 7f       	andi	r24, 0xFE	; 254
+ 7b8:	88 bb       	out	0x18, r24	; 24
+ 7ba:	30 c0       	rjmp	.+96     	; 0x81c <animate_left+0x110>
 			break;
 		case 0x1:
 			LED2_PORT &= ~(LED2_OFFSET);
- 784:	88 b3       	in	r24, 0x18	; 24
- 786:	8d 7f       	andi	r24, 0xFD	; 253
- 788:	88 bb       	out	0x18, r24	; 24
- 78a:	2c c0       	rjmp	.+88     	; 0x7e4 <animate_left+0x110>
+ 7bc:	88 b3       	in	r24, 0x18	; 24
+ 7be:	8d 7f       	andi	r24, 0xFD	; 253
+ 7c0:	88 bb       	out	0x18, r24	; 24
+ 7c2:	2c c0       	rjmp	.+88     	; 0x81c <animate_left+0x110>
 			break;
 		case 0x2:
 			LED3_PORT &= ~(LED3_OFFSET);
- 78c:	88 b3       	in	r24, 0x18	; 24
- 78e:	8b 7f       	andi	r24, 0xFB	; 251
- 790:	88 bb       	out	0x18, r24	; 24
- 792:	28 c0       	rjmp	.+80     	; 0x7e4 <animate_left+0x110>
+ 7c4:	88 b3       	in	r24, 0x18	; 24
+ 7c6:	8b 7f       	andi	r24, 0xFB	; 251
+ 7c8:	88 bb       	out	0x18, r24	; 24
+ 7ca:	28 c0       	rjmp	.+80     	; 0x81c <animate_left+0x110>
 			break;
 		case 0x3:
 			LED4_PORT &= ~(LED4_OFFSET);
- 794:	88 b3       	in	r24, 0x18	; 24
- 796:	87 7f       	andi	r24, 0xF7	; 247
- 798:	88 bb       	out	0x18, r24	; 24
- 79a:	24 c0       	rjmp	.+72     	; 0x7e4 <animate_left+0x110>
+ 7cc:	88 b3       	in	r24, 0x18	; 24
+ 7ce:	87 7f       	andi	r24, 0xF7	; 247
+ 7d0:	88 bb       	out	0x18, r24	; 24
+ 7d2:	24 c0       	rjmp	.+72     	; 0x81c <animate_left+0x110>
 			break;
 		case 0x4:
 			LED5_PORT &= ~(LED5_OFFSET);
- 79c:	88 b3       	in	r24, 0x18	; 24
- 79e:	8f 7e       	andi	r24, 0xEF	; 239
- 7a0:	88 bb       	out	0x18, r24	; 24
- 7a2:	20 c0       	rjmp	.+64     	; 0x7e4 <animate_left+0x110>
+ 7d4:	88 b3       	in	r24, 0x18	; 24
+ 7d6:	8f 7e       	andi	r24, 0xEF	; 239
+ 7d8:	88 bb       	out	0x18, r24	; 24
+ 7da:	20 c0       	rjmp	.+64     	; 0x81c <animate_left+0x110>
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) =  *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) | LED_OFFSETS[led_num];
 }
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
- 7a4:	92 30       	cpi	r25, 0x02	; 2
- 7a6:	99 f0       	breq	.+38     	; 0x7ce <animate_left+0xfa>
- 7a8:	28 f4       	brcc	.+10     	; 0x7b4 <animate_left+0xe0>
- 7aa:	99 23       	and	r25, r25
- 7ac:	41 f0       	breq	.+16     	; 0x7be <animate_left+0xea>
- 7ae:	91 30       	cpi	r25, 0x01	; 1
- 7b0:	51 f0       	breq	.+20     	; 0x7c6 <animate_left+0xf2>
- 7b2:	18 c0       	rjmp	.+48     	; 0x7e4 <animate_left+0x110>
- 7b4:	93 30       	cpi	r25, 0x03	; 3
- 7b6:	79 f0       	breq	.+30     	; 0x7d6 <animate_left+0x102>
- 7b8:	94 30       	cpi	r25, 0x04	; 4
- 7ba:	89 f0       	breq	.+34     	; 0x7de <animate_left+0x10a>
- 7bc:	13 c0       	rjmp	.+38     	; 0x7e4 <animate_left+0x110>
+ 7dc:	92 30       	cpi	r25, 0x02	; 2
+ 7de:	99 f0       	breq	.+38     	; 0x806 <animate_left+0xfa>
+ 7e0:	28 f4       	brcc	.+10     	; 0x7ec <animate_left+0xe0>
+ 7e2:	99 23       	and	r25, r25
+ 7e4:	41 f0       	breq	.+16     	; 0x7f6 <animate_left+0xea>
+ 7e6:	91 30       	cpi	r25, 0x01	; 1
+ 7e8:	51 f0       	breq	.+20     	; 0x7fe <animate_left+0xf2>
+ 7ea:	18 c0       	rjmp	.+48     	; 0x81c <animate_left+0x110>
+ 7ec:	93 30       	cpi	r25, 0x03	; 3
+ 7ee:	79 f0       	breq	.+30     	; 0x80e <animate_left+0x102>
+ 7f0:	94 30       	cpi	r25, 0x04	; 4
+ 7f2:	89 f0       	breq	.+34     	; 0x816 <animate_left+0x10a>
+ 7f4:	13 c0       	rjmp	.+38     	; 0x81c <animate_left+0x110>
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
- 7be:	88 b3       	in	r24, 0x18	; 24
- 7c0:	81 60       	ori	r24, 0x01	; 1
- 7c2:	88 bb       	out	0x18, r24	; 24
- 7c4:	0f c0       	rjmp	.+30     	; 0x7e4 <animate_left+0x110>
+ 7f6:	88 b3       	in	r24, 0x18	; 24
+ 7f8:	81 60       	ori	r24, 0x01	; 1
+ 7fa:	88 bb       	out	0x18, r24	; 24
+ 7fc:	0f c0       	rjmp	.+30     	; 0x81c <animate_left+0x110>
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
- 7c6:	88 b3       	in	r24, 0x18	; 24
- 7c8:	82 60       	ori	r24, 0x02	; 2
- 7ca:	88 bb       	out	0x18, r24	; 24
- 7cc:	0b c0       	rjmp	.+22     	; 0x7e4 <animate_left+0x110>
+ 7fe:	88 b3       	in	r24, 0x18	; 24
+ 800:	82 60       	ori	r24, 0x02	; 2
+ 802:	88 bb       	out	0x18, r24	; 24
+ 804:	0b c0       	rjmp	.+22     	; 0x81c <animate_left+0x110>
 			break;
 		case 0x2:
 			LED3_PORT |= (LED3_OFFSET);
- 7ce:	88 b3       	in	r24, 0x18	; 24
- 7d0:	84 60       	ori	r24, 0x04	; 4
- 7d2:	88 bb       	out	0x18, r24	; 24
- 7d4:	07 c0       	rjmp	.+14     	; 0x7e4 <animate_left+0x110>
+ 806:	88 b3       	in	r24, 0x18	; 24
+ 808:	84 60       	ori	r24, 0x04	; 4
+ 80a:	88 bb       	out	0x18, r24	; 24
+ 80c:	07 c0       	rjmp	.+14     	; 0x81c <animate_left+0x110>
 			break;
 		case 0x3:
 			LED4_PORT |= (LED4_OFFSET);
- 7d6:	88 b3       	in	r24, 0x18	; 24
- 7d8:	88 60       	ori	r24, 0x08	; 8
- 7da:	88 bb       	out	0x18, r24	; 24
- 7dc:	03 c0       	rjmp	.+6      	; 0x7e4 <animate_left+0x110>
+ 80e:	88 b3       	in	r24, 0x18	; 24
+ 810:	88 60       	ori	r24, 0x08	; 8
+ 812:	88 bb       	out	0x18, r24	; 24
+ 814:	03 c0       	rjmp	.+6      	; 0x81c <animate_left+0x110>
 			break;
 		case 0x4:
 			LED5_PORT |= (LED5_OFFSET);
- 7de:	88 b3       	in	r24, 0x18	; 24
- 7e0:	80 61       	ori	r24, 0x10	; 16
- 7e2:	88 bb       	out	0x18, r24	; 24
+ 816:	88 b3       	in	r24, 0x18	; 24
+ 818:	80 61       	ori	r24, 0x10	; 16
+ 81a:	88 bb       	out	0x18, r24	; 24
 	uint8_t col_max = word_end*FRAME_WIDTH;
 	for (uint8_t col = col_max; col > col_min; col--) {
 		uint8_t column = data_buf[col-1];
 		
 		// write to LEDs
 		for(uint8_t l = 0; l < NUM_LEDS; l++){
- 7e4:	9f 5f       	subi	r25, 0xFF	; 255
- 7e6:	95 30       	cpi	r25, 0x05	; 5
- 7e8:	08 f4       	brcc	.+2      	; 0x7ec <animate_left+0x118>
- 7ea:	b1 cf       	rjmp	.-158    	; 0x74e <animate_left+0x7a>
+ 81c:	9f 5f       	subi	r25, 0xFF	; 255
+ 81e:	95 30       	cpi	r25, 0x05	; 5
+ 820:	08 f4       	brcc	.+2      	; 0x824 <animate_left+0x118>
+ 822:	b1 cf       	rjmp	.-158    	; 0x786 <animate_left+0x7a>
 	#else
 		//round up by default
 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
 	#endif
 
 	__builtin_avr_delay_cycles(__ticks_dc);
- 7ec:	8f e0       	ldi	r24, 0x0F	; 15
- 7ee:	9e e0       	ldi	r25, 0x0E	; 14
- 7f0:	01 97       	sbiw	r24, 0x01	; 1
- 7f2:	f1 f7       	brne	.-4      	; 0x7f0 <animate_left+0x11c>
- 7f4:	00 c0       	rjmp	.+0      	; 0x7f6 <animate_left+0x122>
- 7f6:	00 00       	nop
+ 824:	8f e0       	ldi	r24, 0x0F	; 15
+ 826:	9e e0       	ldi	r25, 0x0E	; 14
+ 828:	01 97       	sbiw	r24, 0x01	; 1
+ 82a:	f1 f7       	brne	.-4      	; 0x828 <animate_left+0x11c>
+ 82c:	00 c0       	rjmp	.+0      	; 0x82e <animate_left+0x122>
+ 82e:	00 00       	nop
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) = *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) & ~(LED_OFFSETS[led_num]);
 }
 
 inline void all_off(void){
 	for(uint8_t i = 0; i < NUM_LEDS; i++){
- 7f8:	90 e0       	ldi	r25, 0x00	; 0
- 7fa:	21 c0       	rjmp	.+66     	; 0x83e <animate_left+0x16a>
+ 830:	90 e0       	ldi	r25, 0x00	; 0
+ 832:	21 c0       	rjmp	.+66     	; 0x876 <animate_left+0x16a>
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) =  *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) | LED_OFFSETS[led_num];
 }
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
- 7fc:	92 30       	cpi	r25, 0x02	; 2
- 7fe:	99 f0       	breq	.+38     	; 0x826 <animate_left+0x152>
- 800:	28 f4       	brcc	.+10     	; 0x80c <animate_left+0x138>
- 802:	99 23       	and	r25, r25
- 804:	41 f0       	breq	.+16     	; 0x816 <animate_left+0x142>
- 806:	91 30       	cpi	r25, 0x01	; 1
- 808:	51 f0       	breq	.+20     	; 0x81e <animate_left+0x14a>
- 80a:	18 c0       	rjmp	.+48     	; 0x83c <animate_left+0x168>
- 80c:	93 30       	cpi	r25, 0x03	; 3
- 80e:	79 f0       	breq	.+30     	; 0x82e <animate_left+0x15a>
- 810:	94 30       	cpi	r25, 0x04	; 4
- 812:	89 f0       	breq	.+34     	; 0x836 <animate_left+0x162>
- 814:	13 c0       	rjmp	.+38     	; 0x83c <animate_left+0x168>
+ 834:	92 30       	cpi	r25, 0x02	; 2
+ 836:	99 f0       	breq	.+38     	; 0x85e <animate_left+0x152>
+ 838:	28 f4       	brcc	.+10     	; 0x844 <animate_left+0x138>
+ 83a:	99 23       	and	r25, r25
+ 83c:	41 f0       	breq	.+16     	; 0x84e <animate_left+0x142>
+ 83e:	91 30       	cpi	r25, 0x01	; 1
+ 840:	51 f0       	breq	.+20     	; 0x856 <animate_left+0x14a>
+ 842:	18 c0       	rjmp	.+48     	; 0x874 <animate_left+0x168>
+ 844:	93 30       	cpi	r25, 0x03	; 3
+ 846:	79 f0       	breq	.+30     	; 0x866 <animate_left+0x15a>
+ 848:	94 30       	cpi	r25, 0x04	; 4
+ 84a:	89 f0       	breq	.+34     	; 0x86e <animate_left+0x162>
+ 84c:	13 c0       	rjmp	.+38     	; 0x874 <animate_left+0x168>
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
- 816:	88 b3       	in	r24, 0x18	; 24
- 818:	81 60       	ori	r24, 0x01	; 1
- 81a:	88 bb       	out	0x18, r24	; 24
- 81c:	0f c0       	rjmp	.+30     	; 0x83c <animate_left+0x168>
+ 84e:	88 b3       	in	r24, 0x18	; 24
+ 850:	81 60       	ori	r24, 0x01	; 1
+ 852:	88 bb       	out	0x18, r24	; 24
+ 854:	0f c0       	rjmp	.+30     	; 0x874 <animate_left+0x168>
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
- 81e:	88 b3       	in	r24, 0x18	; 24
- 820:	82 60       	ori	r24, 0x02	; 2
- 822:	88 bb       	out	0x18, r24	; 24
- 824:	0b c0       	rjmp	.+22     	; 0x83c <animate_left+0x168>
+ 856:	88 b3       	in	r24, 0x18	; 24
+ 858:	82 60       	ori	r24, 0x02	; 2
+ 85a:	88 bb       	out	0x18, r24	; 24
+ 85c:	0b c0       	rjmp	.+22     	; 0x874 <animate_left+0x168>
 			break;
 		case 0x2:
 			LED3_PORT |= (LED3_OFFSET);
- 826:	88 b3       	in	r24, 0x18	; 24
- 828:	84 60       	ori	r24, 0x04	; 4
- 82a:	88 bb       	out	0x18, r24	; 24
- 82c:	07 c0       	rjmp	.+14     	; 0x83c <animate_left+0x168>
+ 85e:	88 b3       	in	r24, 0x18	; 24
+ 860:	84 60       	ori	r24, 0x04	; 4
+ 862:	88 bb       	out	0x18, r24	; 24
+ 864:	07 c0       	rjmp	.+14     	; 0x874 <animate_left+0x168>
 			break;
 		case 0x3:
 			LED4_PORT |= (LED4_OFFSET);
- 82e:	88 b3       	in	r24, 0x18	; 24
- 830:	88 60       	ori	r24, 0x08	; 8
- 832:	88 bb       	out	0x18, r24	; 24
- 834:	03 c0       	rjmp	.+6      	; 0x83c <animate_left+0x168>
+ 866:	88 b3       	in	r24, 0x18	; 24
+ 868:	88 60       	ori	r24, 0x08	; 8
+ 86a:	88 bb       	out	0x18, r24	; 24
+ 86c:	03 c0       	rjmp	.+6      	; 0x874 <animate_left+0x168>
 			break;
 		case 0x4:
 			LED5_PORT |= (LED5_OFFSET);
- 836:	88 b3       	in	r24, 0x18	; 24
- 838:	80 61       	ori	r24, 0x10	; 16
- 83a:	88 bb       	out	0x18, r24	; 24
+ 86e:	88 b3       	in	r24, 0x18	; 24
+ 870:	80 61       	ori	r24, 0x10	; 16
+ 872:	88 bb       	out	0x18, r24	; 24
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) = *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) & ~(LED_OFFSETS[led_num]);
 }
 
 inline void all_off(void){
 	for(uint8_t i = 0; i < NUM_LEDS; i++){
- 83c:	9f 5f       	subi	r25, 0xFF	; 255
- 83e:	95 30       	cpi	r25, 0x05	; 5
- 840:	e8 f2       	brcs	.-70     	; 0x7fc <animate_left+0x128>
- 842:	e7 ee       	ldi	r30, 0xE7	; 231
- 844:	f3 e0       	ldi	r31, 0x03	; 3
- 846:	31 97       	sbiw	r30, 0x01	; 1
- 848:	f1 f7       	brne	.-4      	; 0x846 <animate_left+0x172>
- 84a:	00 c0       	rjmp	.+0      	; 0x84c <animate_left+0x178>
- 84c:	00 00       	nop
+ 874:	9f 5f       	subi	r25, 0xFF	; 255
+ 876:	95 30       	cpi	r25, 0x05	; 5
+ 878:	e8 f2       	brcs	.-70     	; 0x834 <animate_left+0x128>
+ 87a:	e7 ee       	ldi	r30, 0xE7	; 231
+ 87c:	f3 e0       	ldi	r31, 0x03	; 3
+ 87e:	31 97       	sbiw	r30, 0x01	; 1
+ 880:	f1 f7       	brne	.-4      	; 0x87e <animate_left+0x172>
+ 882:	00 c0       	rjmp	.+0      	; 0x884 <animate_left+0x178>
+ 884:	00 00       	nop
 		}
 	}
 	
 	uint8_t col_min = frame*FRAME_WIDTH;
 	uint8_t col_max = word_end*FRAME_WIDTH;
 	for (uint8_t col = col_max; col > col_min; col--) {
- 84e:	51 50       	subi	r21, 0x01	; 1
- 850:	75 17       	cp	r23, r21
- 852:	08 f4       	brcc	.+2      	; 0x856 <animate_left+0x182>
- 854:	75 cf       	rjmp	.-278    	; 0x740 <animate_left+0x6c>
+ 886:	51 50       	subi	r21, 0x01	; 1
+ 888:	75 17       	cp	r23, r21
+ 88a:	08 f4       	brcc	.+2      	; 0x88e <animate_left+0x182>
+ 88c:	75 cf       	rjmp	.-278    	; 0x778 <animate_left+0x6c>
 			_delay_us(800);
 		}
 #endif
 	
 	return 0;
 }
- 856:	86 2f       	mov	r24, r22
- 858:	08 95       	ret
+ 88e:	86 2f       	mov	r24, r22
+ 890:	08 95       	ret
 
-0000085a <animate2>:
+00000892 <animate2>:
 
 void animate2(void){
 	bool bump = 0;
 	bool last_bump = 0;
 	uint8_t frame_num = 0;
- 85a:	80 e0       	ldi	r24, 0x00	; 0
+ 892:	80 e0       	ldi	r24, 0x00	; 0
 	return 0;
 }
 
 void animate2(void){
 	bool bump = 0;
 	bool last_bump = 0;
- 85c:	90 e0       	ldi	r25, 0x00	; 0
+ 894:	90 e0       	ldi	r25, 0x00	; 0
 
 static inline int bump_hit(void){
 	static uint8_t high_count = 0;
 	static uint8_t low_count = 0;
 	static bool bump_state = 0;
 	if(BUMP_PIN & BUMP_OFFSET){
- 85e:	b5 9b       	sbis	0x16, 5	; 22
- 860:	08 c0       	rjmp	.+16     	; 0x872 <animate2+0x18>
+ 896:	b5 9b       	sbis	0x16, 5	; 22
+ 898:	08 c0       	rjmp	.+16     	; 0x8aa <animate2+0x18>
 		low_count++;
- 862:	20 91 a0 00 	lds	r18, 0x00A0	; 0x8000a0 <low_count.2150>
- 866:	2f 5f       	subi	r18, 0xFF	; 255
- 868:	20 93 a0 00 	sts	0x00A0, r18	; 0x8000a0 <low_count.2150>
+ 89a:	20 91 a0 00 	lds	r18, 0x00A0	; 0x8000a0 <low_count.2150>
+ 89e:	2f 5f       	subi	r18, 0xFF	; 255
+ 8a0:	20 93 a0 00 	sts	0x00A0, r18	; 0x8000a0 <low_count.2150>
 		high_count = 0;
- 86c:	10 92 9f 00 	sts	0x009F, r1	; 0x80009f <high_count.2149>
- 870:	07 c0       	rjmp	.+14     	; 0x880 <animate2+0x26>
+ 8a4:	10 92 9f 00 	sts	0x009F, r1	; 0x80009f <high_count.2149>
+ 8a8:	07 c0       	rjmp	.+14     	; 0x8b8 <animate2+0x26>
 	}
 	else{
 		high_count++;
- 872:	20 91 9f 00 	lds	r18, 0x009F	; 0x80009f <high_count.2149>
- 876:	2f 5f       	subi	r18, 0xFF	; 255
- 878:	20 93 9f 00 	sts	0x009F, r18	; 0x80009f <high_count.2149>
+ 8aa:	20 91 9f 00 	lds	r18, 0x009F	; 0x80009f <high_count.2149>
+ 8ae:	2f 5f       	subi	r18, 0xFF	; 255
+ 8b0:	20 93 9f 00 	sts	0x009F, r18	; 0x80009f <high_count.2149>
 		low_count = 0;
- 87c:	10 92 a0 00 	sts	0x00A0, r1	; 0x8000a0 <low_count.2150>
+ 8b4:	10 92 a0 00 	sts	0x00A0, r1	; 0x8000a0 <low_count.2150>
 	}
 	if(high_count >= BUMP_FILTER) bump_state = 1;
- 880:	20 91 9f 00 	lds	r18, 0x009F	; 0x80009f <high_count.2149>
- 884:	22 33       	cpi	r18, 0x32	; 50
- 886:	18 f0       	brcs	.+6      	; 0x88e <animate2+0x34>
- 888:	21 e0       	ldi	r18, 0x01	; 1
- 88a:	20 93 9e 00 	sts	0x009E, r18	; 0x80009e <__data_end>
+ 8b8:	20 91 9f 00 	lds	r18, 0x009F	; 0x80009f <high_count.2149>
+ 8bc:	22 33       	cpi	r18, 0x32	; 50
+ 8be:	18 f0       	brcs	.+6      	; 0x8c6 <animate2+0x34>
+ 8c0:	21 e0       	ldi	r18, 0x01	; 1
+ 8c2:	20 93 9e 00 	sts	0x009E, r18	; 0x80009e <__data_end>
 	if(low_count >= BUMP_FILTER) bump_state = 0;
- 88e:	20 91 a0 00 	lds	r18, 0x00A0	; 0x8000a0 <low_count.2150>
- 892:	22 33       	cpi	r18, 0x32	; 50
- 894:	10 f0       	brcs	.+4      	; 0x89a <animate2+0x40>
- 896:	10 92 9e 00 	sts	0x009E, r1	; 0x80009e <__data_end>
+ 8c6:	20 91 a0 00 	lds	r18, 0x00A0	; 0x8000a0 <low_count.2150>
+ 8ca:	22 33       	cpi	r18, 0x32	; 50
+ 8cc:	10 f0       	brcs	.+4      	; 0x8d2 <animate2+0x40>
+ 8ce:	10 92 9e 00 	sts	0x009E, r1	; 0x80009e <__data_end>
 	return bump_state;
- 89a:	20 91 9e 00 	lds	r18, 0x009E	; 0x80009e <__data_end>
+ 8d2:	20 91 9e 00 	lds	r18, 0x009E	; 0x80009e <__data_end>
 	uint8_t last_starting_col = FRAME_WIDTH * data_frame_count;
 	
 	while(1){
 		
 		// read bump sensor and adjust shake timing
 		bump = bump_hit();
- 89e:	c1 e0       	ldi	r28, 0x01	; 1
- 8a0:	21 11       	cpse	r18, r1
- 8a2:	01 c0       	rjmp	.+2      	; 0x8a6 <animate2+0x4c>
- 8a4:	c0 e0       	ldi	r28, 0x00	; 0
+ 8d6:	c1 e0       	ldi	r28, 0x01	; 1
+ 8d8:	21 11       	cpse	r18, r1
+ 8da:	01 c0       	rjmp	.+2      	; 0x8de <animate2+0x4c>
+ 8dc:	c0 e0       	ldi	r28, 0x00	; 0
 		}
 		if(consecutive_bump_detects > 2000){
 			all_on();
 		}
 		*/
 		if(bump & !last_bump){
- 8a6:	9c 17       	cp	r25, r28
- 8a8:	e8 f5       	brcc	.+122    	; 0x924 <animate2+0xca>
+ 8de:	9c 17       	cp	r25, r28
+ 8e0:	e8 f5       	brcc	.+122    	; 0x95c <animate2+0xca>
 	#else
 		//round up by default
 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
 	#endif
 
 	__builtin_avr_delay_cycles(__ticks_dc);
- 8aa:	2f eb       	ldi	r18, 0xBF	; 191
- 8ac:	37 e5       	ldi	r19, 0x57	; 87
- 8ae:	91 e0       	ldi	r25, 0x01	; 1
- 8b0:	21 50       	subi	r18, 0x01	; 1
- 8b2:	30 40       	sbci	r19, 0x00	; 0
- 8b4:	90 40       	sbci	r25, 0x00	; 0
- 8b6:	e1 f7       	brne	.-8      	; 0x8b0 <animate2+0x56>
- 8b8:	00 c0       	rjmp	.+0      	; 0x8ba <animate2+0x60>
- 8ba:	00 00       	nop
+ 8e2:	2f eb       	ldi	r18, 0xBF	; 191
+ 8e4:	37 e5       	ldi	r19, 0x57	; 87
+ 8e6:	91 e0       	ldi	r25, 0x01	; 1
+ 8e8:	21 50       	subi	r18, 0x01	; 1
+ 8ea:	30 40       	sbci	r19, 0x00	; 0
+ 8ec:	90 40       	sbci	r25, 0x00	; 0
+ 8ee:	e1 f7       	brne	.-8      	; 0x8e8 <animate2+0x56>
+ 8f0:	00 c0       	rjmp	.+0      	; 0x8f2 <animate2+0x60>
+ 8f2:	00 00       	nop
 			// rising edge
 			//consecutive_bump_detects = 0;
 			_delay_ms(55);
 			uint8_t ret = animate_left(frame_num);
- 8bc:	0b df       	rcall	.-490    	; 0x6d4 <animate_left>
+ 8f4:	0b df       	rcall	.-490    	; 0x70c <animate_left>
 			if (ret >= data_frame_count)
- 8be:	90 91 a1 00 	lds	r25, 0x00A1	; 0x8000a1 <data_frame_count>
- 8c2:	89 17       	cp	r24, r25
- 8c4:	08 f0       	brcs	.+2      	; 0x8c8 <animate2+0x6e>
+ 8f6:	90 91 a1 00 	lds	r25, 0x00A1	; 0x8000a1 <data_frame_count>
+ 8fa:	89 17       	cp	r24, r25
+ 8fc:	08 f0       	brcs	.+2      	; 0x900 <animate2+0x6e>
 				ret = 0;
- 8c6:	80 e0       	ldi	r24, 0x00	; 0
+ 8fe:	80 e0       	ldi	r24, 0x00	; 0
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) = *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) & ~(LED_OFFSETS[led_num]);
 }
 
 inline void all_off(void){
 	for(uint8_t i = 0; i < NUM_LEDS; i++){
- 8c8:	90 e0       	ldi	r25, 0x00	; 0
- 8ca:	21 c0       	rjmp	.+66     	; 0x90e <animate2+0xb4>
+ 900:	90 e0       	ldi	r25, 0x00	; 0
+ 902:	21 c0       	rjmp	.+66     	; 0x946 <animate2+0xb4>
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) =  *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) | LED_OFFSETS[led_num];
 }
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
- 8cc:	92 30       	cpi	r25, 0x02	; 2
- 8ce:	99 f0       	breq	.+38     	; 0x8f6 <animate2+0x9c>
- 8d0:	28 f4       	brcc	.+10     	; 0x8dc <animate2+0x82>
- 8d2:	99 23       	and	r25, r25
- 8d4:	41 f0       	breq	.+16     	; 0x8e6 <animate2+0x8c>
- 8d6:	91 30       	cpi	r25, 0x01	; 1
- 8d8:	51 f0       	breq	.+20     	; 0x8ee <animate2+0x94>
- 8da:	18 c0       	rjmp	.+48     	; 0x90c <animate2+0xb2>
- 8dc:	93 30       	cpi	r25, 0x03	; 3
- 8de:	79 f0       	breq	.+30     	; 0x8fe <animate2+0xa4>
- 8e0:	94 30       	cpi	r25, 0x04	; 4
- 8e2:	89 f0       	breq	.+34     	; 0x906 <animate2+0xac>
- 8e4:	13 c0       	rjmp	.+38     	; 0x90c <animate2+0xb2>
+ 904:	92 30       	cpi	r25, 0x02	; 2
+ 906:	99 f0       	breq	.+38     	; 0x92e <animate2+0x9c>
+ 908:	28 f4       	brcc	.+10     	; 0x914 <animate2+0x82>
+ 90a:	99 23       	and	r25, r25
+ 90c:	41 f0       	breq	.+16     	; 0x91e <animate2+0x8c>
+ 90e:	91 30       	cpi	r25, 0x01	; 1
+ 910:	51 f0       	breq	.+20     	; 0x926 <animate2+0x94>
+ 912:	18 c0       	rjmp	.+48     	; 0x944 <animate2+0xb2>
+ 914:	93 30       	cpi	r25, 0x03	; 3
+ 916:	79 f0       	breq	.+30     	; 0x936 <animate2+0xa4>
+ 918:	94 30       	cpi	r25, 0x04	; 4
+ 91a:	89 f0       	breq	.+34     	; 0x93e <animate2+0xac>
+ 91c:	13 c0       	rjmp	.+38     	; 0x944 <animate2+0xb2>
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
- 8e6:	28 b3       	in	r18, 0x18	; 24
- 8e8:	21 60       	ori	r18, 0x01	; 1
- 8ea:	28 bb       	out	0x18, r18	; 24
- 8ec:	0f c0       	rjmp	.+30     	; 0x90c <animate2+0xb2>
+ 91e:	28 b3       	in	r18, 0x18	; 24
+ 920:	21 60       	ori	r18, 0x01	; 1
+ 922:	28 bb       	out	0x18, r18	; 24
+ 924:	0f c0       	rjmp	.+30     	; 0x944 <animate2+0xb2>
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
- 8ee:	28 b3       	in	r18, 0x18	; 24
- 8f0:	22 60       	ori	r18, 0x02	; 2
- 8f2:	28 bb       	out	0x18, r18	; 24
- 8f4:	0b c0       	rjmp	.+22     	; 0x90c <animate2+0xb2>
+ 926:	28 b3       	in	r18, 0x18	; 24
+ 928:	22 60       	ori	r18, 0x02	; 2
+ 92a:	28 bb       	out	0x18, r18	; 24
+ 92c:	0b c0       	rjmp	.+22     	; 0x944 <animate2+0xb2>
 			break;
 		case 0x2:
 			LED3_PORT |= (LED3_OFFSET);
- 8f6:	28 b3       	in	r18, 0x18	; 24
- 8f8:	24 60       	ori	r18, 0x04	; 4
- 8fa:	28 bb       	out	0x18, r18	; 24
- 8fc:	07 c0       	rjmp	.+14     	; 0x90c <animate2+0xb2>
+ 92e:	28 b3       	in	r18, 0x18	; 24
+ 930:	24 60       	ori	r18, 0x04	; 4
+ 932:	28 bb       	out	0x18, r18	; 24
+ 934:	07 c0       	rjmp	.+14     	; 0x944 <animate2+0xb2>
 			break;
 		case 0x3:
 			LED4_PORT |= (LED4_OFFSET);
- 8fe:	28 b3       	in	r18, 0x18	; 24
- 900:	28 60       	ori	r18, 0x08	; 8
- 902:	28 bb       	out	0x18, r18	; 24
- 904:	03 c0       	rjmp	.+6      	; 0x90c <animate2+0xb2>
+ 936:	28 b3       	in	r18, 0x18	; 24
+ 938:	28 60       	ori	r18, 0x08	; 8
+ 93a:	28 bb       	out	0x18, r18	; 24
+ 93c:	03 c0       	rjmp	.+6      	; 0x944 <animate2+0xb2>
 			break;
 		case 0x4:
 			LED5_PORT |= (LED5_OFFSET);
- 906:	28 b3       	in	r18, 0x18	; 24
- 908:	20 61       	ori	r18, 0x10	; 16
- 90a:	28 bb       	out	0x18, r18	; 24
+ 93e:	28 b3       	in	r18, 0x18	; 24
+ 940:	20 61       	ori	r18, 0x10	; 16
+ 942:	28 bb       	out	0x18, r18	; 24
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) = *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) & ~(LED_OFFSETS[led_num]);
 }
 
 inline void all_off(void){
 	for(uint8_t i = 0; i < NUM_LEDS; i++){
- 90c:	9f 5f       	subi	r25, 0xFF	; 255
- 90e:	95 30       	cpi	r25, 0x05	; 5
- 910:	e8 f2       	brcs	.-70     	; 0x8cc <animate2+0x72>
- 912:	2f ef       	ldi	r18, 0xFF	; 255
- 914:	33 ef       	ldi	r19, 0xF3	; 243
- 916:	91 e0       	ldi	r25, 0x01	; 1
- 918:	21 50       	subi	r18, 0x01	; 1
- 91a:	30 40       	sbci	r19, 0x00	; 0
- 91c:	90 40       	sbci	r25, 0x00	; 0
- 91e:	e1 f7       	brne	.-8      	; 0x918 <animate2+0xbe>
- 920:	00 c0       	rjmp	.+0      	; 0x922 <animate2+0xc8>
- 922:	00 00       	nop
+ 944:	9f 5f       	subi	r25, 0xFF	; 255
+ 946:	95 30       	cpi	r25, 0x05	; 5
+ 948:	e8 f2       	brcs	.-70     	; 0x904 <animate2+0x72>
+ 94a:	2f ef       	ldi	r18, 0xFF	; 255
+ 94c:	33 ef       	ldi	r19, 0xF3	; 243
+ 94e:	91 e0       	ldi	r25, 0x01	; 1
+ 950:	21 50       	subi	r18, 0x01	; 1
+ 952:	30 40       	sbci	r19, 0x00	; 0
+ 954:	90 40       	sbci	r25, 0x00	; 0
+ 956:	e1 f7       	brne	.-8      	; 0x950 <animate2+0xbe>
+ 958:	00 c0       	rjmp	.+0      	; 0x95a <animate2+0xc8>
+ 95a:	00 00       	nop
 	#else
 		//round up by default
 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
 	#endif
 
 	__builtin_avr_delay_cycles(__ticks_dc);
- 924:	2a e1       	ldi	r18, 0x1A	; 26
- 926:	2a 95       	dec	r18
- 928:	f1 f7       	brne	.-4      	; 0x926 <animate2+0xcc>
- 92a:	00 c0       	rjmp	.+0      	; 0x92c <animate2+0xd2>
+ 95c:	2a e1       	ldi	r18, 0x1A	; 26
+ 95e:	2a 95       	dec	r18
+ 960:	f1 f7       	brne	.-4      	; 0x95e <animate2+0xcc>
+ 962:	00 c0       	rjmp	.+0      	; 0x964 <animate2+0xd2>
 			}
 		}
 		if(!bump & last_bump){
 			// falling edge
 		}
 		last_bump = bump;
- 92c:	9c 2f       	mov	r25, r28
- 92e:	97 cf       	rjmp	.-210    	; 0x85e <animate2+0x4>
+ 964:	9c 2f       	mov	r25, r28
+ 966:	97 cf       	rjmp	.-210    	; 0x896 <animate2+0x4>
 
-00000930 <init>:
+00000968 <init>:
 
 void init(void){
 
 	
 	// set main clock prescaler to 1 for highest cpu speed
 	CLKPR = 0b10000000;
- 930:	80 e8       	ldi	r24, 0x80	; 128
- 932:	86 bd       	out	0x26, r24	; 38
+ 968:	80 e8       	ldi	r24, 0x80	; 128
+ 96a:	86 bd       	out	0x26, r24	; 38
 	CLKPR = 0;
- 934:	16 bc       	out	0x26, r1	; 38
+ 96c:	16 bc       	out	0x26, r1	; 38
 	
 	init_leds();
- 936:	dc db       	rcall	.-2120   	; 0xf0 <init_leds>
+ 96e:	c0 db       	rcall	.-2176   	; 0xf0 <init_leds>
 	//init_bumpers();
 	init_adc();
- 938:	68 dc       	rcall	.-1840   	; 0x20a <init_adc>
+ 970:	4c dc       	rcall	.-1896   	; 0x20a <init_adc>
 	init_timer();
- 93a:	60 dc       	rcall	.-1856   	; 0x1fc <init_timer>
- 93c:	08 95       	ret
+ 972:	44 dc       	rcall	.-1912   	; 0x1fc <init_timer>
+ 974:	08 95       	ret
 
-0000093e <main>:
+00000976 <main>:
 	#else
 		//round up by default
 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
 	#endif
 
 	__builtin_avr_delay_cycles(__ticks_dc);
- 93e:	8f eb       	ldi	r24, 0xBF	; 191
- 940:	9d e5       	ldi	r25, 0x5D	; 93
- 942:	01 97       	sbiw	r24, 0x01	; 1
- 944:	f1 f7       	brne	.-4      	; 0x942 <main+0x4>
- 946:	00 c0       	rjmp	.+0      	; 0x948 <main+0xa>
- 948:	00 00       	nop
+ 976:	8f eb       	ldi	r24, 0xBF	; 191
+ 978:	9d e5       	ldi	r25, 0x5D	; 93
+ 97a:	01 97       	sbiw	r24, 0x01	; 1
+ 97c:	f1 f7       	brne	.-4      	; 0x97a <main+0x4>
+ 97e:	00 c0       	rjmp	.+0      	; 0x980 <main+0xa>
+ 980:	00 00       	nop
 
 int main(void)
 {	
 	_delay_ms(100/8);
 	
 	init();	
- 94a:	f2 df       	rcall	.-28     	; 0x930 <init>
+ 982:	f2 df       	rcall	.-28     	; 0x968 <init>
 	
 	test_leds();
- 94c:	06 dc       	rcall	.-2036   	; 0x15a <test_leds>
+ 984:	ea db       	rcall	.-2092   	; 0x15a <test_leds>
 	
 	// handle quick power on/off to select a mode
 	uint8_t mode = EEPROM_read(0xff);
- 94e:	8f ef       	ldi	r24, 0xFF	; 255
- 950:	a1 db       	rcall	.-2238   	; 0x94 <EEPROM_read>
- 952:	c8 2f       	mov	r28, r24
+ 986:	8f ef       	ldi	r24, 0xFF	; 255
+ 988:	85 db       	rcall	.-2294   	; 0x94 <EEPROM_read>
+ 98a:	c8 2f       	mov	r28, r24
 	/* Return data from data register */
 	return EEDR;
 }
 
 inline void led_on(uint8_t led_num){
 	switch(led_num){
- 954:	82 30       	cpi	r24, 0x02	; 2
- 956:	99 f0       	breq	.+38     	; 0x97e <main+0x40>
- 958:	28 f4       	brcc	.+10     	; 0x964 <main+0x26>
- 95a:	88 23       	and	r24, r24
- 95c:	41 f0       	breq	.+16     	; 0x96e <main+0x30>
- 95e:	81 30       	cpi	r24, 0x01	; 1
- 960:	51 f0       	breq	.+20     	; 0x976 <main+0x38>
- 962:	18 c0       	rjmp	.+48     	; 0x994 <main+0x56>
- 964:	83 30       	cpi	r24, 0x03	; 3
- 966:	79 f0       	breq	.+30     	; 0x986 <main+0x48>
- 968:	84 30       	cpi	r24, 0x04	; 4
- 96a:	89 f0       	breq	.+34     	; 0x98e <main+0x50>
- 96c:	13 c0       	rjmp	.+38     	; 0x994 <main+0x56>
+ 98c:	82 30       	cpi	r24, 0x02	; 2
+ 98e:	99 f0       	breq	.+38     	; 0x9b6 <main+0x40>
+ 990:	28 f4       	brcc	.+10     	; 0x99c <main+0x26>
+ 992:	88 23       	and	r24, r24
+ 994:	41 f0       	breq	.+16     	; 0x9a6 <main+0x30>
+ 996:	81 30       	cpi	r24, 0x01	; 1
+ 998:	51 f0       	breq	.+20     	; 0x9ae <main+0x38>
+ 99a:	18 c0       	rjmp	.+48     	; 0x9cc <main+0x56>
+ 99c:	83 30       	cpi	r24, 0x03	; 3
+ 99e:	79 f0       	breq	.+30     	; 0x9be <main+0x48>
+ 9a0:	84 30       	cpi	r24, 0x04	; 4
+ 9a2:	89 f0       	breq	.+34     	; 0x9c6 <main+0x50>
+ 9a4:	13 c0       	rjmp	.+38     	; 0x9cc <main+0x56>
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
- 96e:	88 b3       	in	r24, 0x18	; 24
- 970:	8e 7f       	andi	r24, 0xFE	; 254
- 972:	88 bb       	out	0x18, r24	; 24
- 974:	0f c0       	rjmp	.+30     	; 0x994 <main+0x56>
+ 9a6:	88 b3       	in	r24, 0x18	; 24
+ 9a8:	8e 7f       	andi	r24, 0xFE	; 254
+ 9aa:	88 bb       	out	0x18, r24	; 24
+ 9ac:	0f c0       	rjmp	.+30     	; 0x9cc <main+0x56>
 			break;
 		case 0x1:
 			LED2_PORT &= ~(LED2_OFFSET);
- 976:	88 b3       	in	r24, 0x18	; 24
- 978:	8d 7f       	andi	r24, 0xFD	; 253
- 97a:	88 bb       	out	0x18, r24	; 24
- 97c:	0b c0       	rjmp	.+22     	; 0x994 <main+0x56>
+ 9ae:	88 b3       	in	r24, 0x18	; 24
+ 9b0:	8d 7f       	andi	r24, 0xFD	; 253
+ 9b2:	88 bb       	out	0x18, r24	; 24
+ 9b4:	0b c0       	rjmp	.+22     	; 0x9cc <main+0x56>
 			break;
 		case 0x2:
 			LED3_PORT &= ~(LED3_OFFSET);
- 97e:	88 b3       	in	r24, 0x18	; 24
- 980:	8b 7f       	andi	r24, 0xFB	; 251
- 982:	88 bb       	out	0x18, r24	; 24
- 984:	07 c0       	rjmp	.+14     	; 0x994 <main+0x56>
+ 9b6:	88 b3       	in	r24, 0x18	; 24
+ 9b8:	8b 7f       	andi	r24, 0xFB	; 251
+ 9ba:	88 bb       	out	0x18, r24	; 24
+ 9bc:	07 c0       	rjmp	.+14     	; 0x9cc <main+0x56>
 			break;
 		case 0x3:
 			LED4_PORT &= ~(LED4_OFFSET);
- 986:	88 b3       	in	r24, 0x18	; 24
- 988:	87 7f       	andi	r24, 0xF7	; 247
- 98a:	88 bb       	out	0x18, r24	; 24
- 98c:	03 c0       	rjmp	.+6      	; 0x994 <main+0x56>
+ 9be:	88 b3       	in	r24, 0x18	; 24
+ 9c0:	87 7f       	andi	r24, 0xF7	; 247
+ 9c2:	88 bb       	out	0x18, r24	; 24
+ 9c4:	03 c0       	rjmp	.+6      	; 0x9cc <main+0x56>
 			break;
 		case 0x4:
 			LED5_PORT &= ~(LED5_OFFSET);
- 98e:	88 b3       	in	r24, 0x18	; 24
- 990:	8f 7e       	andi	r24, 0xEF	; 239
- 992:	88 bb       	out	0x18, r24	; 24
+ 9c6:	88 b3       	in	r24, 0x18	; 24
+ 9c8:	8f 7e       	andi	r24, 0xEF	; 239
+ 9ca:	88 bb       	out	0x18, r24	; 24
 	
 	// handle quick power on/off to select a mode
 	uint8_t mode = EEPROM_read(0xff);
 	led_on(mode);
 	
 	if(mode+1 > 3){
- 994:	8c 2f       	mov	r24, r28
- 996:	90 e0       	ldi	r25, 0x00	; 0
- 998:	01 96       	adiw	r24, 0x01	; 1
- 99a:	04 97       	sbiw	r24, 0x04	; 4
- 99c:	24 f0       	brlt	.+8      	; 0x9a6 <main+0x68>
+ 9cc:	8c 2f       	mov	r24, r28
+ 9ce:	90 e0       	ldi	r25, 0x00	; 0
+ 9d0:	01 96       	adiw	r24, 0x01	; 1
+ 9d2:	04 97       	sbiw	r24, 0x04	; 4
+ 9d4:	24 f0       	brlt	.+8      	; 0x9de <main+0x68>
 		EEPROM_write(0xff, 0);
- 99e:	60 e0       	ldi	r22, 0x00	; 0
- 9a0:	8f ef       	ldi	r24, 0xFF	; 255
- 9a2:	6c db       	rcall	.-2344   	; 0x7c <EEPROM_write>
- 9a4:	04 c0       	rjmp	.+8      	; 0x9ae <main+0x70>
+ 9d6:	60 e0       	ldi	r22, 0x00	; 0
+ 9d8:	8f ef       	ldi	r24, 0xFF	; 255
+ 9da:	50 db       	rcall	.-2400   	; 0x7c <EEPROM_write>
+ 9dc:	04 c0       	rjmp	.+8      	; 0x9e6 <main+0x70>
 	}
 	else{
 		EEPROM_write(0xff, mode+1);
- 9a6:	61 e0       	ldi	r22, 0x01	; 1
- 9a8:	6c 0f       	add	r22, r28
- 9aa:	8f ef       	ldi	r24, 0xFF	; 255
- 9ac:	67 db       	rcall	.-2354   	; 0x7c <EEPROM_write>
- 9ae:	9f ef       	ldi	r25, 0xFF	; 255
- 9b0:	29 e6       	ldi	r18, 0x69	; 105
- 9b2:	38 e1       	ldi	r19, 0x18	; 24
- 9b4:	91 50       	subi	r25, 0x01	; 1
- 9b6:	20 40       	sbci	r18, 0x00	; 0
- 9b8:	30 40       	sbci	r19, 0x00	; 0
- 9ba:	e1 f7       	brne	.-8      	; 0x9b4 <main+0x76>
- 9bc:	00 c0       	rjmp	.+0      	; 0x9be <main+0x80>
- 9be:	00 00       	nop
+ 9de:	61 e0       	ldi	r22, 0x01	; 1
+ 9e0:	6c 0f       	add	r22, r28
+ 9e2:	8f ef       	ldi	r24, 0xFF	; 255
+ 9e4:	4b db       	rcall	.-2410   	; 0x7c <EEPROM_write>
+ 9e6:	9f ef       	ldi	r25, 0xFF	; 255
+ 9e8:	29 e6       	ldi	r18, 0x69	; 105
+ 9ea:	38 e1       	ldi	r19, 0x18	; 24
+ 9ec:	91 50       	subi	r25, 0x01	; 1
+ 9ee:	20 40       	sbci	r18, 0x00	; 0
+ 9f0:	30 40       	sbci	r19, 0x00	; 0
+ 9f2:	e1 f7       	brne	.-8      	; 0x9ec <main+0x76>
+ 9f4:	00 c0       	rjmp	.+0      	; 0x9f6 <main+0x80>
+ 9f6:	00 00       	nop
 	}
 	
 	_delay_ms(1000);
 	EEPROM_write(0xff, 0);
- 9c0:	60 e0       	ldi	r22, 0x00	; 0
- 9c2:	8f ef       	ldi	r24, 0xFF	; 255
- 9c4:	5b db       	rcall	.-2378   	; 0x7c <EEPROM_write>
+ 9f8:	60 e0       	ldi	r22, 0x00	; 0
+ 9fa:	8f ef       	ldi	r24, 0xFF	; 255
+ 9fc:	3f db       	rcall	.-2434   	; 0x7c <EEPROM_write>
 	
 	all_off();
- 9c6:	6e db       	rcall	.-2340   	; 0xa4 <all_off>
+ 9fe:	52 db       	rcall	.-2396   	; 0xa4 <all_off>
 	
 	//mode = 2;	// for testing
 	
     while(1) 
     {
 		switch(mode){
- 9c8:	c1 30       	cpi	r28, 0x01	; 1
- 9ca:	61 f0       	breq	.+24     	; 0x9e4 <main+0xa6>
- 9cc:	30 f0       	brcs	.+12     	; 0x9da <main+0x9c>
- 9ce:	c2 30       	cpi	r28, 0x02	; 2
- 9d0:	d1 f1       	breq	.+116    	; 0xa46 <main+0x108>
- 9d2:	c3 30       	cpi	r28, 0x03	; 3
- 9d4:	09 f4       	brne	.+2      	; 0x9d8 <main+0x9a>
- 9d6:	cb c0       	rjmp	.+406    	; 0xb6e <main+0x230>
- 9d8:	f7 cf       	rjmp	.-18     	; 0x9c8 <main+0x8a>
+ a00:	c1 30       	cpi	r28, 0x01	; 1
+ a02:	61 f0       	breq	.+24     	; 0xa1c <main+0xa6>
+ a04:	30 f0       	brcs	.+12     	; 0xa12 <main+0x9c>
+ a06:	c2 30       	cpi	r28, 0x02	; 2
+ a08:	d1 f1       	breq	.+116    	; 0xa7e <main+0x108>
+ a0a:	c3 30       	cpi	r28, 0x03	; 3
+ a0c:	09 f4       	brne	.+2      	; 0xa10 <main+0x9a>
+ a0e:	66 c0       	rjmp	.+204    	; 0xadc <main+0x166>
+ a10:	f7 cf       	rjmp	.-18     	; 0xa00 <main+0x8a>
 			case 0:	// normal animation mode
 				load_frames();
- 9da:	38 de       	rcall	.-912    	; 0x64c <load_frames>
+ a12:	38 de       	rcall	.-912    	; 0x684 <load_frames>
 				BUMP_PORT |= BUMP_OFFSET;	// enable bump sensor pull-up
- 9dc:	88 b3       	in	r24, 0x18	; 24
- 9de:	80 62       	ori	r24, 0x20	; 32
- 9e0:	88 bb       	out	0x18, r24	; 24
+ a14:	88 b3       	in	r24, 0x18	; 24
+ a16:	80 62       	ori	r24, 0x20	; 32
+ a18:	88 bb       	out	0x18, r24	; 24
 				animate2();
- 9e2:	3b df       	rcall	.-394    	; 0x85a <animate2>
+ a1a:	3b df       	rcall	.-394    	; 0x892 <animate2>
 				break;
 			case 1:	// bump sensor alignment mode
 				BUMP_PORT |= BUMP_OFFSET;	// enable bump sensor pull-up
- 9e4:	88 b3       	in	r24, 0x18	; 24
- 9e6:	80 62       	ori	r24, 0x20	; 32
- 9e8:	88 bb       	out	0x18, r24	; 24
+ a1c:	88 b3       	in	r24, 0x18	; 24
+ a1e:	80 62       	ori	r24, 0x20	; 32
+ a20:	88 bb       	out	0x18, r24	; 24
 
 static inline int bump_hit(void){
 	static uint8_t high_count = 0;
 	static uint8_t low_count = 0;
 	static bool bump_state = 0;
 	if(BUMP_PIN & BUMP_OFFSET){
- 9ea:	b5 9b       	sbis	0x16, 5	; 22
- 9ec:	08 c0       	rjmp	.+16     	; 0x9fe <main+0xc0>
+ a22:	b5 9b       	sbis	0x16, 5	; 22
+ a24:	08 c0       	rjmp	.+16     	; 0xa36 <main+0xc0>
 		low_count++;
- 9ee:	80 91 a0 00 	lds	r24, 0x00A0	; 0x8000a0 <low_count.2150>
- 9f2:	8f 5f       	subi	r24, 0xFF	; 255
- 9f4:	80 93 a0 00 	sts	0x00A0, r24	; 0x8000a0 <low_count.2150>
+ a26:	80 91 a0 00 	lds	r24, 0x00A0	; 0x8000a0 <low_count.2150>
+ a2a:	8f 5f       	subi	r24, 0xFF	; 255
+ a2c:	80 93 a0 00 	sts	0x00A0, r24	; 0x8000a0 <low_count.2150>
 		high_count = 0;
- 9f8:	10 92 9f 00 	sts	0x009F, r1	; 0x80009f <high_count.2149>
- 9fc:	07 c0       	rjmp	.+14     	; 0xa0c <main+0xce>
+ a30:	10 92 9f 00 	sts	0x009F, r1	; 0x80009f <high_count.2149>
+ a34:	07 c0       	rjmp	.+14     	; 0xa44 <main+0xce>
 	}
 	else{
 		high_count++;
- 9fe:	80 91 9f 00 	lds	r24, 0x009F	; 0x80009f <high_count.2149>
- a02:	8f 5f       	subi	r24, 0xFF	; 255
- a04:	80 93 9f 00 	sts	0x009F, r24	; 0x80009f <high_count.2149>
+ a36:	80 91 9f 00 	lds	r24, 0x009F	; 0x80009f <high_count.2149>
+ a3a:	8f 5f       	subi	r24, 0xFF	; 255
+ a3c:	80 93 9f 00 	sts	0x009F, r24	; 0x80009f <high_count.2149>
 		low_count = 0;
- a08:	10 92 a0 00 	sts	0x00A0, r1	; 0x8000a0 <low_count.2150>
+ a40:	10 92 a0 00 	sts	0x00A0, r1	; 0x8000a0 <low_count.2150>
 	}
 	if(high_count >= BUMP_FILTER) bump_state = 1;
- a0c:	80 91 9f 00 	lds	r24, 0x009F	; 0x80009f <high_count.2149>
- a10:	82 33       	cpi	r24, 0x32	; 50
- a12:	18 f0       	brcs	.+6      	; 0xa1a <main+0xdc>
- a14:	81 e0       	ldi	r24, 0x01	; 1
- a16:	80 93 9e 00 	sts	0x009E, r24	; 0x80009e <__data_end>
+ a44:	80 91 9f 00 	lds	r24, 0x009F	; 0x80009f <high_count.2149>
+ a48:	82 33       	cpi	r24, 0x32	; 50
+ a4a:	18 f0       	brcs	.+6      	; 0xa52 <main+0xdc>
+ a4c:	81 e0       	ldi	r24, 0x01	; 1
+ a4e:	80 93 9e 00 	sts	0x009E, r24	; 0x80009e <__data_end>
 	if(low_count >= BUMP_FILTER) bump_state = 0;
- a1a:	80 91 a0 00 	lds	r24, 0x00A0	; 0x8000a0 <low_count.2150>
- a1e:	82 33       	cpi	r24, 0x32	; 50
- a20:	10 f0       	brcs	.+4      	; 0xa26 <main+0xe8>
- a22:	10 92 9e 00 	sts	0x009E, r1	; 0x80009e <__data_end>
+ a52:	80 91 a0 00 	lds	r24, 0x00A0	; 0x8000a0 <low_count.2150>
+ a56:	82 33       	cpi	r24, 0x32	; 50
+ a58:	10 f0       	brcs	.+4      	; 0xa5e <main+0xe8>
+ a5a:	10 92 9e 00 	sts	0x009E, r1	; 0x80009e <__data_end>
 	return bump_state;
- a26:	80 91 9e 00 	lds	r24, 0x009E	; 0x80009e <__data_end>
+ a5e:	80 91 9e 00 	lds	r24, 0x009E	; 0x80009e <__data_end>
 				animate2();
 				break;
 			case 1:	// bump sensor alignment mode
 				BUMP_PORT |= BUMP_OFFSET;	// enable bump sensor pull-up
 				while(1){
 					if(bump_hit()){
- a2a:	88 23       	and	r24, r24
- a2c:	21 f0       	breq	.+8      	; 0xa36 <main+0xf8>
+ a62:	88 23       	and	r24, r24
+ a64:	21 f0       	breq	.+8      	; 0xa6e <main+0xf8>
 }
 
 inline void led_on(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
- a2e:	88 b3       	in	r24, 0x18	; 24
- a30:	8e 7f       	andi	r24, 0xFE	; 254
- a32:	88 bb       	out	0x18, r24	; 24
- a34:	03 c0       	rjmp	.+6      	; 0xa3c <main+0xfe>
+ a66:	88 b3       	in	r24, 0x18	; 24
+ a68:	8e 7f       	andi	r24, 0xFE	; 254
+ a6a:	88 bb       	out	0x18, r24	; 24
+ a6c:	03 c0       	rjmp	.+6      	; 0xa74 <main+0xfe>
 }
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
- a36:	88 b3       	in	r24, 0x18	; 24
- a38:	81 60       	ori	r24, 0x01	; 1
- a3a:	88 bb       	out	0x18, r24	; 24
+ a6e:	88 b3       	in	r24, 0x18	; 24
+ a70:	81 60       	ori	r24, 0x01	; 1
+ a72:	88 bb       	out	0x18, r24	; 24
 	#else
 		//round up by default
 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
 	#endif
 
 	__builtin_avr_delay_cycles(__ticks_dc);
- a3c:	8a e1       	ldi	r24, 0x1A	; 26
- a3e:	8a 95       	dec	r24
- a40:	f1 f7       	brne	.-4      	; 0xa3e <main+0x100>
- a42:	00 c0       	rjmp	.+0      	; 0xa44 <main+0x106>
- a44:	d2 cf       	rjmp	.-92     	; 0x9ea <main+0xac>
+ a74:	8a e1       	ldi	r24, 0x1A	; 26
+ a76:	8a 95       	dec	r24
+ a78:	f1 f7       	brne	.-4      	; 0xa76 <main+0x100>
+ a7a:	00 c0       	rjmp	.+0      	; 0xa7c <main+0x106>
+ a7c:	d2 cf       	rjmp	.-92     	; 0xa22 <main+0xac>
 					}
 					_delay_us(10);
 				}
 				break;
 			case 2:	// program mode
 				if(user_program()){
- a46:	f3 db       	rcall	.-2074   	; 0x22e <user_program>
- a48:	81 11       	cpse	r24, r1
- a4a:	23 c0       	rjmp	.+70     	; 0xa92 <main+0x154>
- a4c:	30 c0       	rjmp	.+96     	; 0xaae <main+0x170>
-	/* Return data from data register */
-	return EEDR;
-}
-
-inline void led_on(uint8_t led_num){
-	switch(led_num){
- a4e:	82 30       	cpi	r24, 0x02	; 2
- a50:	99 f0       	breq	.+38     	; 0xa78 <main+0x13a>
- a52:	28 f4       	brcc	.+10     	; 0xa5e <main+0x120>
- a54:	88 23       	and	r24, r24
- a56:	41 f0       	breq	.+16     	; 0xa68 <main+0x12a>
- a58:	81 30       	cpi	r24, 0x01	; 1
- a5a:	51 f0       	breq	.+20     	; 0xa70 <main+0x132>
- a5c:	18 c0       	rjmp	.+48     	; 0xa8e <main+0x150>
- a5e:	83 30       	cpi	r24, 0x03	; 3
- a60:	79 f0       	breq	.+30     	; 0xa80 <main+0x142>
- a62:	84 30       	cpi	r24, 0x04	; 4
- a64:	89 f0       	breq	.+34     	; 0xa88 <main+0x14a>
- a66:	13 c0       	rjmp	.+38     	; 0xa8e <main+0x150>
-		case 0x0:
-			LED1_PORT &= ~(LED1_OFFSET);
- a68:	98 b3       	in	r25, 0x18	; 24
- a6a:	9e 7f       	andi	r25, 0xFE	; 254
- a6c:	98 bb       	out	0x18, r25	; 24
- a6e:	0f c0       	rjmp	.+30     	; 0xa8e <main+0x150>
+ a7e:	d7 db       	rcall	.-2130   	; 0x22e <user_program>
+ a80:	88 23       	and	r24, r24
+ a82:	81 f0       	breq	.+32     	; 0xaa4 <main+0x12e>
 			break;
 		case 0x1:
 			LED2_PORT &= ~(LED2_OFFSET);
- a70:	98 b3       	in	r25, 0x18	; 24
- a72:	9d 7f       	andi	r25, 0xFD	; 253
- a74:	98 bb       	out	0x18, r25	; 24
- a76:	0b c0       	rjmp	.+22     	; 0xa8e <main+0x150>
 			break;
 		case 0x2:
 			LED3_PORT &= ~(LED3_OFFSET);
- a78:	98 b3       	in	r25, 0x18	; 24
- a7a:	9b 7f       	andi	r25, 0xFB	; 251
- a7c:	98 bb       	out	0x18, r25	; 24
- a7e:	07 c0       	rjmp	.+14     	; 0xa8e <main+0x150>
-			break;
-		case 0x3:
-			LED4_PORT &= ~(LED4_OFFSET);
- a80:	98 b3       	in	r25, 0x18	; 24
- a82:	97 7f       	andi	r25, 0xF7	; 247
- a84:	98 bb       	out	0x18, r25	; 24
- a86:	03 c0       	rjmp	.+6      	; 0xa8e <main+0x150>
-			break;
-		case 0x4:
-			LED5_PORT &= ~(LED5_OFFSET);
- a88:	98 b3       	in	r25, 0x18	; 24
- a8a:	9f 7e       	andi	r25, 0xEF	; 239
- a8c:	98 bb       	out	0x18, r25	; 24
-	}
-}
-
-
-inline void all_on(void){
-	for(uint8_t i = 0; i < NUM_LEDS; i++){
- a8e:	8f 5f       	subi	r24, 0xFF	; 255
- a90:	01 c0       	rjmp	.+2      	; 0xa94 <main+0x156>
- a92:	80 e0       	ldi	r24, 0x00	; 0
- a94:	85 30       	cpi	r24, 0x05	; 5
- a96:	d8 f2       	brcs	.-74     	; 0xa4e <main+0x110>
+ a84:	88 b3       	in	r24, 0x18	; 24
+ a86:	8b 7f       	andi	r24, 0xFB	; 251
+ a88:	88 bb       	out	0x18, r24	; 24
 	#else
 		//round up by default
 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
 	#endif
 
 	__builtin_avr_delay_cycles(__ticks_dc);
- a98:	9f ef       	ldi	r25, 0xFF	; 255
- a9a:	24 e3       	ldi	r18, 0x34	; 52
- a9c:	3c e0       	ldi	r19, 0x0C	; 12
- a9e:	91 50       	subi	r25, 0x01	; 1
- aa0:	20 40       	sbci	r18, 0x00	; 0
- aa2:	30 40       	sbci	r19, 0x00	; 0
- aa4:	e1 f7       	brne	.-8      	; 0xa9e <main+0x160>
- aa6:	00 c0       	rjmp	.+0      	; 0xaa8 <main+0x16a>
- aa8:	00 00       	nop
-				break;
-			case 2:	// program mode
-				if(user_program()){
-					all_on();
-					_delay_ms(500);
-					all_off();
- aaa:	fc da       	rcall	.-2568   	; 0xa4 <all_off>
-					mode = 0;
- aac:	c0 e0       	ldi	r28, 0x00	; 0
-				}
-				test_leds();
- aae:	55 db       	rcall	.-2390   	; 0x15a <test_leds>
-				break;
- ab0:	8b cf       	rjmp	.-234    	; 0x9c8 <main+0x8a>
-	/* Return data from data register */
-	return EEDR;
-}
-
-inline void led_on(uint8_t led_num){
-	switch(led_num){
- ab2:	82 30       	cpi	r24, 0x02	; 2
- ab4:	99 f0       	breq	.+38     	; 0xadc <main+0x19e>
- ab6:	28 f4       	brcc	.+10     	; 0xac2 <main+0x184>
- ab8:	88 23       	and	r24, r24
- aba:	41 f0       	breq	.+16     	; 0xacc <main+0x18e>
- abc:	81 30       	cpi	r24, 0x01	; 1
- abe:	51 f0       	breq	.+20     	; 0xad4 <main+0x196>
- ac0:	18 c0       	rjmp	.+48     	; 0xaf2 <main+0x1b4>
- ac2:	83 30       	cpi	r24, 0x03	; 3
- ac4:	79 f0       	breq	.+30     	; 0xae4 <main+0x1a6>
- ac6:	84 30       	cpi	r24, 0x04	; 4
- ac8:	89 f0       	breq	.+34     	; 0xaec <main+0x1ae>
- aca:	13 c0       	rjmp	.+38     	; 0xaf2 <main+0x1b4>
-		case 0x0:
-			LED1_PORT &= ~(LED1_OFFSET);
- acc:	28 b3       	in	r18, 0x18	; 24
- ace:	2e 7f       	andi	r18, 0xFE	; 254
- ad0:	28 bb       	out	0x18, r18	; 24
- ad2:	0f c0       	rjmp	.+30     	; 0xaf2 <main+0x1b4>
-			break;
-		case 0x1:
-			LED2_PORT &= ~(LED2_OFFSET);
- ad4:	28 b3       	in	r18, 0x18	; 24
- ad6:	2d 7f       	andi	r18, 0xFD	; 253
- ad8:	28 bb       	out	0x18, r18	; 24
- ada:	0b c0       	rjmp	.+22     	; 0xaf2 <main+0x1b4>
-			break;
-		case 0x2:
-			LED3_PORT &= ~(LED3_OFFSET);
- adc:	28 b3       	in	r18, 0x18	; 24
- ade:	2b 7f       	andi	r18, 0xFB	; 251
- ae0:	28 bb       	out	0x18, r18	; 24
- ae2:	07 c0       	rjmp	.+14     	; 0xaf2 <main+0x1b4>
-			break;
-		case 0x3:
-			LED4_PORT &= ~(LED4_OFFSET);
- ae4:	28 b3       	in	r18, 0x18	; 24
- ae6:	27 7f       	andi	r18, 0xF7	; 247
- ae8:	28 bb       	out	0x18, r18	; 24
- aea:	03 c0       	rjmp	.+6      	; 0xaf2 <main+0x1b4>
-			break;
-		case 0x4:
-			LED5_PORT &= ~(LED5_OFFSET);
- aec:	28 b3       	in	r18, 0x18	; 24
- aee:	2f 7e       	andi	r18, 0xEF	; 239
- af0:	28 bb       	out	0x18, r18	; 24
-	}
-}
-
-
-inline void all_on(void){
-	for(uint8_t i = 0; i < NUM_LEDS; i++){
- af2:	8f 5f       	subi	r24, 0xFF	; 255
- af4:	01 c0       	rjmp	.+2      	; 0xaf8 <main+0x1ba>
- af6:	80 e0       	ldi	r24, 0x00	; 0
- af8:	85 30       	cpi	r24, 0x05	; 5
- afa:	d8 f2       	brcs	.-74     	; 0xab2 <main+0x174>
- afc:	8f ef       	ldi	r24, 0xFF	; 255
- afe:	21 ee       	ldi	r18, 0xE1	; 225
- b00:	34 e0       	ldi	r19, 0x04	; 4
- b02:	81 50       	subi	r24, 0x01	; 1
- b04:	20 40       	sbci	r18, 0x00	; 0
- b06:	30 40       	sbci	r19, 0x00	; 0
- b08:	e1 f7       	brne	.-8      	; 0xb02 <main+0x1c4>
- b0a:	00 c0       	rjmp	.+0      	; 0xb0c <main+0x1ce>
- b0c:	00 00       	nop
-	}
-	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) = *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) & ~(LED_OFFSETS[led_num]);
-}
-
-inline void all_off(void){
-	for(uint8_t i = 0; i < NUM_LEDS; i++){
- b0e:	80 e0       	ldi	r24, 0x00	; 0
- b10:	21 c0       	rjmp	.+66     	; 0xb54 <main+0x216>
-	}
-	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) =  *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) | LED_OFFSETS[led_num];
-}
-
-inline void led_off(uint8_t led_num){
-	switch(led_num){
- b12:	82 30       	cpi	r24, 0x02	; 2
- b14:	99 f0       	breq	.+38     	; 0xb3c <main+0x1fe>
- b16:	28 f4       	brcc	.+10     	; 0xb22 <main+0x1e4>
- b18:	88 23       	and	r24, r24
- b1a:	41 f0       	breq	.+16     	; 0xb2c <main+0x1ee>
- b1c:	81 30       	cpi	r24, 0x01	; 1
- b1e:	51 f0       	breq	.+20     	; 0xb34 <main+0x1f6>
- b20:	18 c0       	rjmp	.+48     	; 0xb52 <main+0x214>
- b22:	83 30       	cpi	r24, 0x03	; 3
- b24:	79 f0       	breq	.+30     	; 0xb44 <main+0x206>
- b26:	84 30       	cpi	r24, 0x04	; 4
- b28:	89 f0       	breq	.+34     	; 0xb4c <main+0x20e>
- b2a:	13 c0       	rjmp	.+38     	; 0xb52 <main+0x214>
-		case 0x0:
-			LED1_PORT |= (LED1_OFFSET);
- b2c:	28 b3       	in	r18, 0x18	; 24
- b2e:	21 60       	ori	r18, 0x01	; 1
- b30:	28 bb       	out	0x18, r18	; 24
- b32:	0f c0       	rjmp	.+30     	; 0xb52 <main+0x214>
+ a8a:	9f ef       	ldi	r25, 0xFF	; 255
+ a8c:	21 ee       	ldi	r18, 0xE1	; 225
+ a8e:	34 e0       	ldi	r19, 0x04	; 4
+ a90:	91 50       	subi	r25, 0x01	; 1
+ a92:	20 40       	sbci	r18, 0x00	; 0
+ a94:	30 40       	sbci	r19, 0x00	; 0
+ a96:	e1 f7       	brne	.-8      	; 0xa90 <main+0x11a>
+ a98:	00 c0       	rjmp	.+0      	; 0xa9a <main+0x124>
+ a9a:	00 00       	nop
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
- b34:	28 b3       	in	r18, 0x18	; 24
- b36:	22 60       	ori	r18, 0x02	; 2
- b38:	28 bb       	out	0x18, r18	; 24
- b3a:	0b c0       	rjmp	.+22     	; 0xb52 <main+0x214>
 			break;
 		case 0x2:
 			LED3_PORT |= (LED3_OFFSET);
- b3c:	28 b3       	in	r18, 0x18	; 24
- b3e:	24 60       	ori	r18, 0x04	; 4
- b40:	28 bb       	out	0x18, r18	; 24
- b42:	07 c0       	rjmp	.+14     	; 0xb52 <main+0x214>
+ a9c:	88 b3       	in	r24, 0x18	; 24
+ a9e:	84 60       	ori	r24, 0x04	; 4
+ aa0:	88 bb       	out	0x18, r24	; 24
+			case 2:	// program mode
+				if(user_program()){
+					led_on(2);
+					_delay_ms(200);
+					led_off(2);
+					mode = 0;
+ aa2:	c0 e0       	ldi	r28, 0x00	; 0
+				}
+				test_leds();
+ aa4:	5a db       	rcall	.-2380   	; 0x15a <test_leds>
+				break;
+ aa6:	ac cf       	rjmp	.-168    	; 0xa00 <main+0x8a>
+			break;
+		case 0x2:
+			LED3_PORT &= ~(LED3_OFFSET);
+			break;
+		case 0x3:
+			LED4_PORT &= ~(LED4_OFFSET);
+ aa8:	98 b3       	in	r25, 0x18	; 24
+ aaa:	97 7f       	andi	r25, 0xF7	; 247
+ aac:	98 bb       	out	0x18, r25	; 24
+ aae:	9f ef       	ldi	r25, 0xFF	; 255
+ ab0:	21 ee       	ldi	r18, 0xE1	; 225
+ ab2:	34 e0       	ldi	r19, 0x04	; 4
+ ab4:	91 50       	subi	r25, 0x01	; 1
+ ab6:	20 40       	sbci	r18, 0x00	; 0
+ ab8:	30 40       	sbci	r19, 0x00	; 0
+ aba:	e1 f7       	brne	.-8      	; 0xab4 <main+0x13e>
+ abc:	00 c0       	rjmp	.+0      	; 0xabe <main+0x148>
+ abe:	00 00       	nop
+			break;
+		case 0x2:
+			LED3_PORT |= (LED3_OFFSET);
 			break;
 		case 0x3:
 			LED4_PORT |= (LED4_OFFSET);
- b44:	28 b3       	in	r18, 0x18	; 24
- b46:	28 60       	ori	r18, 0x08	; 8
- b48:	28 bb       	out	0x18, r18	; 24
- b4a:	03 c0       	rjmp	.+6      	; 0xb52 <main+0x214>
-			break;
-		case 0x4:
-			LED5_PORT |= (LED5_OFFSET);
- b4c:	28 b3       	in	r18, 0x18	; 24
- b4e:	20 61       	ori	r18, 0x10	; 16
- b50:	28 bb       	out	0x18, r18	; 24
-	}
-	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) = *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) & ~(LED_OFFSETS[led_num]);
-}
-
-inline void all_off(void){
-	for(uint8_t i = 0; i < NUM_LEDS; i++){
- b52:	8f 5f       	subi	r24, 0xFF	; 255
- b54:	85 30       	cpi	r24, 0x05	; 5
- b56:	e8 f2       	brcs	.-70     	; 0xb12 <main+0x1d4>
- b58:	8f ef       	ldi	r24, 0xFF	; 255
- b5a:	21 ee       	ldi	r18, 0xE1	; 225
- b5c:	34 e0       	ldi	r19, 0x04	; 4
- b5e:	81 50       	subi	r24, 0x01	; 1
- b60:	20 40       	sbci	r18, 0x00	; 0
- b62:	30 40       	sbci	r19, 0x00	; 0
- b64:	e1 f7       	brne	.-8      	; 0xb5e <main+0x220>
- b66:	00 c0       	rjmp	.+0      	; 0xb68 <main+0x22a>
- b68:	00 00       	nop
+ ac0:	98 b3       	in	r25, 0x18	; 24
+ ac2:	98 60       	ori	r25, 0x08	; 8
+ ac4:	98 bb       	out	0x18, r25	; 24
+ ac6:	9f ef       	ldi	r25, 0xFF	; 255
+ ac8:	21 ee       	ldi	r18, 0xE1	; 225
+ aca:	34 e0       	ldi	r19, 0x04	; 4
+ acc:	91 50       	subi	r25, 0x01	; 1
+ ace:	20 40       	sbci	r18, 0x00	; 0
+ ad0:	30 40       	sbci	r19, 0x00	; 0
+ ad2:	e1 f7       	brne	.-8      	; 0xacc <main+0x156>
+ ad4:	00 c0       	rjmp	.+0      	; 0xad6 <main+0x160>
+ ad6:	00 00       	nop
 					mode = 0;
 				}
 				test_leds();
 				break;
 			case 3:	// erase EEPROM
-				for(uint8_t i = 0; i < 10; i++){
- b6a:	9f 5f       	subi	r25, 0xFF	; 255
- b6c:	01 c0       	rjmp	.+2      	; 0xb70 <main+0x232>
+				for(uint8_t i = 0; i < 5; i++){
+ ad8:	8f 5f       	subi	r24, 0xFF	; 255
+ ada:	01 c0       	rjmp	.+2      	; 0xade <main+0x168>
 	
 	//mode = 2;	// for testing
 	
     while(1) 
     {
 		switch(mode){
- b6e:	90 e0       	ldi	r25, 0x00	; 0
+ adc:	80 e0       	ldi	r24, 0x00	; 0
 					mode = 0;
 				}
 				test_leds();
 				break;
 			case 3:	// erase EEPROM
-				for(uint8_t i = 0; i < 10; i++){
- b70:	9a 30       	cpi	r25, 0x0A	; 10
- b72:	08 f2       	brcs	.-126    	; 0xaf6 <main+0x1b8>
-					all_on();
+				for(uint8_t i = 0; i < 5; i++){
+ ade:	85 30       	cpi	r24, 0x05	; 5
+ ae0:	18 f3       	brcs	.-58     	; 0xaa8 <main+0x132>
+					led_on(3);
 					_delay_ms(200);
-					all_off();
+					led_off(3);
 					_delay_ms(200);
 				}
 				EEPROM_write(0, 0xff);	// just clear the frame size, no need to clear the entire frame memory
- b74:	6f ef       	ldi	r22, 0xFF	; 255
- b76:	80 e0       	ldi	r24, 0x00	; 0
- b78:	81 da       	rcall	.-2814   	; 0x7c <EEPROM_write>
+ ae2:	6f ef       	ldi	r22, 0xFF	; 255
+ ae4:	80 e0       	ldi	r24, 0x00	; 0
+ ae6:	ca da       	rcall	.-2668   	; 0x7c <EEPROM_write>
 				mode = 0;
- b7a:	c0 e0       	ldi	r28, 0x00	; 0
+ ae8:	c0 e0       	ldi	r28, 0x00	; 0
 				break;
- b7c:	25 cf       	rjmp	.-438    	; 0x9c8 <main+0x8a>
+ aea:	8a cf       	rjmp	.-236    	; 0xa00 <main+0x8a>
 
-00000b7e <__divmodhi4>:
- b7e:	97 fb       	bst	r25, 7
- b80:	07 2e       	mov	r0, r23
- b82:	16 f4       	brtc	.+4      	; 0xb88 <__divmodhi4+0xa>
- b84:	00 94       	com	r0
- b86:	06 d0       	rcall	.+12     	; 0xb94 <__divmodhi4_neg1>
- b88:	77 fd       	sbrc	r23, 7
- b8a:	08 d0       	rcall	.+16     	; 0xb9c <__divmodhi4_neg2>
- b8c:	0b d0       	rcall	.+22     	; 0xba4 <__udivmodhi4>
- b8e:	07 fc       	sbrc	r0, 7
- b90:	05 d0       	rcall	.+10     	; 0xb9c <__divmodhi4_neg2>
- b92:	3e f4       	brtc	.+14     	; 0xba2 <__divmodhi4_exit>
+00000aec <__divmodhi4>:
+ aec:	97 fb       	bst	r25, 7
+ aee:	07 2e       	mov	r0, r23
+ af0:	16 f4       	brtc	.+4      	; 0xaf6 <__divmodhi4+0xa>
+ af2:	00 94       	com	r0
+ af4:	06 d0       	rcall	.+12     	; 0xb02 <__divmodhi4_neg1>
+ af6:	77 fd       	sbrc	r23, 7
+ af8:	08 d0       	rcall	.+16     	; 0xb0a <__divmodhi4_neg2>
+ afa:	0b d0       	rcall	.+22     	; 0xb12 <__udivmodhi4>
+ afc:	07 fc       	sbrc	r0, 7
+ afe:	05 d0       	rcall	.+10     	; 0xb0a <__divmodhi4_neg2>
+ b00:	3e f4       	brtc	.+14     	; 0xb10 <__divmodhi4_exit>
 
-00000b94 <__divmodhi4_neg1>:
- b94:	90 95       	com	r25
- b96:	81 95       	neg	r24
- b98:	9f 4f       	sbci	r25, 0xFF	; 255
- b9a:	08 95       	ret
+00000b02 <__divmodhi4_neg1>:
+ b02:	90 95       	com	r25
+ b04:	81 95       	neg	r24
+ b06:	9f 4f       	sbci	r25, 0xFF	; 255
+ b08:	08 95       	ret
 
-00000b9c <__divmodhi4_neg2>:
- b9c:	70 95       	com	r23
- b9e:	61 95       	neg	r22
- ba0:	7f 4f       	sbci	r23, 0xFF	; 255
+00000b0a <__divmodhi4_neg2>:
+ b0a:	70 95       	com	r23
+ b0c:	61 95       	neg	r22
+ b0e:	7f 4f       	sbci	r23, 0xFF	; 255
 
-00000ba2 <__divmodhi4_exit>:
- ba2:	08 95       	ret
+00000b10 <__divmodhi4_exit>:
+ b10:	08 95       	ret
 
-00000ba4 <__udivmodhi4>:
- ba4:	aa 1b       	sub	r26, r26
- ba6:	bb 1b       	sub	r27, r27
- ba8:	51 e1       	ldi	r21, 0x11	; 17
- baa:	07 c0       	rjmp	.+14     	; 0xbba <__udivmodhi4_ep>
+00000b12 <__udivmodhi4>:
+ b12:	aa 1b       	sub	r26, r26
+ b14:	bb 1b       	sub	r27, r27
+ b16:	51 e1       	ldi	r21, 0x11	; 17
+ b18:	07 c0       	rjmp	.+14     	; 0xb28 <__udivmodhi4_ep>
 
-00000bac <__udivmodhi4_loop>:
- bac:	aa 1f       	adc	r26, r26
- bae:	bb 1f       	adc	r27, r27
- bb0:	a6 17       	cp	r26, r22
- bb2:	b7 07       	cpc	r27, r23
- bb4:	10 f0       	brcs	.+4      	; 0xbba <__udivmodhi4_ep>
- bb6:	a6 1b       	sub	r26, r22
- bb8:	b7 0b       	sbc	r27, r23
+00000b1a <__udivmodhi4_loop>:
+ b1a:	aa 1f       	adc	r26, r26
+ b1c:	bb 1f       	adc	r27, r27
+ b1e:	a6 17       	cp	r26, r22
+ b20:	b7 07       	cpc	r27, r23
+ b22:	10 f0       	brcs	.+4      	; 0xb28 <__udivmodhi4_ep>
+ b24:	a6 1b       	sub	r26, r22
+ b26:	b7 0b       	sbc	r27, r23
 
-00000bba <__udivmodhi4_ep>:
- bba:	88 1f       	adc	r24, r24
- bbc:	99 1f       	adc	r25, r25
- bbe:	5a 95       	dec	r21
- bc0:	a9 f7       	brne	.-22     	; 0xbac <__udivmodhi4_loop>
- bc2:	80 95       	com	r24
- bc4:	90 95       	com	r25
- bc6:	bc 01       	movw	r22, r24
- bc8:	cd 01       	movw	r24, r26
- bca:	08 95       	ret
+00000b28 <__udivmodhi4_ep>:
+ b28:	88 1f       	adc	r24, r24
+ b2a:	99 1f       	adc	r25, r25
+ b2c:	5a 95       	dec	r21
+ b2e:	a9 f7       	brne	.-22     	; 0xb1a <__udivmodhi4_loop>
+ b30:	80 95       	com	r24
+ b32:	90 95       	com	r25
+ b34:	bc 01       	movw	r22, r24
+ b36:	cd 01       	movw	r24, r26
+ b38:	08 95       	ret
 
-00000bcc <_exit>:
- bcc:	f8 94       	cli
+00000b3a <_exit>:
+ b3a:	f8 94       	cli
 
-00000bce <__stop_program>:
- bce:	ff cf       	rjmp	.-2      	; 0xbce <__stop_program>
+00000b3c <__stop_program>:
+ b3c:	ff cf       	rjmp	.-2      	; 0xb3c <__stop_program>

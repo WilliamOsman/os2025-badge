@@ -15,12 +15,16 @@
 #include <stdbool.h>
 #include <avr/wdt.h>
 
+// -----Optical PROGRAMMING------
 // range of accepted programming frequencies
 #define PHOTO_HZ_MIN 5
 #define PHOTO_HZ_MAX 60
+#define PHOTO_RATE_HZ	10
+#define OVERSAMPLE	8
+#define PHOTO_RINGBUFF_LEN	128
 
 #define FRAME_WIDTH 6
-#define MAX_FRAMES 64
+#define MAX_FRAMES 12
 #define FRAME_CYCLES 0	// number of shake cycles to display each frame
 
 #define BUMP_FILTER 50
@@ -87,12 +91,32 @@ volatile uint8_t tim_cnt_low = 0;
 volatile uint8_t tim_cnt_high = 0;
 
 ISR(TIMER0_OVF_vect) {
-	tim_cnt_high++;
-	tim_cnt_low = 0;
+	// charge up port with pull-up
+	PHOTODIODE_PORT |= PHOTODIODE_OFFSET;
+	//set COMPA to somewhere around 800us
+	//set COMPB to around 6ms (BEFORE OVERFLOW)
+	
+	// if start/end voltage isn't enough, we could track time for voltage to fall?
+}
+
+ISR(TIMER0_COMPA_vect){
+	//stop charging port
+	PHOTODIODE_PORT &= ~PHOTODIODE_OFFSET;
+	// Start adc conversion
+	//ADCSRA |= (1 << ADSC);
+}
+ISR(TIMER0_COMPB_vect){
+	//start adc conversion
+	ADCSRA |= (1 << ADSC);
+}
+ISR(ADC_vect){
+	uint16_t result = ADC;  // ADC is a macro that does ADCL then ADCH
+	rx_ring.buf[rx_ring.write_idx] = result; //load into buffer
+	//increment buffer
+	rx_ring.write_idx = (rx_ring.write_idx + 1) & rx_ring.mask;
 }
 
 #endif
-
 
 void init_leds(void);
 void init(void);
@@ -110,6 +134,23 @@ bool user_program(void);
 void load_frames(void);
 
 void animate2(void);
+
+//ring buffer to read user program data
+typedef struct {
+	uint16_t *buf;
+	uint8_t   mask;  // cap - 1
+	volatile uint8_t write_idx; // producer/head/end-of-data
+	volatile uint8_t read_idx;  // consumer/tail/current read
+} ring_t;
+
+volatile uint16_t rx_storage[PHOTO_RINGBUFF_LEN] = {0};	//raw photodiode buffer
+
+static ring_t rx_ring = {
+	.buf = rx_storage,
+	.mask = PHOTO_RINGBUFF_LEN - 1,
+	.write_idx = 0,
+	.read_idx = 0
+};
 
 uint8_t data_buf[FRAME_WIDTH*MAX_FRAMES] = {0};	// frame buffer
 uint8_t data_frame_count = 0;
@@ -287,58 +328,28 @@ static inline int bump_hit(void){
 
 void init_timer(void){
 	
-	// prescaler set to get 128*microsecond ticks
+	// 256 prescaler set to get 8.192 microsecond overflow
 	#ifdef ATTINY84
 		TCCR1B |= (1<<CS12 | 1<<CS10);
 		TCNT1 = 0;
 	#endif
 	#ifdef ATTINY85
-		TCCR0B = (1<<CS02) | (1<<CS00);
+		TCCR0B = (1<<CS02) | (0<<CS01) |(0<<CS00);
 		TCNT0 = 0;
-		TIMSK  = (1<<TOIE0);           // Enable overflow interrupt
+		TIMSK  = (1<<OCIE0A) | (1<<OCIE0B) | (1<<TOIE0); // Enable compare A/B and overflow interrupts
 		sei();
 	#endif
 }
-
-inline uint16_t get_timer(void){
-	#ifdef ATTINY84
-		return TCNT1;
-	#endif
-	#ifdef ATTINY85
-		uint8_t sreg = SREG;
-		cli();
-		tim_cnt_low = TCNT0;
-		uint8_t low  = tim_cnt_low;
-		uint8_t high = tim_cnt_high;
-		SREG = sreg;
-		return ((uint16_t)(high) << 8) | low;
-	#endif
-}
-
-inline void set_timer(uint16_t cnt){
-	#ifdef ATTINY84
-		TCNT1 = cnt;
-	#endif
-	#ifdef ATTINY85
-		uint8_t sreg = SREG;
-		cli();
-		tim_cnt_low = (uint8_t)(cnt & 0xff);
-		TCNT0 = tim_cnt_low;
-		tim_cnt_high = cnt >> 8;
-		SREG = sreg;
-	#endif
-}
-
 
 void init_adc(){
 	
 	// Enable ADC by clearing Power Reduction ADC bit
 	PRR &= ~(1 << PRADC);
 
-	// Select reference = AVcc, channel = ADCn (05)
+	// Select reference = AVcc, channel = ADCn (05)
 	// REFS1:0 = 00 ? Vcc as ref
 	// MUX[5:0] = channel
-	ADMUX = (PHOTODIODE_ADC_CH); // ADC0ADC5
+	ADMUX = (PHOTODIODE_ADC_CH); // ADC0ADC5
 
 	// Data alignment: for 10-bit read, clear ADLAR (left adjust);
 	ADMUX &= ~(1 << ADLAR);
@@ -346,101 +357,53 @@ void init_adc(){
 	// Set prescaler and enable ADC:
 	// ADPS[2:0]=111 ? ÷128 (62.5? kHz at 8 MHz); ADEN=1
 	// slowest we can sample
-	ADCSRA = (1 << ADEN)
-	| (1 << ADPS2) | (0 << ADPS1) | (0 << ADPS0);
-}
-
-uint16_t sample_adc(void) {
-	// Start conversion
-	ADCSRA |= (1 << ADSC);
-
-	// Wait for conversion to complete (ADSC clears)
-	while (ADCSRA & (1 << ADSC));
-
-	// Read result
-	// If ADLAR=0: must read ADCL first, then ADCH
-	uint16_t result = ADC;  // ADC is a macro that does ADCL then ADCH
-	return result;
+	ADCSRA = (1<<ADEN) | (1<<ADIE) |
+	| (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);
 }
 
 bool user_program(void){
-	const uint32_t min_us128 = 1e6 / PHOTO_HZ_MAX / 128;
-	const uint32_t max_us128 = 1e6 / PHOTO_HZ_MIN / 128;
-	
-	uint16_t invalid_cycles = 5000;
-	
-	bool auto_adjust = true;
 
-	uint16_t high_val = 0;
-	uint16_t low_val = 0xffff;
-	uint16_t thresh_val = 0x7fff;
-	bool current_state = 0;
-	uint8_t state_flter = 0;
-	bool last_state = 0;
-	volatile uint16_t clk_period_us128 = 0;
-	uint8_t valid_clk_cnt = 0;
+
+	//------- STEP 1 --------- setup ISRs
+	 
 	
-	uint8_t current_bit = 0;
-	uint8_t current_byte = 0;
-	uint8_t data_started = 0;
-	uint8_t guess_centers = 0;
+	//STEP 3 - process ring buffer
+	//			- track floor/ceiling
+	//			- track edges
+	//			- estimate bit centers
+	//STEP 4 - store into data array
 	
-	set_timer(0);	// reset timer for next edge
+	bool readData = true;
+	
+	while(readData){
 		
-	while(invalid_cycles != 0){
 		
-		// fancy adc reading to get higher dynamic range
-		uint16_t new_sample = 0;
-		// charge up port with pull-up
-		PHOTODIODE_PORT |= PHOTODIODE_OFFSET;
-		_delay_us(800);
-		PHOTODIODE_PORT &= ~PHOTODIODE_OFFSET;
-		for(uint8_t i = 0; i < 64; i++){	// measure voltage as the photodiode drains the pin capacitance
-			new_sample += sample_adc();
-		}
+		//------- STEP 2 --------- store in ring buffer
 		
-		// automatic threshold to adapt to different lighting and screens
-		if(auto_adjust){
-			if(new_sample < low_val){
-				low_val -= (low_val-new_sample)>>3;
-			}
-			if(new_sample > high_val){
-				high_val += (new_sample-high_val)>>3;
-			}
-			low_val += 50;
-			high_val -= 50;
+		//write new data to ring buffer
+		rx_ring.buf[rx_ring.write_idx] = sample - sample_adc();
+		//advance the write index by 1
+		rx_ring.write_idx = (rx_ring.write_idx + 1) & rx_ring.mask;
 		
-			thresh_val = (high_val>>1) + (low_val>>1);
-		}
+		//------- STEP 3 --------- process ring buffer
 		
-		bool raw_state = new_sample > thresh_val ? 0 : 1;
 		
-		state_flter = (state_flter << 1) | raw_state;
-		
-		// must have consecutive values to change the accepted state
-		if(state_flter & 0b11111){
-			current_state = 1;
-		}
-		if(~state_flter & 0b11111){
-			current_state = 0;
-		}
-		
+			
 		bool rising_edge = current_state & ~last_state;
 		bool falling_edge  = ~current_state & last_state;
 		last_state = current_state;
-				
+		
 		uint16_t edge_time = get_timer();
 		
-		if(current_state){	// led 0 always just shows the detected color
-			led_on(0);
-		}
-		else{
-			led_off(0);
+		if (auto_adjust){
+			if(current_state){	// led 0 always just shows the detected color
+				led_on(0);
+			}
+			else{
+				led_off(0);
+			}
 		}
 		
-		if(valid_clk_cnt < 10){
-			invalid_cycles--;
-		}
 		
 		// attempt to sync to the clk
 		if(valid_clk_cnt < 10 && rising_edge){
@@ -457,7 +420,8 @@ bool user_program(void){
 			}
 			valid_clk_cnt++;
 			if(valid_clk_cnt >= 10){
-				led_on(1);	// signify sync, now we're ready for data
+				led_off(0);
+				//led_on(1);	// signify sync, now we're ready for data
 				auto_adjust = 0;	// no longer try to adapt to brightness
 				clk_period_us128 = clk_period_us128/2;	// use half of the total period to get a single bit time
 				//clk_period_us128 += clk_period_us128/16;
@@ -479,26 +443,26 @@ bool user_program(void){
 		// start condition is data being on for longer than 3 periods then a falling edge
 		switch(data_started){
 			case 0:	// wait for high pulse
-				if(falling_edge){
-					set_timer(0);	// reset timer
-				}
-				else if(current_state && edge_time > clk_period_us128*3){
-					data_started = 1;
-				}
-				break;
+			if(falling_edge){
+				set_timer(0);	// reset timer
+			}
+			else if(current_state && edge_time > clk_period_us128*3){
+				data_started = 1;
+			}
+			break;
 			case 1:	// wait for falling edge
-				if(falling_edge){
-					set_timer(0);
-					data_started = 2;
-				}
-				break;
+			if(falling_edge){
+				set_timer(0);
+				data_started = 2;
+			}
+			break;
 			case 2:	// skip first bit to get into the actual data
-				if(edge_time > clk_period_us128>>1){
-					set_timer(0);
-					data_started = 3;
-					led_on(2);
-				}
-				break;
+			if(edge_time > clk_period_us128>>1){
+				set_timer(0);
+				data_started = 3;
+				//led_on(2);
+			}
+			break;
 		}
 		if(data_started!=3) continue;
 		
@@ -562,6 +526,14 @@ bool user_program(void){
 	
 	// now write the size
 	EEPROM_write(0, (current_byte+1)/FRAME_WIDTH);
+	
+	//flash LED for success
+	for(uint8_t i = 0; i<3; i++){
+		led_on(2);
+		_delay_ms(200);
+		led_off(2);
+		_delay_ms(200);
+	}
 	
 	return 1;
 }
@@ -797,18 +769,18 @@ int main(void)
 				break;
 			case 2:	// program mode
 				if(user_program()){
-					all_on();
-					_delay_ms(500);
-					all_off();
+					led_on(2);
+					_delay_ms(200);
+					led_off(2);
 					mode = 0;
 				}
 				test_leds();
 				break;
 			case 3:	// erase EEPROM
-				for(uint8_t i = 0; i < 10; i++){
-					all_on();
+				for(uint8_t i = 0; i < 5; i++){
+					led_on(3);
 					_delay_ms(200);
-					all_off();
+					led_off(3);
 					_delay_ms(200);
 				}
 				EEPROM_write(0, 0xff);	// just clear the frame size, no need to clear the entire frame memory

@@ -244,7 +244,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0xbd0
+.text           0x00000000      0xb3e
  *(.vectors)
  .vectors       0x00000000       0x1e C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATtiny_DFP/1.10.348/gcc/dev/attiny85/avr25/crtattiny85.o
                 0x00000000                __vector_default
@@ -346,33 +346,33 @@ END GROUP
                 0x0000021e       0x10 main.o
                 0x0000021e                sample_adc
  .text.user_program
-                0x0000022e      0x41e main.o
+                0x0000022e      0x456 main.o
                 0x0000022e                user_program
  .text.load_frames
-                0x0000064c       0x88 main.o
-                0x0000064c                load_frames
+                0x00000684       0x88 main.o
+                0x00000684                load_frames
  .text.animate_left
-                0x000006d4      0x186 main.o
-                0x000006d4                animate_left
+                0x0000070c      0x186 main.o
+                0x0000070c                animate_left
  .text.animate2
-                0x0000085a       0xd6 main.o
-                0x0000085a                animate2
- .text.init     0x00000930        0xe main.o
-                0x00000930                init
- .text.main     0x0000093e      0x240 main.o
-                0x0000093e                main
+                0x00000892       0xd6 main.o
+                0x00000892                animate2
+ .text.init     0x00000968        0xe main.o
+                0x00000968                init
+ .text.main     0x00000976      0x176 main.o
+                0x00000976                main
  .text.libgcc.div
-                0x00000b7e       0x26 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr25\libgcc.a(_divmodhi4.o)
-                0x00000b7e                _div
-                0x00000b7e                __divmodhi4
+                0x00000aec       0x26 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr25\libgcc.a(_divmodhi4.o)
+                0x00000aec                _div
+                0x00000aec                __divmodhi4
  .text.libgcc.div
-                0x00000ba4       0x28 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr25\libgcc.a(_udivmodhi4.o)
-                0x00000ba4                __udivmodhi4
-                0x00000bcc                . = ALIGN (0x2)
+                0x00000b12       0x28 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr25\libgcc.a(_udivmodhi4.o)
+                0x00000b12                __udivmodhi4
+                0x00000b3a                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x00000bcc        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr25\libgcc.a(_exit.o)
-                0x00000bcc                _exit
-                0x00000bcc                exit
+ .fini9         0x00000b3a        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr25\libgcc.a(_exit.o)
+                0x00000b3a                _exit
+                0x00000b3a                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -391,11 +391,11 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x00000bcc        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr25\libgcc.a(_exit.o)
+ .fini0         0x00000b3a        0x4 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr25\libgcc.a(_exit.o)
  *(.fini0)
-                0x00000bd0                _etext = .
+                0x00000b3e                _etext = .
 
-.data           0x00800060       0x3e load address 0x00000bd0
+.data           0x00800060       0x3e load address 0x00000b3e
                 0x00800060                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
@@ -414,7 +414,7 @@ END GROUP
                 0x0080009e                _edata = .
                 0x0080009e                PROVIDE (__data_end, .)
 
-.bss            0x0080009e      0x186
+.bss            0x0080009e       0x4e
                 0x0080009e                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
@@ -427,24 +427,24 @@ END GROUP
  .bss.data_frame_count
                 0x008000a1        0x1 main.o
                 0x008000a1                data_frame_count
- .bss.data_buf  0x008000a2      0x180 main.o
+ .bss.data_buf  0x008000a2       0x48 main.o
                 0x008000a2                data_buf
  .bss.tim_cnt_high
-                0x00800222        0x1 main.o
-                0x00800222                tim_cnt_high
+                0x008000ea        0x1 main.o
+                0x008000ea                tim_cnt_high
  .bss.tim_cnt_low
-                0x00800223        0x1 main.o
-                0x00800223                tim_cnt_low
+                0x008000eb        0x1 main.o
+                0x008000eb                tim_cnt_low
  *(COMMON)
-                0x00800224                PROVIDE (__bss_end, .)
-                0x00000bd0                __data_load_start = LOADADDR (.data)
-                0x00000c0e                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x008000ec                PROVIDE (__bss_end, .)
+                0x00000b3e                __data_load_start = LOADADDR (.data)
+                0x00000b7c                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x00800224        0x0
+.noinit         0x008000ec        0x0
                 [!provide]                PROVIDE (__noinit_start, .)
  *(.noinit*)
                 [!provide]                PROVIDE (__noinit_end, .)
-                0x00800224                _end = .
+                0x008000ec                _end = .
                 [!provide]                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
@@ -517,34 +517,34 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x15b4
+.debug_info     0x00000000     0x160d
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000      0x420 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATtiny_DFP/1.10.348/gcc/dev/attiny85/avr25/crtattiny85.o
- .debug_info    0x00000420     0x1194 main.o
+ .debug_info    0x00000420     0x11ed main.o
 
-.debug_abbrev   0x00000000      0x7ab
+.debug_abbrev   0x00000000      0x791
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0x3e8 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATtiny_DFP/1.10.348/gcc/dev/attiny85/avr25/crtattiny85.o
- .debug_abbrev  0x000003e8      0x3c3 main.o
+ .debug_abbrev  0x000003e8      0x3a9 main.o
 
-.debug_line     0x00000000      0xeb9
+.debug_line     0x00000000      0xe7f
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000       0xf2 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATtiny_DFP/1.10.348/gcc/dev/attiny85/avr25/crtattiny85.o
- .debug_line    0x000000f2      0xdc7 main.o
+ .debug_line    0x000000f2      0xd8d main.o
 
 .debug_frame    0x00000000      0x194
  *(.debug_frame)
  .debug_frame   0x00000000      0x194 main.o
 
-.debug_str      0x00000000     0x78f0
+.debug_str      0x00000000     0x78fd
  *(.debug_str)
  .debug_str     0x00000000      0x169 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATtiny_DFP/1.10.348/gcc/dev/attiny85/avr25/crtattiny85.o
- .debug_str     0x00000169     0x7787 main.o
-                               0x7856 (size before relaxing)
+ .debug_str     0x00000169     0x7794 main.o
+                               0x7863 (size before relaxing)
 
-.debug_loc      0x00000000     0x1136
+.debug_loc      0x00000000     0x10d8
  *(.debug_loc)
- .debug_loc     0x00000000     0x1136 main.o
+ .debug_loc     0x00000000     0x10d8 main.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -564,34 +564,34 @@ END GROUP
 .debug_pubtypes
  *(.debug_pubtypes)
 
-.debug_ranges   0x00000000      0x168
+.debug_ranges   0x00000000      0x150
  *(.debug_ranges)
- .debug_ranges  0x00000000      0x168 main.o
+ .debug_ranges  0x00000000      0x150 main.o
 
-.debug_macro    0x00000000     0x20ff
+.debug_macro    0x00000000     0x210b
  *(.debug_macro)
- .debug_macro   0x00000000      0x18e main.o
- .debug_macro   0x0000018e      0xa36 main.o
- .debug_macro   0x00000bc4       0x10 main.o
- .debug_macro   0x00000bd4      0x1c9 main.o
- .debug_macro   0x00000d9d      0x2fc main.o
- .debug_macro   0x00001099       0x9e main.o
- .debug_macro   0x00001137      0x8d2 main.o
- .debug_macro   0x00001a09       0xc2 main.o
- .debug_macro   0x00001acb       0xbd main.o
- .debug_macro   0x00001b88       0x34 main.o
- .debug_macro   0x00001bbc       0x18 main.o
- .debug_macro   0x00001bd4       0x34 main.o
- .debug_macro   0x00001c08       0x69 main.o
- .debug_macro   0x00001c71       0x10 main.o
- .debug_macro   0x00001c81       0x89 main.o
- .debug_macro   0x00001d0a       0xee main.o
- .debug_macro   0x00001df8       0x10 main.o
- .debug_macro   0x00001e08      0x160 main.o
- .debug_macro   0x00001f68       0x1c main.o
- .debug_macro   0x00001f84       0x97 main.o
- .debug_macro   0x0000201b       0x5a main.o
- .debug_macro   0x00002075       0x22 main.o
- .debug_macro   0x00002097       0x68 main.o
+ .debug_macro   0x00000000      0x19a main.o
+ .debug_macro   0x0000019a      0xa36 main.o
+ .debug_macro   0x00000bd0       0x10 main.o
+ .debug_macro   0x00000be0      0x1c9 main.o
+ .debug_macro   0x00000da9      0x2fc main.o
+ .debug_macro   0x000010a5       0x9e main.o
+ .debug_macro   0x00001143      0x8d2 main.o
+ .debug_macro   0x00001a15       0xc2 main.o
+ .debug_macro   0x00001ad7       0xbd main.o
+ .debug_macro   0x00001b94       0x34 main.o
+ .debug_macro   0x00001bc8       0x18 main.o
+ .debug_macro   0x00001be0       0x34 main.o
+ .debug_macro   0x00001c14       0x69 main.o
+ .debug_macro   0x00001c7d       0x10 main.o
+ .debug_macro   0x00001c8d       0x89 main.o
+ .debug_macro   0x00001d16       0xee main.o
+ .debug_macro   0x00001e04       0x10 main.o
+ .debug_macro   0x00001e14      0x160 main.o
+ .debug_macro   0x00001f74       0x1c main.o
+ .debug_macro   0x00001f90       0x97 main.o
+ .debug_macro   0x00002027       0x5a main.o
+ .debug_macro   0x00002081       0x22 main.o
+ .debug_macro   0x000020a3       0x68 main.o
 OUTPUT(os_2025.elf elf32-avr)
 LOAD linker stubs
