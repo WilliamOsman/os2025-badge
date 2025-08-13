@@ -90,30 +90,37 @@
 volatile uint8_t tim_cnt_low = 0;
 volatile uint8_t tim_cnt_high = 0;
 
-ISR(TIMER0_OVF_vect) {
-	// charge up port with pull-up
-	PHOTODIODE_PORT |= PHOTODIODE_OFFSET;
-	//set COMPA to somewhere around 800us
-	//set COMPB to around 6ms (BEFORE OVERFLOW)
-	
-	// if start/end voltage isn't enough, we could track time for voltage to fall?
+volatile uint8_t tick = 0;
+
+ISR(TIMER0_COMPA_vect) {
+	// 100 µs tick scheduler
+	switch (tick) {
+		case 0:   
+			// charge up port with pull-up
+			PHOTODIODE_PORT |= PHOTODIODE_OFFSET;         
+			break;  // t = 0
+		case 8:
+			//stop charging port after ~800us
+			PHOTODIODE_PORT &= ~PHOTODIODE_OFFSET;      
+		   break;  // t = 0.8 ms
+		case 60:  
+			//start adc conversion
+			ADCSRA |= (1<<ADSC);             
+			break;  // t = 6.0 ms: start ADC
+		default:  break;
+	}
+	tick++;
+	if (tick >= 125) {                           // t = 12.5 ms
+		tick = 0;                                  // next cycle
+	}
 }
 
-ISR(TIMER0_COMPA_vect){
-	//stop charging port
-	PHOTODIODE_PORT &= ~PHOTODIODE_OFFSET;
-	// Start adc conversion
-	//ADCSRA |= (1 << ADSC);
-}
-ISR(TIMER0_COMPB_vect){
-	//start adc conversion
-	ADCSRA |= (1 << ADSC);
-}
-ISR(ADC_vect){
+
+ISR(ADC_vect)
+{
 	uint16_t result = ADC;  // ADC is a macro that does ADCL then ADCH
 	rx_ring.buf[rx_ring.write_idx] = result; //load into buffer
-	//increment buffer
-	rx_ring.write_idx = (rx_ring.write_idx + 1) & rx_ring.mask;
+	rx_ring.write_idx = (rx_ring.write_idx + 1) & rx_ring.mask; //increment write index 
 }
 
 #endif
@@ -168,6 +175,38 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 	0b1110, 0b10001, 0b10001, 0b10001, 0b10001, 0b0,	// C
 	0b0, 0b11111, 0b10101, 0b10101, 0b10001, 0b0,		// E
 	};
+	
+//----------PHOTODIODE DATA---------------	
+	
+void timer0_tick_100us_init(void) {
+	// CTC, OCR0A = 99, prescaler = 8  => 8 MHz / 8 = 1 MHz (1 µs/tick). 100 µs per interrupt.
+	TCCR0A = (1<<WGM01);       // CTC
+	OCR0A  = 99;               // 100 counts -> 100 µs
+	TCCR0B = (1<<CS01);        // prescaler 8
+	TIMSK  |= (1<<OCIE0A);     // enable compare A interrupt
+}
+
+void init_adc(){
+	
+	// Enable ADC by clearing Power Reduction ADC bit
+	PRR &= ~(1 << PRADC);
+
+	// Select reference = AVcc, channel = ADCn (05)
+	// REFS1:0 = 00 ? Vcc as ref
+	// MUX[5:0] = channel
+	ADMUX = (PHOTODIODE_ADC_CH); // ADC0ADC5
+
+	// Data alignment: for 10-bit read, clear ADLAR (left adjust);
+	ADMUX &= ~(1 << ADLAR);
+
+	// Set prescaler and enable ADC:
+	// ADPS[2:0]=111 ? ÷128 (62.5? kHz at 8 MHz); ADEN=1
+	// slowest we can sample
+	ADCSRA = (1<<ADEN) | (1<<ADIE) |
+	| (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);
+}
+
+//----------EEPROM---------------	
 
 void EEPROM_write(uint8_t ucAddress, uint8_t ucData)
 {
@@ -197,6 +236,8 @@ uint8_t EEPROM_read(uint8_t ucAddress)
 	/* Return data from data register */
 	return EEDR;
 }
+
+//----------LED UTILITY---------------	
 
 inline void led_on(uint8_t led_num){
 	switch(led_num){
@@ -246,11 +287,16 @@ inline void all_off(void){
 	}
 }
 
-
 inline void all_on(void){
 	for(uint8_t i = 0; i < NUM_LEDS; i++){
 		led_on(i);
 	}
+}
+
+void test_leds(void){
+	all_on();
+	_delay_us(10000);
+	all_off();
 }
 
 void init_leds(void){
@@ -298,15 +344,11 @@ void init_leds(void){
 	all_off();
 }
 
+//----------BUMPERS---------------	
+
 void init_bumpers(void){
 	// Set up the bumpers with pull ups
 	BUMP_PORT |= (BUMP_OFFSET);
-}
-
-void test_leds(void){
-	all_on();
-	_delay_us(10000);
-	all_off();
 }
 
 static inline int bump_hit(void){
@@ -326,45 +368,24 @@ static inline int bump_hit(void){
 	return bump_state;
 }
 
-void init_timer(void){
-	
-	// 256 prescaler set to get 8.192 microsecond overflow
-	#ifdef ATTINY84
-		TCCR1B |= (1<<CS12 | 1<<CS10);
-		TCNT1 = 0;
-	#endif
-	#ifdef ATTINY85
-		TCCR0B = (1<<CS02) | (0<<CS01) |(0<<CS00);
-		TCNT0 = 0;
-		TIMSK  = (1<<OCIE0A) | (1<<OCIE0B) | (1<<TOIE0); // Enable compare A/B and overflow interrupts
-		sei();
-	#endif
-}
-
-void init_adc(){
-	
-	// Enable ADC by clearing Power Reduction ADC bit
-	PRR &= ~(1 << PRADC);
-
-	// Select reference = AVcc, channel = ADCn (05)
-	// REFS1:0 = 00 ? Vcc as ref
-	// MUX[5:0] = channel
-	ADMUX = (PHOTODIODE_ADC_CH); // ADC0ADC5
-
-	// Data alignment: for 10-bit read, clear ADLAR (left adjust);
-	ADMUX &= ~(1 << ADLAR);
-
-	// Set prescaler and enable ADC:
-	// ADPS[2:0]=111 ? ÷128 (62.5? kHz at 8 MHz); ADEN=1
-	// slowest we can sample
-	ADCSRA = (1<<ADEN) | (1<<ADIE) |
-	| (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);
-}
-
 bool user_program(void){
 
+	uint8_t data[FRAME_WIDTH*MAX_FRAMES];
+	uint8_t write_index;
 
-	//------- STEP 1 --------- setup ISRs
+	//------- STEP 1 --------- setup sampling ISRs
+	init_adc();
+	timer0_tick_100us_init();
+	sei();
+
+	//start chewing through buffer once we have a byte of data
+	if ( (rx_ring.write_idx - rx_ring.read_idx) > (8*OVERSAMPLE) ){
+		uint16_t max = 0;
+		uint16_t min = 1024;
+		for(uint8_t i = 0; i<8*OVERSAMPLE; i++){
+			if rx_ring.buf[
+		}
+	}
 	 
 	
 	//STEP 3 - process ring buffer
@@ -376,15 +397,6 @@ bool user_program(void){
 	bool readData = true;
 	
 	while(readData){
-		
-		
-		//------- STEP 2 --------- store in ring buffer
-		
-		//write new data to ring buffer
-		rx_ring.buf[rx_ring.write_idx] = sample - sample_adc();
-		//advance the write index by 1
-		rx_ring.write_idx = (rx_ring.write_idx + 1) & rx_ring.mask;
-		
 		//------- STEP 3 --------- process ring buffer
 		
 		
@@ -393,7 +405,6 @@ bool user_program(void){
 		bool falling_edge  = ~current_state & last_state;
 		last_state = current_state;
 		
-		uint16_t edge_time = get_timer();
 		
 		if (auto_adjust){
 			if(current_state){	// led 0 always just shows the detected color
@@ -712,7 +723,7 @@ void init(void){
 
 	
 	// set main clock prescaler to 1 for highest cpu speed
-	CLKPR = 0b10000000;
+	CLKPR = (1<<CLKPCE);
 	CLKPR = 0;
 	
 	init_leds();
