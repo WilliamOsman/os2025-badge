@@ -22,6 +22,8 @@
 #define PHOTO_RATE_HZ	10
 #define OVERSAMPLE	8
 #define PHOTO_RINGBUFF_LEN	128
+#define CHARGE_DELAY	200	//microseconds to keep pull-up pin engaged
+#define SAMPLE_DELAY	400	//microseconds to wait after charge before sampling
 
 #define FRAME_WIDTH 6
 #define MAX_FRAMES 12
@@ -99,10 +101,10 @@ ISR(TIMER0_COMPA_vect) {
 			// charge up port with pull-up
 			PHOTODIODE_PORT |= PHOTODIODE_OFFSET;         
 			break;  // t = 0
-		case 8:
-			//stop charging port after ~800us
+		case 2:
+			//stop charging port after ~200us
 			PHOTODIODE_PORT &= ~PHOTODIODE_OFFSET;      
-		   break;  // t = 0.8 ms
+			break;  // t = 0.2 ms
 		case 60:  
 			//start adc conversion
 			ADCSRA |= (1<<ADSC);             
@@ -202,8 +204,9 @@ void init_adc(){
 	// Set prescaler and enable ADC:
 	// ADPS[2:0]=111 ? ÷128 (62.5? kHz at 8 MHz); ADEN=1
 	// slowest we can sample
-	ADCSRA = (1<<ADEN) | (1<<ADIE) |
-	| (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0);
+	ADCSRA = (1<<ADEN) // enable ADC
+			| (1<<ADIE) // ADC interrupt enable
+			| (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0); // divided 128
 }
 
 //----------EEPROM---------------	
