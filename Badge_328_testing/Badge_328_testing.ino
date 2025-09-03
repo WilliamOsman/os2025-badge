@@ -100,7 +100,7 @@ void loop() {
     //write the first bit
     rx = (rx << 1) | (1 >> data[SHIFT(write_index, -1)]);  //invert and load next bit
     newbitFlag = true;
-    next_bit = period + halfperiod;
+    next_bit = period + halfperiod - 1;
     bits = 1;
     width = 0;
   }
@@ -111,7 +111,7 @@ void loop() {
     Serial.print("  ");
     Serial.print("W");
     delay(1);
-    rx = (rx << 1) | (1 >> data[SHIFT(write_index, -1)]);  //invert and load next bit
+    rx =                                                                                                                                                                                                                                                                                                         (rx << 1) | (1 >> data[SHIFT(write_index, -1)]);  //invert and load next bit
     newbitFlag = true;
     digitalWrite(CENTER_PIN, LOW);
     next_bit += period;
@@ -131,8 +131,10 @@ if (newbitFlag) {
   } else if (readData) {
     static uint8_t current_bit = 0;
     static uint8_t current_byte = 0;
-
-    Serial.print("b:");
+    
+    Serial.print("B:");
+    Serial.print(current_byte);
+    Serial.print(":");
     Serial.print(current_bit);
 
     //Serial.println(rx);
