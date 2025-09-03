@@ -56,7 +56,7 @@ void loop() {
     if (newdata > photodata_max) photodata_max = newdata;
     else if (newdata < photodata_min) photodata_min = newdata;
     amplitude = (photodata_max - photodata_min);
-    Serial.println(amplitude);
+    //Serial.println(amplitude);
     deviation = amplitude * 0.2;
     if (newdata > (photodata_min + amplitude - deviation)) rolling_max = rolling_max * 0.9 + newdata * 0.1;
     else if (newdata < (photodata_min + deviation)) rolling_min = rolling_min * 0.95 + newdata * 0.05;
@@ -81,6 +81,7 @@ void loop() {
     data[SHIFT(write_index, -1)] = data[write_index];
   }
 
+  Serial.print(data[SHIFT(write_index, -1)]);
 
   //--------------- Convert to Bitstream ------------
 
@@ -94,7 +95,8 @@ void loop() {
 
   //if edge detected
   if (data[SHIFT(write_index, -2)] != data[SHIFT(write_index, -1)]) {
-
+    Serial.print("  ");
+    Serial.print("E");
     //write the first bit
     rx = (rx << 1) | (1 >> data[SHIFT(write_index, -1)]);  //invert and load next bit
     newbitFlag = true;
@@ -106,6 +108,8 @@ void loop() {
   //if edge change not detected after period next bit is the same
   else if (width == next_bit) {
     digitalWrite(CENTER_PIN, HIGH);
+    Serial.print("  ");
+    Serial.print("W");
     delay(1);
     rx = (rx << 1) | (1 >> data[SHIFT(write_index, -1)]);  //invert and load next bit
     newbitFlag = true;
@@ -121,31 +125,35 @@ if (newbitFlag) {
   static bool readData = false;
   newbitFlag = false;
   if (!readData && (rx & (0b1111)) == 0b1110) {
-    Serial.println("data start");
+    Serial.print("  data start");
     readData = true;
     rx = 0b0;  //clear RX
   } else if (readData) {
     static uint8_t current_bit = 0;
     static uint8_t current_byte = 0;
 
-    data_buf[current_byte] |= (rx & 0b1) << current_bit;
-    Serial.println(rx & 0b1);
+    Serial.print("b:");
+    Serial.print(current_bit);
 
+    //Serial.println(rx);
+    data_buf[current_byte] |= (rx & 0b1) << current_bit;
+    //Serial.println(rx & 0b1);
+    
     current_bit++;
     if (current_bit > 5) {
       //if 5th bit is 0, data is over, or read is corrupted
       if (!(rx & 0b1)) {
         //data read is finished, or data is corrupted
         readData = false;
-        Serial.print("current byte: ");
-        Serial.println(current_byte);
+        //Serial.print("byte: ");
+        //Serial.println(current_byte);
         //bytePos = 0;
         if ((current_byte + 1) % FRAME_WIDTH != 0) {
-          Serial.println("PARTIAL FRAME");
+          Serial.print("  PARTIAL FRAME ");
           //return 0;	// not a full frame detected
         }
         if (current_bit != 6) {
-          Serial.println("PARTIAL COLUMN");
+          Serial.print("PARTIAL COLUMN");
           //return 0;	// didn't end on a full vertical line (minus the stop bit)
         }
         if ((current_byte + 1) / FRAME_WIDTH > MAX_FRAMES) {
@@ -154,7 +162,7 @@ if (newbitFlag) {
         }
 
         for (uint8_t i = 0; i < current_byte; i++) {
-          Serial.println(data_buf[current_byte], HEX);
+          //Serial.println(data_buf[current_byte], HEX);
         }
         current_byte = 0;
         current_bit = 0;
@@ -165,7 +173,7 @@ if (newbitFlag) {
     }
   }
 }
-
+Serial.println();
   digitalWrite(LED_PIN, data[SHIFT(write_index, -1)]);
   /*
   Serial.print(bits); 
