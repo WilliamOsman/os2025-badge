@@ -17,13 +17,14 @@
 
 // -----Optical PROGRAMMING------
 // range of accepted programming frequencies
-#define PHOTO_HZ_MIN 5
-#define PHOTO_HZ_MAX 60
+//#define PHOTO_HZ_MIN 5
+//#define PHOTO_HZ_MAX 60
 #define PHOTO_RATE_HZ	10
 #define OVERSAMPLE	8
 #define PHOTO_RINGBUFF_LEN	128
 #define CHARGE_DELAY	200	//microseconds to keep pull-up pin engaged
 #define SAMPLE_DELAY	400	//microseconds to wait after charge before sampling
+#define SUBSAMPLE_COUNT	64	//number of samples per ADC integration
 
 #define FRAME_WIDTH 6
 #define MAX_FRAMES 12
@@ -94,36 +95,7 @@ volatile uint8_t tim_cnt_high = 0;
 
 volatile uint8_t tick = 0;
 
-ISR(TIMER0_COMPA_vect) {
-	// 100 µs tick scheduler
-	switch (tick) {
-		case 0:   
-			// charge up port with pull-up
-			PHOTODIODE_PORT |= PHOTODIODE_OFFSET;         
-			break;  // t = 0
-		case 2:
-			//stop charging port after ~200us
-			PHOTODIODE_PORT &= ~PHOTODIODE_OFFSET;      
-			break;  // t = 0.2 ms
-		case 60:  
-			//start adc conversion
-			ADCSRA |= (1<<ADSC);             
-			break;  // t = 6.0 ms: start ADC
-		default:  break;
-	}
-	tick++;
-	if (tick >= 125) {                           // t = 12.5 ms
-		tick = 0;                                  // next cycle
-	}
-}
 
-
-ISR(ADC_vect)
-{
-	uint16_t result = ADC;  // ADC is a macro that does ADCL then ADCH
-	rx_ring.buf[rx_ring.write_idx] = result; //load into buffer
-	rx_ring.write_idx = (rx_ring.write_idx + 1) & rx_ring.mask; //increment write index 
-}
 
 #endif
 
@@ -207,6 +179,62 @@ void init_adc(){
 	ADCSRA = (1<<ADEN) // enable ADC
 			| (1<<ADIE) // ADC interrupt enable
 			| (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0); // divided 128
+}
+
+uint16_t sample_adc(void) {
+	// Start conversion
+	ADCSRA |= (1 << ADSC);
+
+	// Wait for conversion to complete (ADSC clears)
+	while (ADCSRA & (1 << ADSC));
+
+	// Read result
+	// If ADLAR=0: must read ADCL first, then ADCH
+	uint16_t result = ADC;  // ADC is a macro that does ADCL then ADCH
+	return result;
+}
+
+ISR(TIMER0_COMPA_vect) {
+	// 100 µs tick scheduler
+	switch (tick) {
+		case 0:
+		// charge up port with pull-up
+		PHOTODIODE_PORT |= PHOTODIODE_OFFSET;
+		break;  // t = 0
+		case 2:
+		//stop charging port after ~200us
+		PHOTODIODE_PORT &= ~PHOTODIODE_OFFSET;
+		break;  // t = 0.2 ms
+		case 60:
+		//start adc conversion
+		ADCSRA |= (1<<ADSC);
+		break;  // t = 6.0 ms: start ADC
+		default:  break;
+	}
+	tick++;
+	if (tick >= 125) {                           // t = 12.5 ms
+		tick = 0;                                  // next cycle
+	}
+}
+
+
+ISR(ADC_vect)
+{
+	static uint8_t count = 0;
+	
+	newdata += ADC;				// ADC is a macro that does ADCL then ADCH
+	
+	if (count < SUBSAMPLE_COUNT){
+		newdata += result;		//integrate
+		count++;				//increment sample number
+		ADCSRA |= (1<<ADSC);	//trigger new ADC
+	}
+	else{
+		newdata_flag = true;	//set flag
+		count = 0;				//clear count
+	}
+	
+	
 }
 
 //----------EEPROM---------------	
@@ -372,7 +400,11 @@ static inline int bump_hit(void){
 }
 
 bool user_program(void){
-
+	/*
+	1) Setup timer ISR to generate ADC samples and set new sample flag
+	2) When new sample flag is set, process data
+	*/
+	
 	uint8_t data[FRAME_WIDTH*MAX_FRAMES];
 	uint8_t write_index;
 
@@ -381,137 +413,39 @@ bool user_program(void){
 	timer0_tick_100us_init();
 	sei();
 
-	//start chewing through buffer once we have a byte of data
-	if ( (rx_ring.write_idx - rx_ring.read_idx) > (8*OVERSAMPLE) ){
-		uint16_t max = 0;
-		uint16_t min = 1024;
-		for(uint8_t i = 0; i<8*OVERSAMPLE; i++){
-			if rx_ring.buf[
+
+	//-------- PROCESS NEW SAMPLE -----------------
+	do {
+		//charge up the photodiode's capacitance
+		pinMode(PHOTODIODE, INPUT_PULLUP);
+		delayMicroseconds(100);
+		pinMode(PHOTODIODE, INPUT);
+		//delayMicroseconds(500);
+
+		//integrate as voltage drops due to photodiode
+		uint32_t startTime = micros();
+		for (uint8_t i = 0; i < 64; i++) {
+		  newdata += analogRead(PHOTODIODE);
 		}
-	}
-	 
-	
-	//STEP 3 - process ring buffer
-	//			- track floor/ceiling
-	//			- track edges
-	//			- estimate bit centers
-	//STEP 4 - store into data array
-	
-	bool readData = true;
-	
-	while(readData){
-		//------- STEP 3 --------- process ring buffer
-		
-		
-			
-		bool rising_edge = current_state & ~last_state;
-		bool falling_edge  = ~current_state & last_state;
-		last_state = current_state;
-		
-		
-		if (auto_adjust){
-			if(current_state){	// led 0 always just shows the detected color
-				led_on(0);
-			}
-			else{
-				led_off(0);
-			}
+		newdata /= 64;  //average
+
+		// exponential average to smooth data
+		data_smooth = data_smooth * 0.5 + newdata * 0.5;
+
+		// track maximum/minimum values
+		if (newdata > data_max) data_max = newdata;
+		else if (newdata < data_min) data_min = newdata;
+		else {
+		  data_max = data_max - data_max * 0.005;
+		  data_min = data_min + data_max * 0.005;
 		}
-		
-		
-		// attempt to sync to the clk
-		if(valid_clk_cnt < 10 && rising_edge){
-			set_timer(0);	// reset timer for next edge
-			if(edge_time < min_us128 || edge_time > max_us128*2){
-				valid_clk_cnt = 0;
-				continue;
-			}
-			uint16_t edge_variance = edge_time > clk_period_us128 ? edge_time-clk_period_us128 : clk_period_us128-edge_time;
-			clk_period_us128 = (clk_period_us128/4) * 3 + edge_time/4;
-			if(edge_variance > edge_time>>4){	// variance is over 1/16 of the expected time
-				valid_clk_cnt = 0;
-				continue;
-			}
-			valid_clk_cnt++;
-			if(valid_clk_cnt >= 10){
-				led_off(0);
-				//led_on(1);	// signify sync, now we're ready for data
-				auto_adjust = 0;	// no longer try to adapt to brightness
-				clk_period_us128 = clk_period_us128/2;	// use half of the total period to get a single bit time
-				//clk_period_us128 += clk_period_us128/16;
-			}
-			continue;
-		}
-		
-		if(valid_clk_cnt < 10){
-			continue;
-		}
-		
-		if(edge_time > clk_period_us128*16){
-			break;	// no recent valid edges
-		}
-		
-		// decode the data
-		
-		
-		// start condition is data being on for longer than 3 periods then a falling edge
-		switch(data_started){
-			case 0:	// wait for high pulse
-			if(falling_edge){
-				set_timer(0);	// reset timer
-			}
-			else if(current_state && edge_time > clk_period_us128*3){
-				data_started = 1;
-			}
-			break;
-			case 1:	// wait for falling edge
-			if(falling_edge){
-				set_timer(0);
-				data_started = 2;
-			}
-			break;
-			case 2:	// skip first bit to get into the actual data
-			if(edge_time > clk_period_us128>>1){
-				set_timer(0);
-				data_started = 3;
-				//led_on(2);
-			}
-			break;
-		}
-		if(data_started!=3) continue;
-		
-		// reset timer on all edges to half a bit period
-		if(rising_edge || falling_edge){
-			guess_centers = 0;
-			set_timer(clk_period_us128/2);
-			continue;
-		}
-		
-		if(edge_time > clk_period_us128){	// center of a data bit, save data
-			guess_centers++;
-			set_timer(0);	// reset for next bit
-			data_buf[current_byte] |= current_state<<current_bit;
-			current_bit++;
-			if(current_bit > 5){
-				if(!current_state){
-					// bit 5 should always be 1 for keeping clock sync
-					// if its not, we had a failure somewhere or are complete, exit programming mode
-					break;
-				}
-				current_bit = 0;
-				current_byte++;
-			}
-		}
-		
-		if(guess_centers > 8){
-			break;
-		}
-		
-	}
-	
-	if(data_started != 3){
-		return 0;
-	}
+		float data_nuetral = (data_max - data_min) / 2 + data_min;
+		amplitude = (data_max - data_min);
+
+		if (data_smooth < data_nuetral) state = 1;  //invert the reading
+		else state = 0;
+
+	} while (amplitude < 50);
 	
 	
 	// validate data
