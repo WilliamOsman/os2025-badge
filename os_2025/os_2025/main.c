@@ -22,9 +22,12 @@
 #define PHOTO_RATE_HZ	10
 #define OVERSAMPLE	8
 #define PHOTO_RINGBUFF_LEN	128
-#define CHARGE_DELAY	200	//microseconds to keep pull-up pin engaged
-#define SAMPLE_DELAY	400	//microseconds to wait after charge before sampling
-#define SUBSAMPLE_COUNT	64	//number of samples per ADC integration
+#define CHARGE_DELAY	200		//microseconds to keep pull-up pin engaged
+#define SAMPLE_DELAY	400		//microseconds to wait after charge before sampling
+#define INTEGRATION_COUNT	64	//number of samples per ADC integration (power of 2)
+#define INTEGRATION_SHIFT	6	//number of shifts to divide by SUBSAMPLE_COUNT
+#define SIGNAL_AMPLITUDE_MIN 50	//ignore ADC data if signal contrast isn't high enough
+#define START_FLAG	0b1110		//bits indicating transfer start
 
 #define FRAME_WIDTH 6
 #define MAX_FRAMES 12
@@ -150,6 +153,9 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 	0b0, 0b11111, 0b10101, 0b10101, 0b10001, 0b0,		// E
 	};
 	
+volatile uint8_t newSample_available = false;
+volatile uint16_t newSample = 0;
+	
 //----------PHOTODIODE DATA---------------	
 	
 void timer0_tick_100us_init(void) {
@@ -221,17 +227,19 @@ ISR(TIMER0_COMPA_vect) {
 ISR(ADC_vect)
 {
 	static uint8_t count = 0;
+	static uint32_t integrate = 0;
 	
-	newdata += ADC;				// ADC is a macro that does ADCL then ADCH
+	integrate += ADC;								// ADC is a macro that does ADCL then ADCH
 	
-	if (count < SUBSAMPLE_COUNT){
-		newdata += result;		//integrate
-		count++;				//increment sample number
-		ADCSRA |= (1<<ADSC);	//trigger new ADC
+	if (count < INTEGRATION_COUNT){
+		count++;									//increment integration step
+		ADCSRA |= (1<<ADSC);						//trigger new ADC reading
 	}
 	else{
-		newdata_flag = true;	//set flag
-		count = 0;				//clear count
+		newSample_available = true;					//flag indicates new data ready
+		newSample = integrate >> INTEGRATION_SHIFT;	//divide by total samples for average
+		integrate = 0;								//reset integration
+		count = 0;									//reset count
 	}
 	
 	
@@ -402,48 +410,192 @@ static inline int bump_hit(void){
 bool user_program(void){
 	/*
 	1) Setup timer ISR to generate ADC samples and set new sample flag
-	2) When new sample flag is set, process data
+		↳	2) When new sample flag is set, process new sample
+			3) If waveform amplitude large enough, the signal is good
+			4) Convert samples to bitstream
+			5) If binary start signal detected, load bits into frame array
+			6) If data end, check data and save/quit
+			
+	states : Reading / Saving / Failed
+			BadSignal / Good Signal
+			Data Started / Data Finished
 	*/
 	
 	uint8_t data[FRAME_WIDTH*MAX_FRAMES];
 	uint8_t write_index;
+	
+	bool seekData = true;
+	bool dataStarted = false;
+	bool state_now = 0;
+	bool state_prev = 0;
+	bool signal_available = false;
+	uint8_t rx = 0;						//incoming bitstream storage
 
 	//------- STEP 1 --------- setup sampling ISRs
 	init_adc();
 	timer0_tick_100us_init();
 	sei();
 
+	if(seekData)
+	{
+		//------------ Process ADC Sample -----------------
+		if(newSample_available)
+		{
+			static float data_smooth = newSample;
+			static float data_max = newSample;
+			static float data_min = newSample;
+			
+			data_smooth = data_smooth * 0.5 + newSample * 0.5;
+
+			// track maximum/minimum value
+			if (data_smooth > data_max) data_max = data_smooth;
+			else if (data_smooth < data_min) data_min = data_smooth;
+			//slow decay to keep max/min from hovering above/below the data
+			else {
+				data_max -= data_max * 0.005;
+				data_min += data_max * 0.005;
+			}
+			
+			float amplitude = (data_max - data_min);
+			float midline = amplitude / 2 + data_min;	//threshold between high and low
+			
+			//if optical signal has large enough contrast assume there's a signal
+			if( amplitude >= SIGNAL_AMPLITUDE_MIN ) signal_available = true;
+			else signal_available = false;
+			
+			//if data is below middle of signal, bit is HIGH
+			if (data_smooth < midline) state_now = 1;  //invert the reading
+			else state_now = 0;
+		}
+		
+		//------------ Convert to Bitstream -----------------
+		if (signal_available)
+		{
+			//calculate bit width
+			static uint8_t period = 8;
+			static uint8_t halfperiod = period >> 2;
+			static uint8_t bit_count = 0;
+			static uint8_t width = 0;
+			static uint8_t next_bit = period;
+			static bool newbitFlag = false;
+			
+			//detect bit on edge
+			if (state_now != state_prev) 
+			{
+				state_prev = state_now;
+				//write the first bit
+				rx = (rx << 1) | state_now;  //load next bit
+				newbitFlag = true;
+				next_bit = period + halfperiod;
+				bit_count = 1;
+				width = 1;
+			}
+
+			//detect bit on center
+			else if (width == next_bit) 
+			{
+				rx = (rx << 1) | state_now;  //load next bit
+				newbitFlag = true;
+				next_bit += period;
+				bit_count++;
+			}
+
+			width++;
+		}
+		
+		//------------ Process Bitstream -----------------
+		if (newbitFlag) 
+		{
+			static bool readData = false;
+			newbitFlag = false;
+			if (!readData && (rx & (0b1111)) == START_FLAG) 
+			{
+				readData = true;
+				rx = 0b0;  //clear RX
+				data_buf[0] = 0b0;
+			}
+
+			else if (readData) 
+			{
+				static uint8_t current_bit = 0;
+				static uint8_t current_byte = 0;
+				
+				data_buf[current_byte] |= (state << current_bit);
+
+				current_bit++;
+
+				if (current_bit > 5) {
+					//if 5th bit is 0, data is over, or read is corrupted
+					if (!(rx & 0b1)) {
+						//data read is finished, or data is corrupted
+						readData = false;
+						Serial.print(":TERMINATED:");
+						if ((current_byte + 1) % FRAME_WIDTH != 0) {
+							Serial.print("  PARTIAL FRAME ");
+							//return 0;	// not a full frame detected
+							} else if (current_bit != 6) {
+							Serial.print("PARTIAL COLUMN");
+							//return 0;	// didn't end on a full vertical line (minus the stop bit)
+							} else if ((current_byte + 1) / FRAME_WIDTH > MAX_FRAMES) {
+							Serial.println("TOO MANY FRAMES");
+							//return 0;	// too many frames
+						} else Serial.println("Sucess");
+						//print out transmitted data
+						for (uint8_t i = 0; i <= current_byte; i++) {
+							Serial.println(data_buf[i], BIN);
+						}
+						
+						//reset for new data transmission
+						current_byte = 0;
+						current_bit = 0;
+						
+					}
+					//finished reading column, move onto next byte
+					else {
+						Serial.print(":");
+						Serial.print(data_buf[current_byte], BIN);
+						current_byte++;
+						current_bit = 0;
+						data_buf[current_byte] = 0b0;
+					}
+				}
+			}
+		}
+		
+		//convert signal to bitstream
+		if(subBit_available)
+		{
+			//Process bitstream
+			if(dataStarted)
+			{
+				//add bit to array
+			}
+			else
+			{
+				//watch for start signal
+			}
+						
+		}
+				
+				
+	else{
+	}
+	
+
 
 	//-------- PROCESS NEW SAMPLE -----------------
-	do {
-		//charge up the photodiode's capacitance
-		pinMode(PHOTODIODE, INPUT_PULLUP);
-		delayMicroseconds(100);
-		pinMode(PHOTODIODE, INPUT);
-		//delayMicroseconds(500);
-
-		//integrate as voltage drops due to photodiode
-		uint32_t startTime = micros();
+	if(newSample_available) {
+		newSample_available = false;
+		//integrate as voltage drops due to photodiode		uint32_t startTime = micros();
 		for (uint8_t i = 0; i < 64; i++) {
-		  newdata += analogRead(PHOTODIODE);
+			newdata += analogRead(PHOTODIODE);
 		}
+		/*
+
 		newdata /= 64;  //average
-
+		*/
 		// exponential average to smooth data
-		data_smooth = data_smooth * 0.5 + newdata * 0.5;
-
-		// track maximum/minimum values
-		if (newdata > data_max) data_max = newdata;
-		else if (newdata < data_min) data_min = newdata;
-		else {
-		  data_max = data_max - data_max * 0.005;
-		  data_min = data_min + data_max * 0.005;
-		}
-		float data_nuetral = (data_max - data_min) / 2 + data_min;
-		amplitude = (data_max - data_min);
-
-		if (data_smooth < data_nuetral) state = 1;  //invert the reading
-		else state = 0;
+		
 
 	} while (amplitude < 50);
 	
