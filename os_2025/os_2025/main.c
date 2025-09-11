@@ -119,6 +119,7 @@ void load_frames(void);
 
 void animate2(void);
 
+/*
 //ring buffer to read user program data
 typedef struct {
 	uint16_t *buf;
@@ -135,6 +136,7 @@ static ring_t rx_ring = {
 	.write_idx = 0,
 	.read_idx = 0
 };
+*/
 
 uint8_t data_buf[FRAME_WIDTH*MAX_FRAMES] = {0};	// frame buffer
 uint8_t data_frame_count = 0;
@@ -153,7 +155,7 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 	0b0, 0b11111, 0b10101, 0b10101, 0b10001, 0b0,		// E
 	};
 	
-volatile uint8_t newSample_available = false;
+volatile bool newSample_available = false;
 volatile uint16_t newSample = 0;
 	
 //----------PHOTODIODE DATA---------------	
@@ -422,28 +424,30 @@ bool user_program(void){
 	*/
 	
 	uint8_t data[FRAME_WIDTH*MAX_FRAMES];
-	uint8_t write_index;
+	//uint8_t write_index;
+	uint8_t total_bytes = 0;
 	
 	bool seekData = true;
-	bool dataStarted = false;
+	//bool dataStarted = false;
 	bool state_now = 0;
 	bool state_prev = 0;
 	bool signal_available = false;
 	uint8_t rx = 0;						//incoming bitstream storage
+	bool newbit_available = false;
 
 	//------- STEP 1 --------- setup sampling ISRs
 	init_adc();
 	timer0_tick_100us_init();
 	sei();
 
-	if(seekData)
+	while(seekData)
 	{
 		//------------ Process ADC Sample -----------------
 		if(newSample_available)
 		{
-			static float data_smooth = newSample;
-			static float data_max = newSample;
-			static float data_min = newSample;
+			static float data_smooth = 0;
+			static float data_max = 0;
+			static float data_min = 0;
 			
 			data_smooth = data_smooth * 0.5 + newSample * 0.5;
 
@@ -473,11 +477,10 @@ bool user_program(void){
 		{
 			//calculate bit width
 			static uint8_t period = 8;
-			static uint8_t halfperiod = period >> 2;
+			static uint8_t halfperiod = 4;
 			static uint8_t bit_count = 0;
 			static uint8_t width = 0;
-			static uint8_t next_bit = period;
-			static bool newbitFlag = false;
+			static uint8_t next_bit = 0;
 			
 			//detect bit on edge
 			if (state_now != state_prev) 
@@ -485,7 +488,7 @@ bool user_program(void){
 				state_prev = state_now;
 				//write the first bit
 				rx = (rx << 1) | state_now;  //load next bit
-				newbitFlag = true;
+				newbit_available = true;
 				next_bit = period + halfperiod;
 				bit_count = 1;
 				width = 1;
@@ -495,7 +498,7 @@ bool user_program(void){
 			else if (width == next_bit) 
 			{
 				rx = (rx << 1) | state_now;  //load next bit
-				newbitFlag = true;
+				newbit_available = true;
 				next_bit += period;
 				bit_count++;
 			}
@@ -504,23 +507,26 @@ bool user_program(void){
 		}
 		
 		//------------ Process Bitstream -----------------
-		if (newbitFlag) 
+		if (newbit_available) 
 		{
-			static bool readData = false;
-			newbitFlag = false;
-			if (!readData && (rx & (0b1111)) == START_FLAG) 
+			static bool data_incoming = false;
+			
+			newbit_available = false;
+			
+			//start flag detected
+			if (!data_incoming && (rx & (0b1111)) == START_FLAG) 
 			{
-				readData = true;
+				data_incoming = true;
 				rx = 0b0;  //clear RX
 				data_buf[0] = 0b0;
 			}
 
-			else if (readData) 
+			else if (data_incoming) 
 			{
 				static uint8_t current_bit = 0;
 				static uint8_t current_byte = 0;
 				
-				data_buf[current_byte] |= (state << current_bit);
+				data_buf[current_byte] |= (state_now << current_bit);
 
 				current_bit++;
 
@@ -528,21 +534,16 @@ bool user_program(void){
 					//if 5th bit is 0, data is over, or read is corrupted
 					if (!(rx & 0b1)) {
 						//data read is finished, or data is corrupted
-						readData = false;
-						Serial.print(":TERMINATED:");
+						data_incoming = false;
+						total_bytes = current_byte;
 						if ((current_byte + 1) % FRAME_WIDTH != 0) {
-							Serial.print("  PARTIAL FRAME ");
-							//return 0;	// not a full frame detected
-							} else if (current_bit != 6) {
-							Serial.print("PARTIAL COLUMN");
-							//return 0;	// didn't end on a full vertical line (minus the stop bit)
-							} else if ((current_byte + 1) / FRAME_WIDTH > MAX_FRAMES) {
-							Serial.println("TOO MANY FRAMES");
-							//return 0;	// too many frames
-						} else Serial.println("Sucess");
-						//print out transmitted data
-						for (uint8_t i = 0; i <= current_byte; i++) {
-							Serial.println(data_buf[i], BIN);
+							return 0;	// not a full frame detected
+						} 
+						else if (current_bit != 6) {
+							return 0;	// didn't end on a full vertical line (minus the stop bit)
+						} 
+						else if ((current_byte + 1) / FRAME_WIDTH > MAX_FRAMES) {
+							return 0;	// too many frames
 						}
 						
 						//reset for new data transmission
@@ -552,8 +553,6 @@ bool user_program(void){
 					}
 					//finished reading column, move onto next byte
 					else {
-						Serial.print(":");
-						Serial.print(data_buf[current_byte], BIN);
 						current_byte++;
 						current_bit = 0;
 						data_buf[current_byte] = 0b0;
@@ -561,71 +560,17 @@ bool user_program(void){
 				}
 			}
 		}
-		
-		//convert signal to bitstream
-		if(subBit_available)
-		{
-			//Process bitstream
-			if(dataStarted)
-			{
-				//add bit to array
-			}
-			else
-			{
-				//watch for start signal
-			}
-						
-		}
-				
-				
-	else{
 	}
-	
-
-
-	//-------- PROCESS NEW SAMPLE -----------------
-	if(newSample_available) {
-		newSample_available = false;
-		//integrate as voltage drops due to photodiode		uint32_t startTime = micros();
-		for (uint8_t i = 0; i < 64; i++) {
-			newdata += analogRead(PHOTODIODE);
-		}
-		/*
-
-		newdata /= 64;  //average
-		*/
-		// exponential average to smooth data
-		
-
-	} while (amplitude < 50);
-	
-	
-	// validate data
-	
-	// check we got data to fill a whole number of frames
-	
-	if((current_byte + 1) % FRAME_WIDTH != 0){
-		return 0;	// not a full frame detected
-	}
-	if(current_bit != 6){
-		return 0;	// didn't end on a full vertical line (minus the stop bit)
-	}
-	if((current_byte+1) / FRAME_WIDTH > MAX_FRAMES){
-		return 0;	// too many frames
-	}
-	
-	// good enough, probably not worth trying to do any real data validation
-	
-	// copy to eeprom
+					
 	
 	EEPROM_write(0, 0);	// 0x0 is used as the frame count, set to zero while writing
 	
-	for(uint8_t i = 0; i < current_byte+1; i++){
+	for(uint8_t i = 0; i < total_bytes+1; i++){
 		EEPROM_write(i+1, data_buf[i]);
 	}
 	
 	// now write the size
-	EEPROM_write(0, (current_byte+1)/FRAME_WIDTH);
+	EEPROM_write(0, (total_bytes+1)/FRAME_WIDTH);
 	
 	//flash LED for success
 	for(uint8_t i = 0; i<3; i++){
@@ -809,8 +754,6 @@ void animate2(void){
 
 
 void init(void){
-
-	
 	// set main clock prescaler to 1 for highest cpu speed
 	CLKPR = (1<<CLKPCE);
 	CLKPR = 0;
@@ -818,7 +761,7 @@ void init(void){
 	init_leds();
 	//init_bumpers();
 	init_adc();
-	init_timer();
+	//init_timer();
 }
 
 int main(void)
