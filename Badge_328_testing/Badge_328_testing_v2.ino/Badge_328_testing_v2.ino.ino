@@ -59,8 +59,8 @@ void loop() {
     if (newdata > data_max) data_max = newdata;
     else if (newdata < data_min) data_min = newdata;
     else {
-      data_max = data_max - data_max * 0.005;
-      data_min = data_min + data_max * 0.005;
+      data_max = data_max - amplitude * 0.005;
+      data_min = data_min + amplitude * 0.005;
     }
     float data_nuetral = (data_max - data_min) / 2 + data_min;
     amplitude = (data_max - data_min);

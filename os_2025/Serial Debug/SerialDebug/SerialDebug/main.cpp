@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <avr/wdt.h>
-//#include "ATtinySerialOut.h"
+#include "ATtinySerialOut.hpp"
 
 // -----Optical PROGRAMMING------
 // range of accepted programming frequencies
@@ -277,9 +277,9 @@ void init_leds(void){
 //----------PHOTODIODE DATA---------------	
 	
 void timer0_tick_100us_init(void) {
-	// CTC, OCR0A = 99, prescaler = 8  => 8 MHz / 8 = 1 MHz (1 Âµs/tick). 100 Âµs per interrupt.
+	// CTC, OCR0A = 99, prescaler = 8  => 8 MHz / 8 = 1 MHz (1 µs/tick). 100 µs per interrupt.
 	TCCR0A = (1<<WGM01);       // CTC
-	OCR0A  = 99;               // 100 counts -> 100 Âµs
+	OCR0A  = 99;               // 100 counts -> 100 µs
 	TCCR0B = (1<<CS01);        // prescaler 8
 	TIMSK  |= (1<<OCIE0A);     // enable compare A interrupt
 }
@@ -298,7 +298,7 @@ void init_adc(){
 	ADMUX &= ~(1 << ADLAR);
 
 	// Set prescaler and enable ADC:
-	// ADPS[2:0]=111 ? Ã·128 (62.5? kHz at 8 MHz); ADEN=1
+	// ADPS[2:0]=111 ? ÷128 (62.5? kHz at 8 MHz); ADEN=1
 	// slowest we can sample
 	ADCSRA = (1<<ADEN) // enable ADC
 			| (1<<ADIE) // ADC interrupt enable
@@ -319,7 +319,7 @@ uint16_t sample_adc(void) {
 }
 
 ISR(TIMER0_COMPA_vect) {
-	// 100 Âµs tick scheduler
+	// 100 µs tick scheduler
 	switch (tick) {
 		case 0: // t = 0
 			// charge up port with pull-up
@@ -431,7 +431,7 @@ static inline int bump_hit(void){
 bool user_program(void){
 	/*
 	1) Setup timer ISR to generate ADC samples and set new sample flag
-		â†³	2) When new sample flag is set, process new sample
+		?	2) When new sample flag is set, process new sample
 			3) If waveform amplitude large enough, the signal is good
 			4) Convert samples to bitstream
 			5) If start bits detected, start saving data
@@ -793,6 +793,8 @@ void init(void){
 	//init_bumpers();
 	init_adc();
 	//init_timer();
+	initTXPin();
+	Serial.println("hello");
 }
 
 int main(void)
