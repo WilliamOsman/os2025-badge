@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <avr/wdt.h>
-//#include "ATtinySerialOut.hpp"
+#include "ATtinySerialOut.hpp"
 
 // -----Optical PROGRAMMING------
 // range of accepted programming frequencies
@@ -22,12 +22,13 @@
 //#define PHOTO_HZ_MAX 60
 #define PHOTO_RATE_HZ	10
 #define OVERSAMPLE	8
+#define SAMPLE_HISTORY	4		//number of bits to store subsample min/max data for exposure tracking
 #define PHOTO_RINGBUFF_LEN	128
 #define CHARGE_DELAY	200		//microseconds to keep pull-up pin engaged
 #define SAMPLE_DELAY	400		//microseconds to wait after charge before sampling
 #define INTEGRATION_COUNT	32	//number of samples per ADC integration (power of 2)
 #define INTEGRATION_SHIFT	5	//number of shifts to divide by SUBSAMPLE_COUNT
-#define SIGNAL_AMPLITUDE_MIN 20	//ignore ADC data if signal contrast isn't high enough
+#define SIGNAL_AMPLITUDE_MIN 500	//ignore ADC data if signal contrast isn't high enough
 #define START_FLAG	0b1110		//bits indicating transfer start
 
 #define FRAME_WIDTH 6
@@ -73,7 +74,7 @@
 // pin setups for the 85
 #ifdef ATTINY85
 
-#define NUM_LEDS	5
+#define NUM_LEDS	4
 #define LED1_OFFSET		(1 << 0)
 #define LED2_OFFSET		(1 << 1)
 #define LED3_OFFSET		(1 << 2)
@@ -163,32 +164,12 @@ inline void led_on(uint8_t led_num){
 			LED4_PORT &= ~(LED4_OFFSET);
 			break;
 		case 0x4:
-			LED5_PORT &= ~(LED5_OFFSET);
+			//LED5_PORT &= ~(LED5_OFFSET);
 			break;
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) =  *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) | LED_OFFSETS[led_num];
 }
 
-inline void led_inv(uint8_t led_num){
-	switch(led_num){
-		case 0x0:
-		LED1_PORT &= ~LED1_PORT & ~(LED1_OFFSET);
-		break;
-		case 0x1:
-		LED2_PORT &= ~LED2_PORT & ~(LED2_OFFSET);
-		break;
-		case 0x2:
-		LED3_PORT &= ~LED3_PORT & ~(LED3_OFFSET);
-		break;
-		case 0x3:
-		LED4_PORT &= ~LED4_PORT & ~(LED4_OFFSET);
-		break;
-		case 0x4:
-		LED5_PORT &= ~LED5_PORT & ~(LED5_OFFSET);
-		break;
-	}
-	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) =  *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) | LED_OFFSETS[led_num];
-}
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
@@ -205,7 +186,7 @@ inline void led_off(uint8_t led_num){
 			LED4_PORT |= (LED4_OFFSET);
 			break;
 		case 0x4:
-			LED5_PORT |= (LED5_OFFSET);
+			//LED5_PORT |= (LED5_OFFSET);
 			break;
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) = *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) & ~(LED_OFFSETS[led_num]);
@@ -268,7 +249,7 @@ void init_leds(void){
 		DDRB |= LED2_OFFSET;
 		DDRB |= LED3_OFFSET;
 		DDRB |= LED4_OFFSET;
-		DDRB |= LED5_OFFSET;
+		//DDRB |= LED5_OFFSET;
 	#endif
 	
 	all_off();
@@ -330,7 +311,7 @@ ISR(TIMER0_COMPA_vect) {
 			PHOTODIODE_PORT &= ~PHOTODIODE_OFFSET;
 			//start adc conversion
 			ADCSRA |= (1<<ADSC);
-			//led_off(4);
+			led_off(2);
 			break;
 		/*
 		case 60:
@@ -350,7 +331,7 @@ ISR(TIMER0_COMPA_vect) {
 ISR(ADC_vect)
 {
 	static uint8_t count = 0;
-	static uint32_t integrate = 0;
+	static uint16_t integrate = 0;
 	
 	
 	integrate += ADC;								// ADC is a macro that does ADCL then ADCH
@@ -365,7 +346,7 @@ ISR(ADC_vect)
 		newSample = integrate;
 		integrate = 0;								//reset integration
 		count = 0;									//reset count
-		//led_on(4);
+		led_on(2);
 	}
 	
 	
@@ -448,6 +429,7 @@ bool user_program(void){
 	uint8_t rx = 0;						//incoming bitstream storage
 	bool newbit_available = false;
 	bool data_incoming = false;
+	bool first_read = true;
 
 	//------- STEP 1 --------- setup sampling ISRs
 	init_adc();
@@ -459,21 +441,63 @@ bool user_program(void){
 		//------------ Process ADC Sample -----------------
 		if(newSample_available)
 		{
+
 			static float data_smooth = 0;
 			static float data_max = 0;
 			static float data_min = 0;
+			static uint16_t max_blocks[SAMPLE_HISTORY];
+			static uint16_t min_blocks[SAMPLE_HISTORY];
+			static uint8_t block_samples = 0;
+			static uint8_t block_writepos = 0;
+				
 			
-			data_smooth = data_smooth * 0.6 + (float)newSample * 0.4;
-			//Serial.println(data_smooth);
-
+			
+			newSample_available = false;
+			
+			if(first_read){
+				first_read = false;
+				data_smooth = newSample;
+				data_max = newSample;
+				data_min = newSample;
+				for(uint8_t block = 0; block < SAMPLE_HISTORY; block++){
+					max_blocks[block] = newSample;
+					min_blocks[block] = newSample;
+				}
+			}
+			
+			data_smooth = data_smooth * 0.5 + (float)newSample * 0.5;			
+			
+			if(newSample > max_blocks[block_writepos]) max_blocks[block_writepos] = newSample;
+			else if(newSample < min_blocks[block_writepos]) min_blocks[block_writepos] = newSample;
+			
+			block_samples++;
+			
+			if(block_samples >= OVERSAMPLE){
+				block_samples = 0;
+				block_writepos++;
+				if(block_writepos >= SAMPLE_HISTORY) block_writepos = 0;
+				max_blocks[block_writepos] = newSample;
+				min_blocks[block_writepos] = newSample;
+			}
+			
+			data_max = max_blocks[0];
+			data_min = min_blocks[0];
+			
+			for(uint8_t block = 1; block < SAMPLE_HISTORY; block++){
+				if(max_blocks[block] > data_max) data_max = max_blocks[block];
+				else if(min_blocks[block] < data_min) data_min = min_blocks[block];
+			}
+			
+			/*
 			// track maximum/minimum value
 			if (data_smooth > data_max) data_max = data_smooth;
 			else if (data_smooth < data_min) data_min = data_smooth;
 			//slow decay to keep max/min from hovering above/below the data
 			else {
-				data_max -= (data_max - data_min) * 0.002;
-				data_min += (data_max - data_min) * 0.002;
+				data_max -= (data_max - data_min) * 0.02;
+				data_min += (data_max - data_min) * 0.02;
 			}
+			*/
 			
 			float amplitude = (data_max - data_min);
 			float midline = amplitude / 2 + data_min;	//threshold between high and low
@@ -481,16 +505,29 @@ bool user_program(void){
 			//if optical signal has large enough contrast assume there's a signal
 			if( amplitude >= SIGNAL_AMPLITUDE_MIN ){
 				 signal_available = true;
-				 led_on(2);
+				 //led_on(2);
 			}
 			else{
 				 signal_available = false;
-				 led_off(2);
+				 //led_off(2);
 			}
 			
 			//if data is below middle of signal, bit is HIGH
 			if (data_smooth < midline) state_now = 1;  //invert the reading
 			else state_now = 0;
+			
+			Serial.print(newSample);
+			Serial.print(",");
+			Serial.print(data_smooth);
+			Serial.print(",");
+			Serial.print(data_max);
+			Serial.print(",");
+			Serial.print(data_min);
+			Serial.print(",");
+			Serial.print(midline);
+			Serial.print(",");
+			Serial.print(amplitude);
+			Serial.println();
 			
 			if(state_now) led_on(0);
 			else led_off(0);	
@@ -507,10 +544,11 @@ bool user_program(void){
 			static uint8_t next_bit = 0;
 			
 			signal_available = false;
-			
+
 			//detect bit on edge
 			if (state_now != state_prev) 
 			{
+				//Serial.print("E");
 				state_prev = state_now;
 				//write the first bit
 				rx = (rx << 1) | state_now;  //load next bit
@@ -523,12 +561,13 @@ bool user_program(void){
 			//detect bit on center
 			else if (width == next_bit) 
 			{
+				//Serial.print("C");
 				rx = (rx << 1) | state_now;  //load next bit
 				newbit_available = true;
 				next_bit += period;
 				bit_count++;
 			}
-
+			//Serial.print(state_now);
 			width++;
 		}
 		
@@ -536,14 +575,16 @@ bool user_program(void){
 		if (newbit_available) 
 		{			
 			newbit_available = false;
+			//Serial.print(state_now);
 			
 			//start flag detected
 			if (!data_incoming && (rx & (0b1111)) == START_FLAG) 
 			{
+				//Serial.print(":START");
 				data_incoming = true;
 				rx = 0b0;  //clear RX
 				data_buf[0] = 0b0;
-				led_on(1);
+				//led_on(1);
 			}
 
 			else if (data_incoming) 
@@ -556,13 +597,15 @@ bool user_program(void){
 				current_bit++;
 
 				if (current_bit > 5) {
+					//Serial.print(":BYTE");
 					//if 5th bit is 0, data is over, or read is corrupted
 					if (!(rx & 0b1)) {
+						//Serial.println(":FINISH");
 						//data read is finished, or data is corrupted
 						data_incoming = false;
-						//seekData = false;
-						
+						//seekData = false;						
 						total_bytes = current_byte;
+						
 						if ((current_byte + 1) % FRAME_WIDTH != 0) {
 							//led_on(1);
 							//return 0;	// not a full frame detected
@@ -578,6 +621,7 @@ bool user_program(void){
 						//reset for new data transmission
 						current_byte = 0;
 						current_bit = 0;
+						//led_off(1);
 						
 					}
 					//finished reading column, move onto next byte
@@ -588,6 +632,7 @@ bool user_program(void){
 					}
 				}
 			}
+			//Serial.println();
 		}
 	}
 					
@@ -794,8 +839,8 @@ void init(void){
 	//init_bumpers();
 	init_adc();
 	//init_timer();
-	//initTXPin();
-	//Serial.println("hello");
+	initTXPin();
+	Serial.println("hello");
 }
 
 int main(void)
@@ -804,11 +849,11 @@ int main(void)
 	
 	init();	
 	
-	test_leds();
+	//test_leds();
 	
 	// handle quick power on/off to select a mode
 	uint8_t mode = EEPROM_read(0xff);
-	led_on(mode);
+	//led_on(mode);
 	
 	if(mode+1 > 3){
 		EEPROM_write(0xff, 0);
@@ -822,7 +867,7 @@ int main(void)
 	
 	all_off();
 	
-	//mode = 2;	// for testing
+	mode = 2;	// for testing
 	
     while(1) 
     {

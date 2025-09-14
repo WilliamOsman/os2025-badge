@@ -3,31 +3,31 @@ SerialTest.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .text         0000013e  00000000  00000000  00000094  2**1
+  0 .text         000002a8  00000000  00000000  00000094  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  1 .data         00000008  00800060  0000013e  000001d2  2**0
+  1 .data         00000008  00800060  000002a8  0000033c  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  2 .bss          00000001  00800068  00800068  000001da  2**0
+  2 .bss          00000001  00800068  00800068  00000344  2**0
                   ALLOC
-  3 .comment      00000030  00000000  00000000  000001da  2**0
+  3 .comment      00000030  00000000  00000000  00000344  2**0
                   CONTENTS, READONLY
-  4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  0000020c  2**2
+  4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000374  2**2
                   CONTENTS, READONLY
-  5 .debug_aranges 000001b8  00000000  00000000  00000248  2**0
+  5 .debug_aranges 000001c8  00000000  00000000  000003b0  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_info   000024a9  00000000  00000000  00000400  2**0
+  6 .debug_info   00002760  00000000  00000000  00000578  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_abbrev 000007f6  00000000  00000000  000028a9  2**0
+  7 .debug_abbrev 0000084b  00000000  00000000  00002cd8  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   00000b08  00000000  00000000  0000309f  2**0
+  8 .debug_line   00000c10  00000000  00000000  00003523  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  00000540  00000000  00000000  00003ba8  2**2
+  9 .debug_frame  00000560  00000000  00000000  00004134  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    00000c1b  00000000  00000000  000040e8  2**0
+ 10 .debug_str    00000cae  00000000  00000000  00004694  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00001ce6  00000000  00000000  00004d03  2**0
+ 11 .debug_loc    00001ee5  00000000  00000000  00005342  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 000001c0  00000000  00000000  000069e9  2**0
+ 12 .debug_ranges 000001d0  00000000  00000000  00007227  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -61,8 +61,8 @@ Disassembly of section .text:
   2a:	10 e0       	ldi	r17, 0x00	; 0
   2c:	a0 e6       	ldi	r26, 0x60	; 96
   2e:	b0 e0       	ldi	r27, 0x00	; 0
-  30:	ee e3       	ldi	r30, 0x3E	; 62
-  32:	f1 e0       	ldi	r31, 0x01	; 1
+  30:	e8 ea       	ldi	r30, 0xA8	; 168
+  32:	f2 e0       	ldi	r31, 0x02	; 2
   34:	02 c0       	rjmp	.+4      	; 0x3a <__do_copy_data+0x10>
   36:	05 90       	lpm	r0, Z+
   38:	0d 92       	st	X+, r0
@@ -83,19 +83,19 @@ Disassembly of section .text:
   4a:	a9 36       	cpi	r26, 0x69	; 105
   4c:	b2 07       	cpc	r27, r18
   4e:	e1 f7       	brne	.-8      	; 0x48 <.do_clear_bss_loop>
-  50:	64 d0       	rcall	.+200    	; 0x11a <main>
-  52:	73 c0       	rjmp	.+230    	; 0x13a <_exit>
+  50:	c4 d0       	rcall	.+392    	; 0x1da <main>
+  52:	28 c1       	rjmp	.+592    	; 0x2a4 <_exit>
 
 00000054 <__bad_interrupt>:
   54:	d5 cf       	rjmp	.-86     	; 0x0 <__vectors>
 
 00000056 <_Z9initTXPinv>:
- */
-inline void delay4CyclesExact(uint16_t a4Microseconds) {
-    asm volatile (
-            "1: sbiw %0,1" "\n\t" // 2 cycles
-            "brne .-4" : "=w" (a4Microseconds) : "0" (a4Microseconds)// 2 cycles
-    );
+			break;
+	}
+}
+
+inline void all_off(void){
+	for(uint8_t i = 0; i < NUM_LEDS; i++){
   56:	c4 9a       	sbi	0x18, 4	; 24
   58:	bc 9a       	sbi	0x17, 4	; 23
   5a:	08 95       	ret
@@ -182,70 +182,323 @@ inline void delay4CyclesExact(uint16_t a4Microseconds) {
   e8:	cf 91       	pop	r28
   ea:	08 95       	ret
 
-000000ec <_Z11writeBinaryh>:
-  ec:	90 91 60 00 	lds	r25, 0x0060	; 0x800060 <__DATA_REGION_ORIGIN__>
-  f0:	99 23       	and	r25, r25
-  f2:	11 f0       	breq	.+4      	; 0xf8 <_Z11writeBinaryh+0xc>
-  f4:	d8 df       	rcall	.-80     	; 0xa6 <_Z39write1Start8Data1StopNoParityWithCliSeih>
-  f6:	08 95       	ret
-  f8:	b1 df       	rcall	.-158    	; 0x5c <_Z29write1Start8Data1StopNoParityh>
-  fa:	08 95       	ret
+000000ec <_Z28writeStringSkipLeadingSpacesPKc>:
+  ec:	cf 93       	push	r28
+  ee:	df 93       	push	r29
+  f0:	fc 01       	movw	r30, r24
+  f2:	80 81       	ld	r24, Z
+  f4:	80 32       	cpi	r24, 0x20	; 32
+  f6:	39 f4       	brne	.+14     	; 0x106 <_Z28writeStringSkipLeadingSpacesPKc+0x1a>
+  f8:	cf 01       	movw	r24, r30
+  fa:	01 96       	adiw	r24, 0x01	; 1
+  fc:	fc 01       	movw	r30, r24
+  fe:	01 96       	adiw	r24, 0x01	; 1
+ 100:	20 81       	ld	r18, Z
+ 102:	20 32       	cpi	r18, 0x20	; 32
+ 104:	d9 f3       	breq	.-10     	; 0xfc <_Z28writeStringSkipLeadingSpacesPKc+0x10>
+ 106:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <__DATA_REGION_ORIGIN__>
+ 10a:	81 11       	cpse	r24, r1
+ 10c:	04 c0       	rjmp	.+8      	; 0x116 <_Z28writeStringSkipLeadingSpacesPKc+0x2a>
+ 10e:	80 81       	ld	r24, Z
+ 110:	81 11       	cpse	r24, r1
+ 112:	0b c0       	rjmp	.+22     	; 0x12a <_Z28writeStringSkipLeadingSpacesPKc+0x3e>
+ 114:	10 c0       	rjmp	.+32     	; 0x136 <_Z28writeStringSkipLeadingSpacesPKc+0x4a>
+ 116:	80 81       	ld	r24, Z
+ 118:	88 23       	and	r24, r24
+ 11a:	69 f0       	breq	.+26     	; 0x136 <_Z28writeStringSkipLeadingSpacesPKc+0x4a>
+ 11c:	ef 01       	movw	r28, r30
+ 11e:	21 96       	adiw	r28, 0x01	; 1
+ 120:	c2 df       	rcall	.-124    	; 0xa6 <_Z39write1Start8Data1StopNoParityWithCliSeih>
+ 122:	89 91       	ld	r24, Y+
+ 124:	81 11       	cpse	r24, r1
+ 126:	fc cf       	rjmp	.-8      	; 0x120 <_Z28writeStringSkipLeadingSpacesPKc+0x34>
+ 128:	06 c0       	rjmp	.+12     	; 0x136 <_Z28writeStringSkipLeadingSpacesPKc+0x4a>
+ 12a:	ef 01       	movw	r28, r30
+ 12c:	21 96       	adiw	r28, 0x01	; 1
+ 12e:	96 df       	rcall	.-212    	; 0x5c <_Z29write1Start8Data1StopNoParityh>
+ 130:	89 91       	ld	r24, Y+
+ 132:	81 11       	cpse	r24, r1
+ 134:	fc cf       	rjmp	.-8      	; 0x12e <_Z28writeStringSkipLeadingSpacesPKc+0x42>
+ 136:	df 91       	pop	r29
+ 138:	cf 91       	pop	r28
+ 13a:	08 95       	ret
 
-000000fc <_ZN13TinySerialOut7printlnEv>:
-  fc:	8d e0       	ldi	r24, 0x0D	; 13
-  fe:	f6 df       	rcall	.-20     	; 0xec <_Z11writeBinaryh>
- 100:	8a e0       	ldi	r24, 0x0A	; 10
- 102:	f4 df       	rcall	.-24     	; 0xec <_Z11writeBinaryh>
- 104:	08 95       	ret
+0000013c <_ZN13TinySerialOut5printEih>:
+ 13c:	cf 93       	push	r28
+ 13e:	df 93       	push	r29
+ 140:	cd b7       	in	r28, 0x3d	; 61
+ 142:	de b7       	in	r29, 0x3e	; 62
+ 144:	27 97       	sbiw	r28, 0x07	; 7
+ 146:	0f b6       	in	r0, 0x3f	; 63
+ 148:	f8 94       	cli
+ 14a:	de bf       	out	0x3e, r29	; 62
+ 14c:	0f be       	out	0x3f, r0	; 63
+ 14e:	cd bf       	out	0x3d, r28	; 61
+ 150:	cb 01       	movw	r24, r22
+ 152:	50 e0       	ldi	r21, 0x00	; 0
+ 154:	be 01       	movw	r22, r28
+ 156:	6f 5f       	subi	r22, 0xFF	; 255
+ 158:	7f 4f       	sbci	r23, 0xFF	; 255
+ 15a:	67 d0       	rcall	.+206    	; 0x22a <itoa>
+ 15c:	ce 01       	movw	r24, r28
+ 15e:	01 96       	adiw	r24, 0x01	; 1
+ 160:	c5 df       	rcall	.-118    	; 0xec <_Z28writeStringSkipLeadingSpacesPKc>
+ 162:	27 96       	adiw	r28, 0x07	; 7
+ 164:	0f b6       	in	r0, 0x3f	; 63
+ 166:	f8 94       	cli
+ 168:	de bf       	out	0x3e, r29	; 62
+ 16a:	0f be       	out	0x3f, r0	; 63
+ 16c:	cd bf       	out	0x3d, r28	; 61
+ 16e:	df 91       	pop	r29
+ 170:	cf 91       	pop	r28
+ 172:	08 95       	ret
 
-00000106 <_ZN13TinySerialOut7printlnEPKc>:
- 106:	cf 93       	push	r28
- 108:	df 93       	push	r29
- 10a:	ec 01       	movw	r28, r24
- 10c:	cb 01       	movw	r24, r22
- 10e:	d2 df       	rcall	.-92     	; 0xb4 <_Z11writeStringPKc>
- 110:	ce 01       	movw	r24, r28
- 112:	f4 df       	rcall	.-24     	; 0xfc <_ZN13TinySerialOut7printlnEv>
- 114:	df 91       	pop	r29
- 116:	cf 91       	pop	r28
- 118:	08 95       	ret
+00000174 <_Z11writeBinaryh>:
+ 174:	90 91 60 00 	lds	r25, 0x0060	; 0x800060 <__DATA_REGION_ORIGIN__>
+ 178:	99 23       	and	r25, r25
+ 17a:	11 f0       	breq	.+4      	; 0x180 <_Z11writeBinaryh+0xc>
+ 17c:	94 df       	rcall	.-216    	; 0xa6 <_Z39write1Start8Data1StopNoParityWithCliSeih>
+ 17e:	08 95       	ret
+ 180:	6d df       	rcall	.-294    	; 0x5c <_Z29write1Start8Data1StopNoParityh>
+ 182:	08 95       	ret
 
-0000011a <main>:
-#include "ATtinySerialOut.hpp"
+00000184 <_ZN13TinySerialOut7printlnEv>:
+ 184:	8d e0       	ldi	r24, 0x0D	; 13
+ 186:	f6 df       	rcall	.-20     	; 0x174 <_Z11writeBinaryh>
+ 188:	8a e0       	ldi	r24, 0x0A	; 10
+ 18a:	f4 df       	rcall	.-24     	; 0x174 <_Z11writeBinaryh>
+ 18c:	08 95       	ret
+
+0000018e <_ZN13TinySerialOut7printlnEPKc>:
+ 18e:	cf 93       	push	r28
+ 190:	df 93       	push	r29
+ 192:	ec 01       	movw	r28, r24
+ 194:	cb 01       	movw	r24, r22
+ 196:	8e df       	rcall	.-228    	; 0xb4 <_Z11writeStringPKc>
+ 198:	ce 01       	movw	r24, r28
+ 19a:	f4 df       	rcall	.-24     	; 0x184 <_ZN13TinySerialOut7printlnEv>
+ 19c:	df 91       	pop	r29
+ 19e:	cf 91       	pop	r28
+ 1a0:	08 95       	ret
+
+000001a2 <_Z9init_ledsv>:
+}
+
+void init_leds(void){
+	// bit of an ugly way to do this, but it allows for various port configs
+
+	DDRB |= LED1_OFFSET;
+ 1a2:	b8 9a       	sbi	0x17, 0	; 23
+	DDRB |= LED2_OFFSET;
+ 1a4:	b9 9a       	sbi	0x17, 1	; 23
+	DDRB |= LED3_OFFSET;
+ 1a6:	ba 9a       	sbi	0x17, 2	; 23
+	DDRB |= LED4_OFFSET;
+ 1a8:	bb 9a       	sbi	0x17, 3	; 23
+ 1aa:	91 e0       	ldi	r25, 0x01	; 1
+ 1ac:	01 c0       	rjmp	.+2      	; 0x1b0 <_Z9init_ledsv+0xe>
+ 1ae:	9f 5f       	subi	r25, 0xFF	; 255
+	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) =  *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) | LED_OFFSETS[led_num];
+}
+
+
+inline void led_off(uint8_t led_num){
+	switch(led_num){
+ 1b0:	8f ef       	ldi	r24, 0xFF	; 255
+ 1b2:	89 0f       	add	r24, r25
+ 1b4:	81 30       	cpi	r24, 0x01	; 1
+ 1b6:	41 f0       	breq	.+16     	; 0x1c8 <_Z9init_ledsv+0x26>
+ 1b8:	28 f0       	brcs	.+10     	; 0x1c4 <_Z9init_ledsv+0x22>
+ 1ba:	82 30       	cpi	r24, 0x02	; 2
+ 1bc:	39 f0       	breq	.+14     	; 0x1cc <_Z9init_ledsv+0x2a>
+ 1be:	83 30       	cpi	r24, 0x03	; 3
+ 1c0:	39 f0       	breq	.+14     	; 0x1d0 <_Z9init_ledsv+0x2e>
+ 1c2:	08 c0       	rjmp	.+16     	; 0x1d4 <_Z9init_ledsv+0x32>
+		case 0x0:
+			LED1_PORT |= (LED1_OFFSET);
+ 1c4:	c0 9a       	sbi	0x18, 0	; 24
+ 1c6:	f3 cf       	rjmp	.-26     	; 0x1ae <_Z9init_ledsv+0xc>
+			break;
+		case 0x1:
+			LED2_PORT |= (LED2_OFFSET);
+ 1c8:	c1 9a       	sbi	0x18, 1	; 24
+ 1ca:	f1 cf       	rjmp	.-30     	; 0x1ae <_Z9init_ledsv+0xc>
+			break;
+		case 0x2:
+			LED3_PORT |= (LED3_OFFSET);
+ 1cc:	c2 9a       	sbi	0x18, 2	; 24
+ 1ce:	ef cf       	rjmp	.-34     	; 0x1ae <_Z9init_ledsv+0xc>
+			break;
+		case 0x3:
+			LED4_PORT |= (LED4_OFFSET);
+ 1d0:	c3 9a       	sbi	0x18, 3	; 24
+ 1d2:	08 95       	ret
+			break;
+	}
+}
+
+inline void all_off(void){
+	for(uint8_t i = 0; i < NUM_LEDS; i++){
+ 1d4:	94 30       	cpi	r25, 0x04	; 4
+ 1d6:	58 f3       	brcs	.-42     	; 0x1ae <_Z9init_ledsv+0xc>
+ 1d8:	08 95       	ret
+
+000001da <main>:
 
 
 int main(void)
 {
+	// set main clock prescaler to 1 for highest cpu speed
+	CLKPR = (1<<CLKPCE);
+ 1da:	80 e8       	ldi	r24, 0x80	; 128
+ 1dc:	86 bd       	out	0x26, r24	; 38
+	CLKPR = 0;
+ 1de:	16 bc       	out	0x26, r1	; 38
+	
 	initTXPin();
- 11a:	9d df       	rcall	.-198    	; 0x56 <_Z9initTXPinv>
+ 1e0:	3a df       	rcall	.-396    	; 0x56 <_Z9initTXPinv>
+	init_leds();
+ 1e2:	df df       	rcall	.-66     	; 0x1a2 <_Z9init_ledsv>
+//----------LED UTILITY---------------	
+
+inline void led_on(uint8_t led_num){
+	switch(led_num){
+		case 0x0:
+			LED1_PORT &= ~(LED1_OFFSET);
+ 1e4:	c0 98       	cbi	0x18, 0	; 24
+	
     /* Replace with your application code */
     while (1) 
     {
+		led_on(0);
 		Serial.println("hello");
- 11c:	61 e6       	ldi	r22, 0x61	; 97
- 11e:	70 e0       	ldi	r23, 0x00	; 0
- 120:	88 e6       	ldi	r24, 0x68	; 104
- 122:	90 e0       	ldi	r25, 0x00	; 0
- 124:	f0 df       	rcall	.-32     	; 0x106 <_ZN13TinySerialOut7printlnEPKc>
+ 1e6:	61 e6       	ldi	r22, 0x61	; 97
+ 1e8:	70 e0       	ldi	r23, 0x00	; 0
+ 1ea:	88 e6       	ldi	r24, 0x68	; 104
+ 1ec:	90 e0       	ldi	r25, 0x00	; 0
+ 1ee:	cf df       	rcall	.-98     	; 0x18e <_ZN13TinySerialOut7printlnEPKc>
 	#else
 		//round up by default
 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
 	#endif
 
 	__builtin_avr_delay_cycles(__ticks_dc);
- 126:	2f ef       	ldi	r18, 0xFF	; 255
- 128:	89 e6       	ldi	r24, 0x69	; 105
- 12a:	98 e1       	ldi	r25, 0x18	; 24
- 12c:	21 50       	subi	r18, 0x01	; 1
- 12e:	80 40       	sbci	r24, 0x00	; 0
- 130:	90 40       	sbci	r25, 0x00	; 0
- 132:	e1 f7       	brne	.-8      	; 0x12c <main+0x12>
- 134:	00 c0       	rjmp	.+0      	; 0x136 <main+0x1c>
- 136:	00 00       	nop
- 138:	f1 cf       	rjmp	.-30     	; 0x11c <main+0x2>
+ 1f0:	2f ef       	ldi	r18, 0xFF	; 255
+ 1f2:	84 e3       	ldi	r24, 0x34	; 52
+ 1f4:	9c e0       	ldi	r25, 0x0C	; 12
+ 1f6:	21 50       	subi	r18, 0x01	; 1
+ 1f8:	80 40       	sbci	r24, 0x00	; 0
+ 1fa:	90 40       	sbci	r25, 0x00	; 0
+ 1fc:	e1 f7       	brne	.-8      	; 0x1f6 <main+0x1c>
+ 1fe:	00 c0       	rjmp	.+0      	; 0x200 <__DATA_REGION_LENGTH__>
+ 200:	00 00       	nop
 
-0000013a <_exit>:
- 13a:	f8 94       	cli
 
-0000013c <__stop_program>:
- 13c:	ff cf       	rjmp	.-2      	; 0x13c <__stop_program>
+inline void led_off(uint8_t led_num){
+	switch(led_num){
+		case 0x0:
+			LED1_PORT |= (LED1_OFFSET);
+ 202:	c0 9a       	sbi	0x18, 0	; 24
+    {
+		led_on(0);
+		Serial.println("hello");
+		_delay_ms(500);
+		led_off(0);
+		Serial.print(100);
+ 204:	4a e0       	ldi	r20, 0x0A	; 10
+ 206:	64 e6       	ldi	r22, 0x64	; 100
+ 208:	70 e0       	ldi	r23, 0x00	; 0
+ 20a:	88 e6       	ldi	r24, 0x68	; 104
+ 20c:	90 e0       	ldi	r25, 0x00	; 0
+ 20e:	96 df       	rcall	.-212    	; 0x13c <_ZN13TinySerialOut5printEih>
+		Serial.println();
+ 210:	88 e6       	ldi	r24, 0x68	; 104
+ 212:	90 e0       	ldi	r25, 0x00	; 0
+ 214:	b7 df       	rcall	.-146    	; 0x184 <_ZN13TinySerialOut7printlnEv>
+ 216:	2f ef       	ldi	r18, 0xFF	; 255
+ 218:	84 e3       	ldi	r24, 0x34	; 52
+ 21a:	9c e0       	ldi	r25, 0x0C	; 12
+ 21c:	21 50       	subi	r18, 0x01	; 1
+ 21e:	80 40       	sbci	r24, 0x00	; 0
+ 220:	90 40       	sbci	r25, 0x00	; 0
+ 222:	e1 f7       	brne	.-8      	; 0x21c <__DATA_REGION_LENGTH__+0x1c>
+ 224:	00 c0       	rjmp	.+0      	; 0x226 <__DATA_REGION_LENGTH__+0x26>
+ 226:	00 00       	nop
+ 228:	dd cf       	rjmp	.-70     	; 0x1e4 <main+0xa>
+
+0000022a <itoa>:
+ 22a:	45 32       	cpi	r20, 0x25	; 37
+ 22c:	51 05       	cpc	r21, r1
+ 22e:	18 f4       	brcc	.+6      	; 0x236 <itoa+0xc>
+ 230:	42 30       	cpi	r20, 0x02	; 2
+ 232:	08 f0       	brcs	.+2      	; 0x236 <itoa+0xc>
+ 234:	04 c0       	rjmp	.+8      	; 0x23e <__itoa_ncheck>
+ 236:	fb 01       	movw	r30, r22
+ 238:	10 82       	st	Z, r1
+ 23a:	cb 01       	movw	r24, r22
+ 23c:	08 95       	ret
+
+0000023e <__itoa_ncheck>:
+ 23e:	bb 27       	eor	r27, r27
+ 240:	4a 30       	cpi	r20, 0x0A	; 10
+ 242:	31 f4       	brne	.+12     	; 0x250 <__itoa_ncheck+0x12>
+ 244:	99 23       	and	r25, r25
+ 246:	22 f4       	brpl	.+8      	; 0x250 <__itoa_ncheck+0x12>
+ 248:	bd e2       	ldi	r27, 0x2D	; 45
+ 24a:	90 95       	com	r25
+ 24c:	81 95       	neg	r24
+ 24e:	9f 4f       	sbci	r25, 0xFF	; 255
+ 250:	01 c0       	rjmp	.+2      	; 0x254 <__utoa_common>
+
+00000252 <__utoa_ncheck>:
+ 252:	bb 27       	eor	r27, r27
+
+00000254 <__utoa_common>:
+ 254:	fb 01       	movw	r30, r22
+ 256:	55 27       	eor	r21, r21
+ 258:	aa 27       	eor	r26, r26
+ 25a:	88 0f       	add	r24, r24
+ 25c:	99 1f       	adc	r25, r25
+ 25e:	aa 1f       	adc	r26, r26
+ 260:	a4 17       	cp	r26, r20
+ 262:	10 f0       	brcs	.+4      	; 0x268 <__stack+0x9>
+ 264:	a4 1b       	sub	r26, r20
+ 266:	83 95       	inc	r24
+ 268:	50 51       	subi	r21, 0x10	; 16
+ 26a:	b9 f7       	brne	.-18     	; 0x25a <__utoa_common+0x6>
+ 26c:	a0 5d       	subi	r26, 0xD0	; 208
+ 26e:	aa 33       	cpi	r26, 0x3A	; 58
+ 270:	08 f0       	brcs	.+2      	; 0x274 <__stack+0x15>
+ 272:	a9 5d       	subi	r26, 0xD9	; 217
+ 274:	a1 93       	st	Z+, r26
+ 276:	00 97       	sbiw	r24, 0x00	; 0
+ 278:	79 f7       	brne	.-34     	; 0x258 <__utoa_common+0x4>
+ 27a:	b1 11       	cpse	r27, r1
+ 27c:	b1 93       	st	Z+, r27
+ 27e:	11 92       	st	Z+, r1
+ 280:	cb 01       	movw	r24, r22
+ 282:	00 c0       	rjmp	.+0      	; 0x284 <strrev>
+
+00000284 <strrev>:
+ 284:	dc 01       	movw	r26, r24
+ 286:	fc 01       	movw	r30, r24
+ 288:	67 2f       	mov	r22, r23
+ 28a:	71 91       	ld	r23, Z+
+ 28c:	77 23       	and	r23, r23
+ 28e:	e1 f7       	brne	.-8      	; 0x288 <strrev+0x4>
+ 290:	32 97       	sbiw	r30, 0x02	; 2
+ 292:	04 c0       	rjmp	.+8      	; 0x29c <strrev+0x18>
+ 294:	7c 91       	ld	r23, X
+ 296:	6d 93       	st	X+, r22
+ 298:	70 83       	st	Z, r23
+ 29a:	62 91       	ld	r22, -Z
+ 29c:	ae 17       	cp	r26, r30
+ 29e:	bf 07       	cpc	r27, r31
+ 2a0:	c8 f3       	brcs	.-14     	; 0x294 <strrev+0x10>
+ 2a2:	08 95       	ret
+
+000002a4 <_exit>:
+ 2a4:	f8 94       	cli
+
+000002a6 <__stop_program>:
+ 2a6:	ff cf       	rjmp	.-2      	; 0x2a6 <__stop_program>
