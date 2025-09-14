@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <avr/wdt.h>
-#include "ATtinySerialOut.hpp"
+//#include "ATtinySerialOut.hpp"
 
 // -----Optical PROGRAMMING------
 // range of accepted programming frequencies
@@ -330,7 +330,7 @@ ISR(TIMER0_COMPA_vect) {
 			PHOTODIODE_PORT &= ~PHOTODIODE_OFFSET;
 			//start adc conversion
 			ADCSRA |= (1<<ADSC);
-			led_off(4);
+			//led_off(4);
 			break;
 		/*
 		case 60:
@@ -365,7 +365,7 @@ ISR(ADC_vect)
 		newSample = integrate;
 		integrate = 0;								//reset integration
 		count = 0;									//reset count
-		led_on(4);
+		//led_on(4);
 	}
 	
 	
@@ -464,6 +464,7 @@ bool user_program(void){
 			static float data_min = 0;
 			
 			data_smooth = data_smooth * 0.6 + (float)newSample * 0.4;
+			//Serial.println(data_smooth);
 
 			// track maximum/minimum value
 			if (data_smooth > data_max) data_max = data_smooth;
@@ -793,8 +794,8 @@ void init(void){
 	//init_bumpers();
 	init_adc();
 	//init_timer();
-	initTXPin();
-	Serial.println("hello");
+	//initTXPin();
+	//Serial.println("hello");
 }
 
 int main(void)

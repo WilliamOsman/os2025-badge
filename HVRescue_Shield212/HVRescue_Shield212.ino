@@ -102,7 +102,7 @@ avrdude -c usbtiny -p attiny85 -U flash:w:os_2025.srec -U eeprom:w:os_2025.eep -
 
 // If interactive mode is off, these fuse settings are used instead of user prompted values
 #define  LFUSE        0x62  // default for ATmega168 = 0x62
-#define  HFUSE        0x5F  // default for ATmega168 = 0xDF
+#define  HFUSE        0xDF  // default for ATmega168 = 0xDF
 #define  EFUSE        0xFF  // default for ATmega168 = 0xF9
 
 /*
