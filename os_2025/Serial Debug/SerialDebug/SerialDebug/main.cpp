@@ -28,7 +28,7 @@
 #define SAMPLE_DELAY	400		//microseconds to wait after charge before sampling
 #define INTEGRATION_COUNT	32	//number of samples per ADC integration (power of 2)
 #define INTEGRATION_SHIFT	5	//number of shifts to divide by SUBSAMPLE_COUNT
-#define SIGNAL_AMPLITUDE_MIN 500	//ignore ADC data if signal contrast isn't high enough
+#define SIGNAL_AMPLITUDE_MIN 2000	//ignore ADC data if signal contrast isn't high enough
 #define START_FLAG	0b1110		//bits indicating transfer start
 
 #define FRAME_WIDTH 6
@@ -441,7 +441,6 @@ bool user_program(void){
 		//------------ Process ADC Sample -----------------
 		if(newSample_available)
 		{
-
 			static float data_smooth = 0;
 			static float data_max = 0;
 			static float data_min = 0;
@@ -450,8 +449,6 @@ bool user_program(void){
 			static uint8_t block_samples = 0;
 			static uint8_t block_writepos = 0;
 				
-			
-			
 			newSample_available = false;
 			
 			if(first_read){
@@ -467,6 +464,7 @@ bool user_program(void){
 			
 			data_smooth = data_smooth * 0.5 + (float)newSample * 0.5;			
 			
+			// track maximum/minimum value
 			if(newSample > max_blocks[block_writepos]) max_blocks[block_writepos] = newSample;
 			else if(newSample < min_blocks[block_writepos]) min_blocks[block_writepos] = newSample;
 			
@@ -515,7 +513,7 @@ bool user_program(void){
 			//if data is below middle of signal, bit is HIGH
 			if (data_smooth < midline) state_now = 1;  //invert the reading
 			else state_now = 0;
-			
+			/*
 			Serial.print(newSample);
 			Serial.print(",");
 			Serial.print(data_smooth);
@@ -528,7 +526,7 @@ bool user_program(void){
 			Serial.print(",");
 			Serial.print(amplitude);
 			Serial.println();
-			
+			*/
 			if(state_now) led_on(0);
 			else led_off(0);	
 		}
@@ -548,7 +546,7 @@ bool user_program(void){
 			//detect bit on edge
 			if (state_now != state_prev) 
 			{
-				//Serial.print("E");
+				Serial.print("E");
 				state_prev = state_now;
 				//write the first bit
 				rx = (rx << 1) | state_now;  //load next bit
@@ -561,13 +559,12 @@ bool user_program(void){
 			//detect bit on center
 			else if (width == next_bit) 
 			{
-				//Serial.print("C");
+				Serial.print("C");
 				rx = (rx << 1) | state_now;  //load next bit
 				newbit_available = true;
 				next_bit += period;
 				bit_count++;
 			}
-			//Serial.print(state_now);
 			width++;
 		}
 		
@@ -575,12 +572,12 @@ bool user_program(void){
 		if (newbit_available) 
 		{			
 			newbit_available = false;
-			//Serial.print(state_now);
+			Serial.print(state_now);
 			
 			//start flag detected
 			if (!data_incoming && (rx & (0b1111)) == START_FLAG) 
 			{
-				//Serial.print(":START");
+				Serial.print(":START");
 				data_incoming = true;
 				rx = 0b0;  //clear RX
 				data_buf[0] = 0b0;
@@ -597,10 +594,10 @@ bool user_program(void){
 				current_bit++;
 
 				if (current_bit > 5) {
-					//Serial.print(":BYTE");
+					Serial.print(":BYTE");
 					//if 5th bit is 0, data is over, or read is corrupted
 					if (!(rx & 0b1)) {
-						//Serial.println(":FINISH");
+						Serial.println(":FINISH");
 						//data read is finished, or data is corrupted
 						data_incoming = false;
 						//seekData = false;						
@@ -632,7 +629,7 @@ bool user_program(void){
 					}
 				}
 			}
-			//Serial.println();
+			Serial.println();
 		}
 	}
 					
