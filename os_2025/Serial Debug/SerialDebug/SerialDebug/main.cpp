@@ -22,13 +22,13 @@
 //#define PHOTO_HZ_MAX 60
 #define PHOTO_RATE_HZ	10
 #define OVERSAMPLE	8
-#define SAMPLE_HISTORY	4		//number of bits to store subsample min/max data for exposure tracking
+#define SAMPLE_HISTORY	16		//number of bits to store subsample min/max data for exposure tracking
 #define PHOTO_RINGBUFF_LEN	128
 #define CHARGE_DELAY	200		//microseconds to keep pull-up pin engaged
 #define SAMPLE_DELAY	400		//microseconds to wait after charge before sampling
 #define INTEGRATION_COUNT	32	//number of samples per ADC integration (power of 2)
 #define INTEGRATION_SHIFT	5	//number of shifts to divide by SUBSAMPLE_COUNT
-#define SIGNAL_AMPLITUDE_MIN 2000	//ignore ADC data if signal contrast isn't high enough
+#define SIGNAL_STRENGTH_FACTOR 25	//(0 to 100) Higher value is less sensitive and less noise
 #define START_FLAG	0b1110		//bits indicating transfer start
 
 #define FRAME_WIDTH 6
@@ -430,6 +430,7 @@ bool user_program(void){
 	bool newbit_available = false;
 	bool data_incoming = false;
 	bool first_read = true;
+	bool signal_stable = false;
 
 	//------- STEP 1 --------- setup sampling ISRs
 	init_adc();
@@ -465,8 +466,8 @@ bool user_program(void){
 			data_smooth = data_smooth * 0.5 + (float)newSample * 0.5;			
 			
 			// track maximum/minimum value
-			if(newSample > max_blocks[block_writepos]) max_blocks[block_writepos] = newSample;
-			else if(newSample < min_blocks[block_writepos]) min_blocks[block_writepos] = newSample;
+			if(data_smooth > max_blocks[block_writepos]) max_blocks[block_writepos] = data_smooth;
+			else if(data_smooth < min_blocks[block_writepos]) min_blocks[block_writepos] = data_smooth;
 			
 			block_samples++;
 			
@@ -474,40 +475,34 @@ bool user_program(void){
 				block_samples = 0;
 				block_writepos++;
 				if(block_writepos >= SAMPLE_HISTORY) block_writepos = 0;
-				max_blocks[block_writepos] = newSample;
-				min_blocks[block_writepos] = newSample;
+				max_blocks[block_writepos] = data_smooth;
+				min_blocks[block_writepos] = data_smooth;
 			}
 			
-			data_max = max_blocks[0];
-			data_min = min_blocks[0];
+			if(data_incoming)
+			{
+				data_max = max_blocks[0];
+				data_min = min_blocks[0];
 			
-			for(uint8_t block = 1; block < SAMPLE_HISTORY; block++){
-				if(max_blocks[block] > data_max) data_max = max_blocks[block];
-				else if(min_blocks[block] < data_min) data_min = min_blocks[block];
-			}
+				for(uint8_t block = 1; block < SAMPLE_HISTORY; block++)
+				{
+					if(max_blocks[block] > data_max) data_max = max_blocks[block];
+					else if(min_blocks[block] < data_min) data_min = min_blocks[block];
+				}
 			
-			/*
-			// track maximum/minimum value
-			if (data_smooth > data_max) data_max = data_smooth;
-			else if (data_smooth < data_min) data_min = data_smooth;
-			//slow decay to keep max/min from hovering above/below the data
-			else {
-				data_max -= (data_max - data_min) * 0.02;
-				data_min += (data_max - data_min) * 0.02;
-			}
-			*/
+				float amplitude = (data_max - data_min);
+				float midline = amplitude / 2 + data_min;	//threshold between high and low
 			
-			float amplitude = (data_max - data_min);
-			float midline = amplitude / 2 + data_min;	//threshold between high and low
-			
-			//if optical signal has large enough contrast assume there's a signal
-			if( amplitude >= SIGNAL_AMPLITUDE_MIN ){
-				 signal_available = true;
-				 //led_on(2);
-			}
-			else{
-				 signal_available = false;
-				 //led_off(2);
+				//if optical signal has large enough contrast assume there's a signal
+				if( amplitude >= data_max * (SIGNAL_STRENGTH_FACTOR / 100.0) )
+				{
+					 signal_available = true;
+					 //led_on(2);
+				}
+				else{
+					 signal_available = false;
+					 //led_off(2);
+				}
 			}
 			
 			//if data is below middle of signal, bit is HIGH
@@ -525,10 +520,11 @@ bool user_program(void){
 			Serial.print(midline);
 			Serial.print(",");
 			Serial.print(amplitude);
+			Serial.print(",");
+			Serial.print(signal_available * 500);
 			Serial.println();
 			*/
-			if(state_now) led_on(0);
-			else led_off(0);	
+				
 		}
 		
 		//------------ Convert to Bitstream -----------------
@@ -542,6 +538,9 @@ bool user_program(void){
 			static uint8_t next_bit = 0;
 			
 			signal_available = false;
+			
+			if(state_now) led_on(0);
+			else led_off(0);
 
 			//detect bit on edge
 			if (state_now != state_prev) 

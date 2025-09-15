@@ -1,0 +1,11 @@
+MAIN SKETCH
+
+avrdude -c usbtiny -p attiny85 -U flash:w:os_2025.srec -U eeprom:w:os_2025.eep -U lfuse:w:0x62:m -U efuse:w:0xFF:m -U hfuse:w:0x5f:m
+
+SERIAL ONLY
+
+avrdude -c usbtiny -p attiny85 -U flash:w:SerialTest.srec -U eeprom:w:SerialTest.eep -U lfuse:w:0x62:m -U efuse:w:0xFF:m 
+
+SERIAL DEBUGGING SKETCH
+
+avrdude -c usbtiny -p attiny85 -U flash:w:SerialDebug.srec -U eeprom:w:SerialDebug.eep -U lfuse:w:0x62:m -U efuse:w:0xFF:m -U hfuse:w:0x5f:m
