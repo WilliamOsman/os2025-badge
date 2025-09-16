@@ -22,10 +22,9 @@
 //#define PHOTO_HZ_MAX 60
 #define PHOTO_RATE_HZ	10
 #define OVERSAMPLE	8
-#define SAMPLE_HISTORY	16		//number of bits to store subsample min/max data for exposure tracking
+#define SAMPLE_HISTORY	8		//number of bits to store subsample min/max data for exposure tracking
 #define PHOTO_RINGBUFF_LEN	128
-#define CHARGE_DELAY	200		//microseconds to keep pull-up pin engaged
-#define SAMPLE_DELAY	400		//microseconds to wait after charge before sampling
+#define CHARGE_TICKS	2		//100us ticks to keep pull-up pin engaged
 #define INTEGRATION_COUNT	32	//number of samples per ADC integration (power of 2)
 #define INTEGRATION_SHIFT	5	//number of shifts to divide by SUBSAMPLE_COUNT
 #define SIGNAL_STRENGTH_FACTOR 25	//(0 to 100) Higher value is less sensitive and less noise
@@ -146,6 +145,7 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 	
 volatile bool newSample_available = false;
 volatile uint16_t newSample = 0;
+const uint8_t clock_offset = 1;	//tick needs slight auto-adjustment for inaccurate programming app fps
 	
 //----------LED UTILITY---------------	
 
@@ -306,23 +306,17 @@ ISR(TIMER0_COMPA_vect) {
 			// charge up port with pull-up
 			PHOTODIODE_PORT |= PHOTODIODE_OFFSET;
 			break;  
-		case 2: // t = 200us
+		case CHARGE_TICKS: // t = 200us
 			//stop charging port after ~200us
 			PHOTODIODE_PORT &= ~PHOTODIODE_OFFSET;
 			//start adc conversion
 			ADCSRA |= (1<<ADSC);
 			led_off(2);
 			break;
-		/*
-		case 60:
-			//start adc conversion
-			ADCSRA |= (1<<ADSC);
-			break;  // t = 6.0 ms: start ADC
-		*/
 		default:  break;
 	}
 	tick++;
-	if (tick >= 125) {                           // t = 12.5 ms
+	if (tick >= 125 + clock_offset) {              // t = 12.5 ms
 		tick = 0;                                  // next cycle
 	}
 }
@@ -410,19 +404,13 @@ static inline int bump_hit(void){
 }
 
 bool user_program(void){
-	/*
-	1) Setup timer ISR to generate ADC samples and set new sample flag
-		?	2) When new sample flag is set, process new sample
-			3) If waveform amplitude large enough, the signal is good
-			4) Convert samples to bitstream
-			5) If start bits detected, start saving data
-			6) If data end, check data and save/quit
+	/* Allows users to upload custom pixels to the display using the OpenSauce web interface
+	https://opensauce.com/badge-25/
 	*/
 	
 	uint8_t total_bytes = 0;
 	
 	bool seekData = true;
-	//bool dataStarted = false;
 	bool state_now = 0;
 	bool state_prev = 0;
 	bool signal_available = false;
@@ -437,18 +425,21 @@ bool user_program(void){
 	timer0_tick_100us_init();
 	sei();
 
+	// ------------- Seek until successful transfer ------------------
 	while(seekData)
 	{
+		static uint8_t stablewhen0 = 10;
+		
 		//------------ Process ADC Sample -----------------
 		if(newSample_available)
 		{
 			static float data_smooth = 0;
 			static float data_max = 0;
 			static float data_min = 0;
-			static uint16_t max_blocks[SAMPLE_HISTORY];
-			static uint16_t min_blocks[SAMPLE_HISTORY];
-			static uint8_t block_samples = 0;
-			static uint8_t block_writepos = 0;
+			static uint16_t max_bucket[SAMPLE_HISTORY];
+			static uint16_t min_bucket[SAMPLE_HISTORY];
+			static uint8_t bucket_sample = 0;
+			static uint8_t bucket_writepos = 0;
 				
 			newSample_available = false;
 			
@@ -458,54 +449,54 @@ bool user_program(void){
 				data_max = newSample;
 				data_min = newSample;
 				for(uint8_t block = 0; block < SAMPLE_HISTORY; block++){
-					max_blocks[block] = newSample;
-					min_blocks[block] = newSample;
+					max_bucket[block] = newSample;
+					min_bucket[block] = newSample;
 				}
 			}
 			
 			data_smooth = data_smooth * 0.5 + (float)newSample * 0.5;			
 			
-			// track maximum/minimum value
-			if(data_smooth > max_blocks[block_writepos]) max_blocks[block_writepos] = data_smooth;
-			else if(data_smooth < min_blocks[block_writepos]) min_blocks[block_writepos] = data_smooth;
+			// windowed historic maximum/minimum over a large number of samples without storing every sample
+			// each bucket contains a max/min that represents 8 previous samples
+			// old buckets are overwritten, so historic data generally follows the signal
+			if(data_smooth > max_bucket[bucket_writepos]) max_bucket[bucket_writepos] = data_smooth;
+			else if(data_smooth < min_bucket[bucket_writepos]) min_bucket[bucket_writepos] = data_smooth;
 			
-			block_samples++;
+			bucket_sample++;
 			
-			if(block_samples >= OVERSAMPLE){
-				block_samples = 0;
-				block_writepos++;
-				if(block_writepos >= SAMPLE_HISTORY) block_writepos = 0;
-				max_blocks[block_writepos] = data_smooth;
-				min_blocks[block_writepos] = data_smooth;
+			if(bucket_sample >= OVERSAMPLE){
+				bucket_sample = 0;
+				bucket_writepos++;
+				if(bucket_writepos >= SAMPLE_HISTORY) bucket_writepos = 0;
+				max_bucket[bucket_writepos] = data_smooth;
+				min_bucket[bucket_writepos] = data_smooth;
 			}
 			
-			if(data_incoming)
+			//lock the max/min values if data transfer is active
+			if(!data_incoming)
 			{
-				data_max = max_blocks[0];
-				data_min = min_blocks[0];
+				data_max = max_bucket[0];
+				data_min = min_bucket[0];
 			
 				for(uint8_t block = 1; block < SAMPLE_HISTORY; block++)
 				{
-					if(max_blocks[block] > data_max) data_max = max_blocks[block];
-					else if(min_blocks[block] < data_min) data_min = min_blocks[block];
-				}
-			
-				float amplitude = (data_max - data_min);
-				float midline = amplitude / 2 + data_min;	//threshold between high and low
-			
-				//if optical signal has large enough contrast assume there's a signal
-				if( amplitude >= data_max * (SIGNAL_STRENGTH_FACTOR / 100.0) )
-				{
-					 signal_available = true;
-					 //led_on(2);
-				}
-				else{
-					 signal_available = false;
-					 //led_off(2);
+					if(max_bucket[block] > data_max) data_max = max_bucket[block];
+					else if(min_bucket[block] < data_min) data_min = min_bucket[block];
 				}
 			}
+
+			float amplitude = (data_max - data_min);
+			float midline = amplitude / 2 + data_min;	//threshold between high and low
+							
+			//good signal if optical signal has large enough contrast
+			//good signal if data transfer is active
+			if( data_incoming || amplitude >= data_max * (SIGNAL_STRENGTH_FACTOR / 100.0) ) signal_available = true;
+			else{
+				stablewhen0 = 10;
+				signal_available = false;
+			}
 			
-			//if data is below middle of signal, bit is HIGH
+			//convert analog signal to boolean
 			if (data_smooth < midline) state_now = 1;  //invert the reading
 			else state_now = 0;
 			/*
@@ -536,6 +527,7 @@ bool user_program(void){
 			static uint8_t bit_count = 0;
 			static uint8_t width = 0;
 			static uint8_t next_bit = 0;
+			static uint8_t stable_counter = 0;
 			
 			signal_available = false;
 			
@@ -545,14 +537,16 @@ bool user_program(void){
 			//detect bit on edge
 			if (state_now != state_prev) 
 			{
+				if(stablewhen0 != 0) stablewhen0--;
 				Serial.print("E");
 				state_prev = state_now;
 				//write the first bit
 				rx = (rx << 1) | state_now;  //load next bit
 				newbit_available = true;
-				next_bit = period + halfperiod;
+				next_bit = period + halfperiod + 1;
 				bit_count = 1;
 				width = 1;
+				stable_counter++;
 			}
 
 			//detect bit on center
@@ -563,6 +557,7 @@ bool user_program(void){
 				newbit_available = true;
 				next_bit += period;
 				bit_count++;
+				stable_counter = 0;
 			}
 			width++;
 		}
@@ -574,7 +569,8 @@ bool user_program(void){
 			Serial.print(state_now);
 			
 			//start flag detected
-			if (!data_incoming && (rx & (0b1111)) == START_FLAG) 
+			if(stablewhen0 != 0) rx = 0b0;  //clear RX
+			else if ((!data_incoming) && (rx & (0b1111)) == START_FLAG ) 
 			{
 				Serial.print(":START");
 				data_incoming = true;
@@ -582,6 +578,7 @@ bool user_program(void){
 				data_buf[0] = 0b0;
 				//led_on(1);
 			}
+			
 
 			else if (data_incoming) 
 			{
