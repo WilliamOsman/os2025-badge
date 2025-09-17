@@ -27,7 +27,7 @@
 #define CHARGE_TICKS	2		//100us ticks to keep pull-up pin engaged
 #define INTEGRATION_COUNT	32	//number of samples per ADC integration (power of 2)
 #define INTEGRATION_SHIFT	5	//number of shifts to divide by SUBSAMPLE_COUNT
-#define SIGNAL_STRENGTH_FACTOR 25	//(0 to 100) Higher value is less sensitive and less noise
+#define SIGNAL_STRENGTH_FACTOR 20	//(0 to 100) Higher value requires more contrast between bright/dark
 #define START_FLAG	0b1110		//bits indicating transfer start
 
 #define FRAME_WIDTH 6
@@ -129,7 +129,8 @@ volatile char *outbuf[32];
 uint8_t data_buf[FRAME_WIDTH*MAX_FRAMES] = {0};	// frame buffer
 uint8_t data_frame_count = 0;
 
-uint8_t default_data_size = 10;	// number of frames
+uint8_t default_data_size = 5;	// number of frames
+/*
 uint8_t default_data[10*FRAME_WIDTH] = {
 	0b1110, 0b10001, 0b10001, 0b10001, 0b1110, 0b0,		// O
 	0b0, 0b11111, 0b1001, 0b1001, 0b0110, 0b0,			// P
@@ -142,9 +143,18 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 	0b1110, 0b10001, 0b10001, 0b10001, 0b10001, 0b0,	// C
 	0b0, 0b11111, 0b10101, 0b10101, 0b10001, 0b0,		// E
 	};
-	
+*/
+
+uint8_t default_data[10*FRAME_WIDTH] = {
+	0b10000, 0b10111, 0b10101, 0b11101, 0b1, 0b0,		// S
+	0b0, 0b11110, 0b101, 0b101, 0b11110, 0b0,			// A
+	0b1111, 0b11000, 0b10000, 0b11000, 0b1111, 0b0,		// U
+	0b1110, 0b10001, 0b10001, 0b10001, 0b10001, 0b0,	// C
+	0b0, 0b11111, 0b10101, 0b10101, 0b10001, 0b0,		// E
+};
 volatile bool newSample_available = false;
 volatile uint16_t newSample = 0;
+volatile bool ADC_shorted = false;	//if first ADC reading is 0v, the 0ohm resistor is shorted
 const uint8_t clock_offset = 1;	//tick needs slight auto-adjustment for inaccurate programming app fps
 	
 //----------LED UTILITY---------------	
@@ -201,6 +211,34 @@ inline void all_off(void){
 inline void all_on(void){
 	for(uint8_t i = 0; i < NUM_LEDS; i++){
 		led_on(i);
+	}
+}
+
+inline void led_error(uint8_t led_num){
+	all_off();
+	for(uint8_t i = 0; i < 5; i++){
+		led_on(0);
+		led_off(1);
+		_delay_ms(100);
+		led_off(0);
+		led_on(1);
+		_delay_ms(100);
+		led_on(0);
+		led_off(1);
+		_delay_ms(100);
+		led_off(0);
+		led_off(1);
+	}
+}
+
+inline void led_success(uint8_t led_num){
+	all_off();
+	for(uint8_t i = 0; i < 15; i++){
+		led_on(led_num);
+		_delay_ms(50);
+		led_off(led_num);
+		_delay_ms(50);
+
 	}
 }
 
@@ -265,6 +303,14 @@ void timer0_tick_100us_init(void) {
 	TIMSK  |= (1<<OCIE0A);     // enable compare A interrupt
 }
 
+void timer0_tick_100us_disable(void) {
+	// CTC, OCR0A = 99, prescaler = 8  => 8 MHz / 8 = 1 MHz (1 µs/tick). 100 µs per interrupt.
+	TCCR0A = (1<<WGM01);       // CTC
+	OCR0A  = 99;               // 100 counts -> 100 µs
+	TCCR0B = (1<<CS01);        // prescaler 8
+	TIMSK  &= ~(1<<OCIE0A);     // enable compare A interrupt
+}
+
 void init_adc(){
 	
 	// Enable ADC by clearing Power Reduction ADC bit
@@ -311,12 +357,11 @@ ISR(TIMER0_COMPA_vect) {
 			PHOTODIODE_PORT &= ~PHOTODIODE_OFFSET;
 			//start adc conversion
 			ADCSRA |= (1<<ADSC);
-			led_off(2);
 			break;
 		default:  break;
 	}
 	tick++;
-	if (tick >= 125 + clock_offset) {              // t = 12.5 ms
+	if (tick >= 125 + clock_offset) {              // t = 12.5 ms + slight offset for drift
 		tick = 0;                                  // next cycle
 	}
 }
@@ -327,6 +372,13 @@ ISR(ADC_vect)
 	static uint8_t count = 0;
 	static uint16_t integrate = 0;
 	
+	uint16_t reading = ADC;
+	
+	//check that the 0ohm resistor isn't shorted on first sample
+	if(count == 0){
+		if(reading < 10) ADC_shorted = true;
+		else ADC_shorted = false;
+	}
 	
 	integrate += ADC;								// ADC is a macro that does ADCL then ADCH
 	count++;										//increment integration step
@@ -340,7 +392,6 @@ ISR(ADC_vect)
 		newSample = integrate;
 		integrate = 0;								//reset integration
 		count = 0;									//reset count
-		led_on(2);
 	}
 	
 	
@@ -419,6 +470,11 @@ bool user_program(void){
 	bool data_incoming = false;
 	bool first_read = true;
 	bool signal_stable = false;
+	
+	const uint8_t led_signal_steady = 1;
+	const uint8_t led_state_now = 0;
+	
+	
 
 	//------- STEP 1 --------- setup sampling ISRs
 	init_adc();
@@ -453,6 +509,8 @@ bool user_program(void){
 					min_bucket[block] = newSample;
 				}
 			}
+			
+			if(ADC_shorted) led_error(0);
 			
 			data_smooth = data_smooth * 0.5 + (float)newSample * 0.5;			
 			
@@ -492,6 +550,7 @@ bool user_program(void){
 			//good signal if data transfer is active
 			if( data_incoming || amplitude >= data_max * (SIGNAL_STRENGTH_FACTOR / 100.0) ) signal_available = true;
 			else{
+				led_off(led_signal_steady);
 				stablewhen0 = 10;
 				signal_available = false;
 			}
@@ -531,14 +590,19 @@ bool user_program(void){
 			
 			signal_available = false;
 			
-			if(state_now) led_on(0);
-			else led_off(0);
+			if(state_now) led_on(led_state_now);
+			else led_off(led_state_now);
 
 			//detect bit on edge
 			if (state_now != state_prev) 
 			{
-				if(stablewhen0 != 0) stablewhen0--;
-				Serial.print("E");
+				if(stablewhen0 != 0){
+					stablewhen0--;
+					led_off(led_signal_steady);
+				}
+				else led_on(led_signal_steady);
+				
+				//Serial.print("E");
 				state_prev = state_now;
 				//write the first bit
 				rx = (rx << 1) | state_now;  //load next bit
@@ -552,7 +616,7 @@ bool user_program(void){
 			//detect bit on center
 			else if (width == next_bit) 
 			{
-				Serial.print("C");
+				//Serial.print("C");
 				rx = (rx << 1) | state_now;  //load next bit
 				newbit_available = true;
 				next_bit += period;
@@ -566,19 +630,20 @@ bool user_program(void){
 		if (newbit_available) 
 		{			
 			newbit_available = false;
-			Serial.print(state_now);
+			//Serial.print(state_now);
 			
 			//start flag detected
-			if(stablewhen0 != 0) rx = 0b0;  //clear RX
+			if(stablewhen0 != 0){
+				 rx = 0b0;  //clear RX
+				 led_off(led_signal_steady);
+			}
 			else if ((!data_incoming) && (rx & (0b1111)) == START_FLAG ) 
 			{
-				Serial.print(":START");
+				//Serial.print(":START");
 				data_incoming = true;
 				rx = 0b0;  //clear RX
 				data_buf[0] = 0b0;
-				//led_on(1);
-			}
-			
+			}			
 
 			else if (data_incoming) 
 			{
@@ -590,31 +655,37 @@ bool user_program(void){
 				current_bit++;
 
 				if (current_bit > 5) {
-					Serial.print(":BYTE");
+					//Serial.print(":BYTE");
 					//if 5th bit is 0, data is over, or read is corrupted
 					if (!(rx & 0b1)) {
-						Serial.println(":FINISH");
+						//Serial.println(":FINISH");
 						//data read is finished, or data is corrupted
 						data_incoming = false;
-						//seekData = false;						
+						seekData = false;						
 						total_bytes = current_byte;
 						
+						// not a full frame detected
 						if ((current_byte + 1) % FRAME_WIDTH != 0) {
-							//led_on(1);
-							//return 0;	// not a full frame detected
+							led_error(0);
+							seekData = true;
+							//return 0;	
 						} 
+						// didn't end on a full vertical line (minus the stop bit)
 						else if (current_bit != 6) {
-							//led_on(2);
-							//return 0;	// didn't end on a full vertical line (minus the stop bit)
+							led_error(0);
+							seekData = true;
+							//return 0;	
 						} 
+						// too many frames
 						else if ((current_byte + 1) / FRAME_WIDTH > MAX_FRAMES) {
-							//return 0;	// too many frames
+							led_error(0);
+							seekData = true;
+							//return 0;	
 						}
 						
 						//reset for new data transmission
 						current_byte = 0;
 						current_bit = 0;
-						//led_off(1);
 						
 					}
 					//finished reading column, move onto next byte
@@ -625,10 +696,11 @@ bool user_program(void){
 					}
 				}
 			}
-			Serial.println();
-		}
+			//Seriali.println();
+		}		
 	}
 					
+	timer0_tick_100us_disable();
 	
 	EEPROM_write(0, 0);	// 0x0 is used as the frame count, set to zero while writing
 	
@@ -640,16 +712,8 @@ bool user_program(void){
 	EEPROM_write(0, (total_bytes+1)/FRAME_WIDTH);
 	
 	//flash LED for success
-	/*
-	for(uint8_t i = 0; i<3; i++){
-		led_on(2);
-		_delay_ms(200);
-		led_off(2);
-		_delay_ms(200);
-	}
-	*/
-	led_on(2);
-	while(true);
+	led_success(2);
+
 	return 1;
 }
 
@@ -832,8 +896,7 @@ void init(void){
 	//init_bumpers();
 	init_adc();
 	//init_timer();
-	initTXPin();
-	Serial.println("hello");
+	//initTXPin();
 }
 
 int main(void)
@@ -842,11 +905,11 @@ int main(void)
 	
 	init();	
 	
-	//test_leds();
+	test_leds();
 	
 	// handle quick power on/off to select a mode
 	uint8_t mode = EEPROM_read(0xff);
-	//led_on(mode);
+	led_on(mode);
 	
 	if(mode+1 > 3){
 		EEPROM_write(0xff, 0);
@@ -860,7 +923,7 @@ int main(void)
 	
 	all_off();
 	
-	mode = 2;	// for testing
+	//mode = 2;	// for testing
 	
     while(1) 
     {
@@ -874,10 +937,10 @@ int main(void)
 				BUMP_PORT |= BUMP_OFFSET;	// enable bump sensor pull-up
 				while(1){
 					if(bump_hit()){
-						led_on(0);
+						led_on(1);
 					}
 					else{
-						led_off(0);
+						led_off(1);
 					}
 					_delay_us(10);
 				}
@@ -888,8 +951,8 @@ int main(void)
 					_delay_ms(200);
 					led_off(2);
 					mode = 0;
+					//Serial.println(mode);
 				}
-				test_leds();
 				break;
 			case 3:	// erase EEPROM
 				for(uint8_t i = 0; i < 5; i++){
