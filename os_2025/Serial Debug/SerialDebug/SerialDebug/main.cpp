@@ -73,7 +73,7 @@
 // pin setups for the 85
 #ifdef ATTINY85
 
-#define NUM_LEDS	4
+#define NUM_LEDS	5
 #define LED1_OFFSET		(1 << 0)
 #define LED2_OFFSET		(1 << 1)
 #define LED3_OFFSET		(1 << 2)
@@ -174,7 +174,7 @@ inline void led_on(uint8_t led_num){
 			LED4_PORT &= ~(LED4_OFFSET);
 			break;
 		case 0x4:
-			//LED5_PORT &= ~(LED5_OFFSET);
+			LED5_PORT &= ~(LED5_OFFSET);
 			break;
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) =  *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) | LED_OFFSETS[led_num];
@@ -196,7 +196,7 @@ inline void led_off(uint8_t led_num){
 			LED4_PORT |= (LED4_OFFSET);
 			break;
 		case 0x4:
-			//LED5_PORT |= (LED5_OFFSET);
+			LED5_PORT |= (LED5_OFFSET);
 			break;
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) = *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) & ~(LED_OFFSETS[led_num]);
@@ -287,7 +287,7 @@ void init_leds(void){
 		DDRB |= LED2_OFFSET;
 		DDRB |= LED3_OFFSET;
 		DDRB |= LED4_OFFSET;
-		//DDRB |= LED5_OFFSET;
+		DDRB |= LED5_OFFSET;
 	#endif
 	
 	all_off();
