@@ -14,27 +14,19 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <avr/wdt.h>
-#include "ATtinySerialOut.hpp"
 
 // -----Optical PROGRAMMING------
-// range of accepted programming frequencies
-//#define PHOTO_HZ_MIN 5
-//#define PHOTO_HZ_MAX 60
-#define PHOTO_RATE_HZ	10
-#define OVERSAMPLE	8
+#define PHOTO_RATE_HZ	10		//doesn't do anything, rate is set by tick comparison in timer0 ISR
+#define OVERSAMPLE	8			//changing won't affect oversample rate, only used as reference
 #define SAMPLE_HISTORY	8		//number of bits to store subsample min/max data for exposure tracking
-#define PHOTO_RINGBUFF_LEN	128
 #define CHARGE_TICKS	2		//100us ticks to keep pull-up pin engaged
 #define INTEGRATION_COUNT	32	//number of samples per ADC integration (power of 2)
-#define INTEGRATION_SHIFT	5	//number of shifts to divide by SUBSAMPLE_COUNT
 #define SIGNAL_STRENGTH_FACTOR 20	//(0 to 100) Higher value requires more contrast between bright/dark
 #define START_FLAG	0b1110		//bits indicating transfer start
 
 #define FRAME_WIDTH 6
-#define MAX_FRAMES 12
-#define FRAME_CYCLES 0	// number of shake cycles to display each frame
-
-#define BUMP_FILTER 50
+#define MAX_FRAMES 24
+#define FRAME_CYCLES 0			// number of shake cycles to display each frame
 
 //#define DISPLAY_MODE_FULL	// all frames at once
 //#define DISPLAY_MODE_FRAME	// one frame at a time
@@ -59,10 +51,6 @@
 #define LED4_PORT	PORTA
 #define LED5_PORT	PORTA
 
-#define BUMP_OFFSET		(1 << 2)
-#define BUMP_PORT	PORTB
-#define BUMP_PIN	PINB
-
 #define PHOTODIODE_PORT PORTA
 #define PHOTODIODE_OFFSET (1 << 1)
 #define PHOTODIODE_PIN PINA
@@ -85,10 +73,6 @@
 #define LED4_PORT	PORTB
 #define LED5_PORT	PORTB
 
-#define BUMP_OFFSET		(1 << 5)
-#define BUMP_PORT	PORTB
-#define BUMP_PIN	PINB
-
 #define PHOTODIODE_PORT PORTB
 #define PHOTODIODE_OFFSET (1 << 5)
 #define PHOTODIODE_PIN PINB
@@ -96,7 +80,6 @@
 
 volatile uint8_t tim_cnt_low = 0;
 volatile uint8_t tim_cnt_high = 0;
-
 volatile uint8_t tick = 0;
 
 
@@ -107,13 +90,9 @@ void run(void);
 void init_leds(void);
 void init(void);
 void set_led(uint8_t led_num, uint8_t state);
-void set_led_frame(uint8_t led_frame);
-void animate(uint8_t* led_frames, uint8_t num_frames);
 void all_off(void);
 
 // stuff for user programming
-void init_timer(void);
-uint16_t timer1_get_us(void);
 void init_adc(void);
 uint16_t sample_adc(void);
 bool user_program(void);
@@ -121,16 +100,12 @@ void load_frames(void);
 
 void animate2(void);
 
-// Software Serial
-// incoming buffer
-volatile char *inbuf[32];
-// outgoing buffer
-volatile char *outbuf[32];
-
 uint8_t data_buf[FRAME_WIDTH*MAX_FRAMES] = {0};	// frame buffer
 uint8_t data_frame_count = 0;
 
 uint8_t default_data_size = 5;	// number of frames
+
+//OPEN SAUCE
 /*
 uint8_t default_data[10*FRAME_WIDTH] = {
 	0b1110, 0b10001, 0b10001, 0b10001, 0b1110, 0b0,		// O
@@ -146,6 +121,7 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 	};
 */
 
+//SAUCE
 uint8_t default_data[10*FRAME_WIDTH] = {
 	0b10000, 0b10111, 0b10101, 0b11101, 0b1, 0b0,		// S
 	0b0, 0b11110, 0b101, 0b101, 0b11110, 0b0,			// A
@@ -153,6 +129,7 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 	0b1110, 0b10001, 0b10001, 0b10001, 0b10001, 0b0,	// C
 	0b0, 0b11111, 0b10101, 0b10101, 0b10001, 0b0,		// E
 };
+
 volatile bool newSample_available = false;
 volatile uint16_t newSample = 0;
 volatile bool ADC_shorted = false;	//if first ADC reading is 0v, the 0ohm resistor is shorted
@@ -452,31 +429,26 @@ uint8_t EEPROM_read(uint8_t ucAddress)
 	return EEDR;
 }
 
-
-
-//----------BUMPERS---------------	
-
-void init_bumpers(void){
-	// Set up the bumpers with pull ups
-	BUMP_PORT |= (BUMP_OFFSET);
+void load_frames(void){
+	// load eeprom or default data into the frame buffer for displaying
+	data_frame_count = EEPROM_read(0x0);
+	
+	if(data_frame_count != 0xff && data_frame_count != 0x0){
+		// eeprom data exists, use it
+		for(uint8_t i = 0; i < data_frame_count*FRAME_WIDTH; i++){
+			data_buf[i] = EEPROM_read(i+1);
+		}
+		return;
+	}
+	
+	// no or bad eeprom, use default
+	data_frame_count = default_data_size;
+	for(uint8_t i = 0; i < data_frame_count*FRAME_WIDTH; i++){
+		data_buf[i] = default_data[i];
+	}
 }
 
-static inline int bump_hit(void){
-	static uint8_t high_count = 0;
-	static uint8_t low_count = 0;
-	static bool bump_state = 0;
-	if(BUMP_PIN & BUMP_OFFSET){
-		low_count++;
-		high_count = 0;
-	}
-	else{
-		high_count++;
-		low_count = 0;
-	}
-	if(high_count >= BUMP_FILTER) bump_state = 1;
-	if(low_count >= BUMP_FILTER) bump_state = 0;
-	return bump_state;
-}
+//---------- Running Modes ---------------	
 
 bool user_program(void){
 	/* Allows users to upload custom pixels to the display using the OpenSauce web interface
@@ -493,7 +465,6 @@ bool user_program(void){
 	bool newbit_available = false;
 	bool data_incoming = false;
 	bool first_read = true;
-	bool signal_stable = false;
 	
 	const uint8_t led_signal_steady = 1;
 	const uint8_t led_state_now = 0;
@@ -564,6 +535,7 @@ bool user_program(void){
 			float midline = amplitude / 2 + data_min;	//threshold between high and low
 							
 			//good signal if optical signal has large enough contrast
+			//OR
 			//good signal if data transfer is active
 			if( data_incoming || amplitude >= data_max * (SIGNAL_STRENGTH_FACTOR / 100.0) ) signal_available = true;
 			else{
@@ -575,23 +547,7 @@ bool user_program(void){
 			//convert analog signal to boolean
 			if (data_smooth < midline) state_now = 1;  //invert the reading
 			else state_now = 0;
-			/*
-			Serial.print(newSample);
-			Serial.print(",");
-			Serial.print(data_smooth);
-			Serial.print(",");
-			Serial.print(data_max);
-			Serial.print(",");
-			Serial.print(data_min);
-			Serial.print(",");
-			Serial.print(midline);
-			Serial.print(",");
-			Serial.print(amplitude);
-			Serial.print(",");
-			Serial.print(signal_available * 500);
-			Serial.println();
-			*/
-				
+
 		}
 		
 		//------------ Convert to Bitstream -----------------
@@ -619,7 +575,6 @@ bool user_program(void){
 				}
 				else led_on(led_signal_steady);
 				
-				//Serial.print("E");
 				state_prev = state_now;
 				//write the first bit
 				rx = (rx << 1) | state_now;  //load next bit
@@ -633,7 +588,6 @@ bool user_program(void){
 			//detect bit on center
 			else if (width == next_bit) 
 			{
-				//Serial.print("C");
 				rx = (rx << 1) | state_now;  //load next bit
 				newbit_available = true;
 				next_bit += period;
@@ -647,7 +601,6 @@ bool user_program(void){
 		if (newbit_available) 
 		{			
 			newbit_available = false;
-			//Serial.print(state_now);
 			
 			//start flag detected
 			if(stablewhen0 != 0){
@@ -656,7 +609,6 @@ bool user_program(void){
 			}
 			else if ((!data_incoming) && (rx & (0b1111)) == START_FLAG ) 
 			{
-				//Serial.print(":START");
 				data_incoming = true;
 				rx = 0b0;  //clear RX
 				data_buf[0] = 0b0;
@@ -672,10 +624,8 @@ bool user_program(void){
 				current_bit++;
 
 				if (current_bit > 5) {
-					//Serial.print(":BYTE");
 					//if 5th bit is 0, data is over, or read is corrupted
 					if (!(rx & 0b1)) {
-						//Serial.println(":FINISH");
 						//data read is finished, or data is corrupted
 						data_incoming = false;
 						seekData = false;						
@@ -685,19 +635,16 @@ bool user_program(void){
 						if ((current_byte + 1) % FRAME_WIDTH != 0) {
 							led_error(0);
 							seekData = true;
-							//return 0;	
 						} 
 						// didn't end on a full vertical line (minus the stop bit)
 						else if (current_bit != 6) {
 							led_error(0);
 							seekData = true;
-							//return 0;	
 						} 
 						// too many frames
 						else if ((current_byte + 1) / FRAME_WIDTH > MAX_FRAMES) {
 							led_error(0);
 							seekData = true;
-							//return 0;	
 						}
 						
 						//reset for new data transmission
@@ -713,7 +660,6 @@ bool user_program(void){
 					}
 				}
 			}
-			//Seriali.println();
 		}		
 	}
 					
@@ -734,28 +680,10 @@ bool user_program(void){
 	return 1;
 }
 
-void load_frames(void){
-	// load eeprom or default data into the frame buffer for displaying
-	data_frame_count = EEPROM_read(0x0);
-	
-	if(data_frame_count != 0xff && data_frame_count != 0x0){
-		// eeprom data exists, use it
-		for(uint8_t i = 0; i < data_frame_count*FRAME_WIDTH; i++){
-			data_buf[i] = EEPROM_read(i+1);
-		}
-		return;
-	}
-	
-	// no or bad eeprom, use default
-	data_frame_count = default_data_size;
-	for(uint8_t i = 0; i < data_frame_count*FRAME_WIDTH; i++){
-		data_buf[i] = default_data[i];
-	}
-}
+
 
 uint8_t animate_left(uint8_t frame){
-	uint8_t total_cols = FRAME_WIDTH * data_frame_count;	
-	
+
 	#ifdef DISPLAY_MODE_FULL
 		_delay_ms(20);
 		// all frames at once
@@ -858,25 +786,18 @@ void animate2(void){
 	
 	uint8_t cycles = 0;
 	
-	//uint16_t consecutive_bump_detects = 0;
-	
-	uint8_t last_starting_col = FRAME_WIDTH * data_frame_count;
-	
 	while(1){
 		if(run_mode != 1) return;
 		// read bump sensor and adjust shake timing
-		//bump = bump_hit();
 		if(ADC_shorted) bump = 1;
 		else bump = 0;
 
 		if(bump & !last_bump){
 			// rising edge
-			//consecutive_bump_detects = 0;
 			_delay_ms(55);
 			uint8_t ret = animate_left(frame_num);
 			if (ret >= data_frame_count)
 				ret = 0;
-			//frame_num = ret;
 			all_off();
 			_delay_ms(80);
 			cycles++;
@@ -906,21 +827,19 @@ void run(void){
 	
 	while(1){
 		all_off();
+		
+		//run_mode is determined in timer0_tick_100us_init ISR routine
 		switch(run_mode){
 			case 0:
 				user_program();
-				//led_on(0);
 				break;
 			case 1:
-				//led_on(1);
 				animate2();
 				break;
 			case 2:
-				//led_on(2);
 				led_error(0);
 				break;
 			default:
-				//led_on(3);
 				led_error(0);
 				break;
 		}
@@ -934,10 +853,6 @@ void init(void){
 	CLKPR = 0;
 	
 	init_leds();
-	//init_bumpers();
-	//init_adc();
-	//init_timer();
-	//initTXPin();
 }
 
 int main(void)
