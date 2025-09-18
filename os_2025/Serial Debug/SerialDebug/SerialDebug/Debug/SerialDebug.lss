@@ -25,9 +25,9 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
  10 .debug_str    000010f7  00000000  00000000  00007d50  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00003a8a  00000000  00000000  00008e47  2**0
+ 11 .debug_loc    00003a7f  00000000  00000000  00008e47  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 000002d8  00000000  00000000  0000c8d1  2**0
+ 12 .debug_ranges 000002d8  00000000  00000000  0000c8c6  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -3245,11 +3245,11 @@ inline void all_off(void){
 				mode = 0;
 				for(uint8_t i = 0; i < 5; i++){
      fc6:	51 f7       	brne	.-44     	; 0xf9c <main+0x9a>
-					_delay_ms(200);
 				}
 				break;
 			// normal mode
 			default:
+				mode = 0;
 				run();
      fc8:	db de       	rcall	.-586    	; 0xd80 <_Z3runv>
 

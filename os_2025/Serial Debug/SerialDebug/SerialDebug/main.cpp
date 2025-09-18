@@ -971,7 +971,7 @@ int main(void)
     {
 		switch(mode){
 			
-			// erase EEPROM
+			// erase EEPROM after 5 button presses
 			case 4:	
 				EEPROM_write(0, 0xff);	// just clear the frame size, no need to clear the entire frame memory
 				mode = 0;
@@ -984,6 +984,7 @@ int main(void)
 				break;
 			// normal mode
 			default:
+				mode = 0;
 				run();
 				break;
 		}		
