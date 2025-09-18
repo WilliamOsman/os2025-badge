@@ -909,9 +909,10 @@ int main(void)
 	
 	// handle quick power on/off to select a mode
 	uint8_t mode = EEPROM_read(0xff);
-	led_on(mode);
+	if(mode < 4) led_on(0);
+	else led_on(4);
 	
-	if(mode+1 > 3){
+	if(mode+1 > 4){
 		EEPROM_write(0xff, 0);
 	}
 	else{
@@ -928,41 +929,21 @@ int main(void)
     while(1) 
     {
 		switch(mode){
-			case 0:	// normal animation mode
+			
+			case 5:	// erase EEPROM
+				EEPROM_write(0, 0xff);	// just clear the frame size, no need to clear the entire frame memory
+				mode = 0;
+				for(uint8_t i = 0; i < 5; i++){
+					led_on(4);
+					_delay_ms(200);
+					led_off(4);
+					_delay_ms(200);
+				}
+				break;
+			default:	// normal animation mode
 				load_frames();
 				BUMP_PORT |= BUMP_OFFSET;	// enable bump sensor pull-up
 				animate2();
-				break;
-			case 1:	// bump sensor alignment mode
-				BUMP_PORT |= BUMP_OFFSET;	// enable bump sensor pull-up
-				while(1){
-					if(bump_hit()){
-						led_on(1);
-					}
-					else{
-						led_off(1);
-					}
-					_delay_us(10);
-				}
-				break;
-			case 2:	// program mode
-				if(user_program()){
-					led_on(2);
-					_delay_ms(200);
-					led_off(2);
-					mode = 0;
-					//Serial.println(mode);
-				}
-				break;
-			case 3:	// erase EEPROM
-				for(uint8_t i = 0; i < 5; i++){
-					led_on(3);
-					_delay_ms(200);
-					led_off(3);
-					_delay_ms(200);
-				}
-				EEPROM_write(0, 0xff);	// just clear the frame size, no need to clear the entire frame memory
-				mode = 0;
 				break;
 		}		
 	}
