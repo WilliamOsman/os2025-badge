@@ -103,6 +103,7 @@ volatile uint8_t tick = 0;
 
 #endif
 
+void run(void);
 void init_leds(void);
 void init(void);
 void set_led(uint8_t led_num, uint8_t state);
@@ -155,6 +156,8 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 volatile bool newSample_available = false;
 volatile uint16_t newSample = 0;
 volatile bool ADC_shorted = false;	//if first ADC reading is 0v, the 0ohm resistor is shorted
+volatile uint16_t ADC_shorted_cycles = 0;
+volatile uint8_t run_mode = 0;
 const uint8_t clock_offset = 1;	//tick needs slight auto-adjustment for inaccurate programming app fps
 	
 //----------LED UTILITY---------------	
@@ -216,19 +219,20 @@ inline void all_on(void){
 
 inline void led_error(uint8_t led_num){
 	all_off();
-	for(uint8_t i = 0; i < 5; i++){
-		led_on(0);
-		led_off(1);
-		_delay_ms(100);
-		led_off(0);
-		led_on(1);
-		_delay_ms(100);
-		led_on(0);
-		led_off(1);
-		_delay_ms(100);
-		led_off(0);
-		led_off(1);
-	}
+	//for(uint8_t i = 0; i < 5; i++){
+	if(run_mode != 2) return;
+	led_on(0);
+	led_off(1);
+	_delay_ms(100);
+	led_off(0);
+	led_on(1);
+	_delay_ms(100);
+	led_on(0);
+	led_off(1);
+	_delay_ms(100);
+	led_off(0);
+	led_off(1);
+	//}
 }
 
 inline void led_success(uint8_t led_num){
@@ -372,14 +376,33 @@ ISR(ADC_vect)
 	static uint8_t count = 0;
 	static uint16_t integrate = 0;
 	
+	
 	uint16_t reading = ADC;
 	
-	//check that the 0ohm resistor isn't shorted on first sample
+	//check shake resistor for short circuit
+	//Run mode can be determined by duration of short/open circuit 
 	if(count == 0){
-		if(reading < 10) ADC_shorted = true;
-		else ADC_shorted = false;
+		//state change to short circuit
+		if(reading < 10 && !ADC_shorted){
+			ADC_shorted = true;
+			ADC_shorted_cycles = 1;
+		}
+		//state change to open circuit
+		else{
+			ADC_shorted = false;
+			ADC_shorted_cycles = 1;
+		}		
+		ADC_shorted_cycles++;
+		if(ADC_shorted_cycles > 1000) ADC_shorted_cycles = 1000;
+		
+		//if ADC hasn't been shorted recently run in program mode
+		if(!ADC_shorted && ADC_shorted_cycles > 100) run_mode = 0;
+		//if ADC is continuously shorted display error
+		else if(ADC_shorted && ADC_shorted_cycles > 10) run_mode = 2;
+		//if ADC shorted run in animation mode for
+		else run_mode = 1;
 	}
-	
+
 	integrate += ADC;								// ADC is a macro that does ADCL then ADCH
 	count++;										//increment integration step
 	
@@ -474,17 +497,12 @@ bool user_program(void){
 	const uint8_t led_signal_steady = 1;
 	const uint8_t led_state_now = 0;
 	
-	
-
-	//------- STEP 1 --------- setup sampling ISRs
-	init_adc();
-	timer0_tick_100us_init();
-	sei();
-
 	// ------------- Seek until successful transfer ------------------
 	while(seekData)
 	{
 		static uint8_t stablewhen0 = 10;
+		
+		if(run_mode != 0) return 0; //exit programming mode early
 		
 		//------------ Process ADC Sample -----------------
 		if(newSample_available)
@@ -510,7 +528,7 @@ bool user_program(void){
 				}
 			}
 			
-			if(ADC_shorted) led_error(0);
+			//if(ADC_shorted) led_error(0);
 			
 			data_smooth = data_smooth * 0.5 + (float)newSample * 0.5;			
 			
@@ -846,20 +864,12 @@ void animate2(void){
 	uint8_t last_starting_col = FRAME_WIDTH * data_frame_count;
 	
 	while(1){
-		
+		if(run_mode != 1) return;
 		// read bump sensor and adjust shake timing
-		bump = bump_hit();
-		/*
-		if(bump){
-			consecutive_bump_detects++;
-		}
-		else{
-			consecutive_bump_detects = 0;
-		}
-		if(consecutive_bump_detects > 2000){
-			all_on();
-		}
-		*/
+		//bump = bump_hit();
+		if(ADC_shorted) bump = 1;
+		else bump = 0;
+
 		if(bump & !last_bump){
 			// rising edge
 			//consecutive_bump_detects = 0;
@@ -886,6 +896,33 @@ void animate2(void){
 	}
 }
 
+void run(void){
+	//setup ADC and ISR
+	
+	init_adc();
+	timer0_tick_100us_init();
+	sei();
+	
+	load_frames();
+	
+	while(1){
+		switch(run_mode){
+			case 0:
+				user_program();
+				break;
+			case 1:
+				animate2();
+				break;
+			case 2:
+				led_error(0);
+				break;
+			default:
+				led_error(0);
+				break;
+		}
+	}
+}
+
 
 void init(void){
 	// set main clock prescaler to 1 for highest cpu speed
@@ -894,7 +931,7 @@ void init(void){
 	
 	init_leds();
 	//init_bumpers();
-	init_adc();
+	//init_adc();
 	//init_timer();
 	//initTXPin();
 }
@@ -930,7 +967,8 @@ int main(void)
     {
 		switch(mode){
 			
-			case 5:	// erase EEPROM
+			// erase EEPROM
+			case 4:	
 				EEPROM_write(0, 0xff);	// just clear the frame size, no need to clear the entire frame memory
 				mode = 0;
 				for(uint8_t i = 0; i < 5; i++){
@@ -940,10 +978,9 @@ int main(void)
 					_delay_ms(200);
 				}
 				break;
-			default:	// normal animation mode
-				load_frames();
-				BUMP_PORT |= BUMP_OFFSET;	// enable bump sensor pull-up
-				animate2();
+			// normal mode
+			default:
+				run();
 				break;
 		}		
 	}
