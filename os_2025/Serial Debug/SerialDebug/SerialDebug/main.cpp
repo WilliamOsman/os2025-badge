@@ -503,10 +503,6 @@ bool user_program(void){
 	{
 		static uint8_t stablewhen0 = 10;
 		
-		led_on(0);
-		_delay_ms(100);
-		led_off(0);
-		
 		if(run_mode != 0) return 0; //exit programming mode early
 		
 		//------------ Process ADC Sample -----------------
@@ -532,8 +528,6 @@ bool user_program(void){
 					min_bucket[block] = newSample;
 				}
 			}
-			
-			//if(ADC_shorted) led_error(0);
 			
 			data_smooth = data_smooth * 0.5 + (float)newSample * 0.5;			
 			

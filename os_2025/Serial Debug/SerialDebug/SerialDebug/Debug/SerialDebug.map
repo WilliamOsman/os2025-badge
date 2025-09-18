@@ -27,7 +27,7 @@ c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/..
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr25\libm.a(fp_zero.o)
                               c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr25\libm.a(addsf3x.o) (__fp_zero)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr25\libm.a(gesf2.o)
-                              main.o (__gtsf2)
+                              main.o (__gesf2)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr25\libm.a(mulsf3.o)
                               main.o (__mulsf3)
 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/../../../../avr/lib/avr25\libm.a(mulsf3x.o)
@@ -922,20 +922,20 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x3f3c
+.debug_info     0x00000000     0x3ec0
  *(.debug_info .gnu.linkonce.wi.*)
  .debug_info    0x00000000      0x420 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/Atmel/ATtiny_DFP/1.10.348/gcc/dev/attiny85/avr25/crtattiny85.o
- .debug_info    0x00000420     0x3b1c main.o
+ .debug_info    0x00000420     0x3aa0 main.o
 
 .debug_abbrev   0x00000000      0x921
  *(.debug_abbrev)
  .debug_abbrev  0x00000000      0x3e8 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/Atmel/ATtiny_DFP/1.10.348/gcc/dev/attiny85/avr25/crtattiny85.o
  .debug_abbrev  0x000003e8      0x539 main.o
 
-.debug_line     0x00000000     0x178b
+.debug_line     0x00000000     0x175c
  *(.debug_line .debug_line.* .debug_line_end)
  .debug_line    0x00000000       0xf2 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/Atmel/ATtiny_DFP/1.10.348/gcc/dev/attiny85/avr25/crtattiny85.o
- .debug_line    0x000000f2     0x1699 main.o
+ .debug_line    0x000000f2     0x166a main.o
 
 .debug_frame    0x00000000      0x708
  *(.debug_frame)
@@ -947,9 +947,9 @@ END GROUP
  .debug_str     0x00000169      0xf8e main.o
                                0x1041 (size before relaxing)
 
-.debug_loc      0x00000000     0x3b27
+.debug_loc      0x00000000     0x3a8a
  *(.debug_loc)
- .debug_loc     0x00000000     0x3b27 main.o
+ .debug_loc     0x00000000     0x3a8a main.o
 
 .debug_macinfo
  *(.debug_macinfo)

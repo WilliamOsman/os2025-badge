@@ -15,19 +15,19 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
   5 .debug_aranges 00000240  00000000  00000000  000014c8  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_info   00003f3c  00000000  00000000  00001708  2**0
+  6 .debug_info   00003ec0  00000000  00000000  00001708  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_abbrev 00000921  00000000  00000000  00005644  2**0
+  7 .debug_abbrev 00000921  00000000  00000000  000055c8  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   0000178b  00000000  00000000  00005f65  2**0
+  8 .debug_line   0000175c  00000000  00000000  00005ee9  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  00000708  00000000  00000000  000076f0  2**2
+  9 .debug_frame  00000708  00000000  00000000  00007648  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    000010f7  00000000  00000000  00007df8  2**0
+ 10 .debug_str    000010f7  00000000  00000000  00007d50  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00003b27  00000000  00000000  00008eef  2**0
+ 11 .debug_loc    00003a8a  00000000  00000000  00008e47  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 000002d8  00000000  00000000  0000ca16  2**0
+ 12 .debug_ranges 000002d8  00000000  00000000  0000c8d1  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -437,1567 +437,1530 @@ bool user_program(void){
      328:	00 d0       	rcall	.+0      	; 0x32a <_Z12user_programv+0x2a>
      32a:	cd b7       	in	r28, 0x3d	; 61
      32c:	de b7       	in	r29, 0x3e	; 62
-	bool state_prev = 0;
-	bool signal_available = false;
-	uint8_t rx = 0;						//incoming bitstream storage
-	bool newbit_available = false;
-	bool data_incoming = false;
-	bool first_read = true;
-     32e:	21 e0       	ldi	r18, 0x01	; 1
-	bool state_now = 0;
-	bool state_prev = 0;
-	bool signal_available = false;
-	uint8_t rx = 0;						//incoming bitstream storage
-	bool newbit_available = false;
-	bool data_incoming = false;
-     330:	1c 82       	std	Y+4, r1	; 0x04
-	
-	bool seekData = true;
-	bool state_now = 0;
-	bool state_prev = 0;
-	bool signal_available = false;
-	uint8_t rx = 0;						//incoming bitstream storage
-     332:	1a 82       	std	Y+2, r1	; 0x02
-	
-	uint8_t total_bytes = 0;
-	
-	bool seekData = true;
-	bool state_now = 0;
-	bool state_prev = 0;
-     334:	1b 82       	std	Y+3, r1	; 0x03
-	*/
-	
-	uint8_t total_bytes = 0;
-	
-	bool seekData = true;
-	bool state_now = 0;
-     336:	19 82       	std	Y+1, r1	; 0x01
+	// ------------- Seek until successful transfer ------------------
+	while(seekData)
+	{
+		static uint8_t stablewhen0 = 10;
+		
+		if(run_mode != 0) return 0; //exit programming mode early
+     32e:	80 91 d7 00 	lds	r24, 0x00D7	; 0x8000d7 <run_mode>
+     332:	81 11       	cpse	r24, r1
+     334:	55 c3       	rjmp	.+1706   	; 0x9e0 <__LOCK_REGION_LENGTH__+0x5e0>
+     336:	21 e0       	ldi	r18, 0x01	; 1
+     338:	1c 82       	std	Y+4, r1	; 0x04
+     33a:	1a 82       	std	Y+2, r1	; 0x02
+     33c:	1b 82       	std	Y+3, r1	; 0x03
+     33e:	19 82       	std	Y+1, r1	; 0x01
 							//return 0;	
 						} 
 						// too many frames
 						else if ((current_byte + 1) / FRAME_WIDTH > MAX_FRAMES) {
 							led_error(0);
 							seekData = true;
-     338:	99 24       	eor	r9, r9
-     33a:	93 94       	inc	r9
-     33c:	0f 2e       	mov	r0, r31
-     33e:	f8 ec       	ldi	r31, 0xC8	; 200
-     340:	2f 2e       	mov	r2, r31
-     342:	f0 e0       	ldi	r31, 0x00	; 0
-     344:	3f 2e       	mov	r3, r31
-     346:	f0 2d       	mov	r31, r0
-//----------LED UTILITY---------------	
-
-inline void led_on(uint8_t led_num){
-	switch(led_num){
-		case 0x0:
-			LED1_PORT &= ~(LED1_OFFSET);
-     348:	c0 98       	cbi	0x18, 0	; 24
-	#else
-		//round up by default
-		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
-	#endif
-
-	__builtin_avr_delay_cycles(__ticks_dc);
-     34a:	4f ef       	ldi	r20, 0xFF	; 255
-     34c:	60 e7       	ldi	r22, 0x70	; 112
-     34e:	82 e0       	ldi	r24, 0x02	; 2
-     350:	41 50       	subi	r20, 0x01	; 1
-     352:	60 40       	sbci	r22, 0x00	; 0
-     354:	80 40       	sbci	r24, 0x00	; 0
-     356:	e1 f7       	brne	.-8      	; 0x350 <_Z12user_programv+0x50>
-     358:	00 c0       	rjmp	.+0      	; 0x35a <_Z12user_programv+0x5a>
-     35a:	00 00       	nop
-
-
-inline void led_off(uint8_t led_num){
-	switch(led_num){
-		case 0x0:
-			LED1_PORT |= (LED1_OFFSET);
-     35c:	c0 9a       	sbi	0x18, 0	; 24
-		
-		led_on(0);
-		_delay_ms(100);
-		led_off(0);
+     340:	99 24       	eor	r9, r9
+     342:	93 94       	inc	r9
+     344:	0f 2e       	mov	r0, r31
+     346:	f8 ec       	ldi	r31, 0xC8	; 200
+     348:	2f 2e       	mov	r2, r31
+     34a:	f0 e0       	ldi	r31, 0x00	; 0
+     34c:	3f 2e       	mov	r3, r31
+     34e:	f0 2d       	mov	r31, r0
+     350:	05 c0       	rjmp	.+10     	; 0x35c <_Z12user_programv+0x5c>
+					//Serial.print(":BYTE");
+					//if 5th bit is 0, data is over, or read is corrupted
+					if (!(rx & 0b1)) {
+						//Serial.println(":FINISH");
+						//data read is finished, or data is corrupted
+						data_incoming = false;
+     352:	1c 82       	std	Y+4, r1	; 0x04
+	// ------------- Seek until successful transfer ------------------
+	while(seekData)
+	{
+		static uint8_t stablewhen0 = 10;
 		
 		if(run_mode != 0) return 0; //exit programming mode early
-     35e:	80 91 d7 00 	lds	r24, 0x00D7	; 0x8000d7 <run_mode>
-     362:	81 11       	cpse	r24, r1
-     364:	41 c3       	rjmp	.+1666   	; 0x9e8 <__LOCK_REGION_LENGTH__+0x5e8>
+     354:	80 91 d7 00 	lds	r24, 0x00D7	; 0x8000d7 <run_mode>
+     358:	81 11       	cpse	r24, r1
+     35a:	44 c3       	rjmp	.+1672   	; 0x9e4 <__LOCK_REGION_LENGTH__+0x5e4>
 		
 		//------------ Process ADC Sample -----------------
 		if(newSample_available)
-     366:	80 91 db 00 	lds	r24, 0x00DB	; 0x8000db <newSample_available>
-     36a:	88 23       	and	r24, r24
-     36c:	09 f4       	brne	.+2      	; 0x370 <_Z12user_programv+0x70>
-     36e:	a6 c1       	rjmp	.+844    	; 0x6bc <__LOCK_REGION_LENGTH__+0x2bc>
+     35c:	80 91 db 00 	lds	r24, 0x00DB	; 0x8000db <newSample_available>
+     360:	88 23       	and	r24, r24
+     362:	09 f4       	brne	.+2      	; 0x366 <_Z12user_programv+0x66>
+     364:	a9 c1       	rjmp	.+850    	; 0x6b8 <__LOCK_REGION_LENGTH__+0x2b8>
 			static uint16_t max_bucket[SAMPLE_HISTORY];
 			static uint16_t min_bucket[SAMPLE_HISTORY];
 			static uint8_t bucket_sample = 0;
 			static uint8_t bucket_writepos = 0;
 				
 			newSample_available = false;
-     370:	10 92 db 00 	sts	0x00DB, r1	; 0x8000db <newSample_available>
+     366:	10 92 db 00 	sts	0x00DB, r1	; 0x8000db <newSample_available>
 			
 			if(first_read){
-     374:	22 23       	and	r18, r18
-     376:	09 f4       	brne	.+2      	; 0x37a <_Z12user_programv+0x7a>
-     378:	40 c0       	rjmp	.+128    	; 0x3fa <_Z12user_programv+0xfa>
+     36a:	22 23       	and	r18, r18
+     36c:	09 f4       	brne	.+2      	; 0x370 <_Z12user_programv+0x70>
+     36e:	40 c0       	rjmp	.+128    	; 0x3f0 <_Z12user_programv+0xf0>
 				first_read = false;
 				data_smooth = newSample;
-     37a:	60 91 d9 00 	lds	r22, 0x00D9	; 0x8000d9 <newSample>
-     37e:	70 91 da 00 	lds	r23, 0x00DA	; 0x8000da <newSample+0x1>
-     382:	80 e0       	ldi	r24, 0x00	; 0
-     384:	90 e0       	ldi	r25, 0x00	; 0
-     386:	b6 d6       	rcall	.+3436   	; 0x10f4 <__floatunsisf>
-     388:	60 93 d0 00 	sts	0x00D0, r22	; 0x8000d0 <_ZZ12user_programvE11data_smooth>
-     38c:	70 93 d1 00 	sts	0x00D1, r23	; 0x8000d1 <_ZZ12user_programvE11data_smooth+0x1>
-     390:	80 93 d2 00 	sts	0x00D2, r24	; 0x8000d2 <_ZZ12user_programvE11data_smooth+0x2>
-     394:	90 93 d3 00 	sts	0x00D3, r25	; 0x8000d3 <_ZZ12user_programvE11data_smooth+0x3>
+     370:	60 91 d9 00 	lds	r22, 0x00D9	; 0x8000d9 <newSample>
+     374:	70 91 da 00 	lds	r23, 0x00DA	; 0x8000da <newSample+0x1>
+     378:	80 e0       	ldi	r24, 0x00	; 0
+     37a:	90 e0       	ldi	r25, 0x00	; 0
+     37c:	bb d6       	rcall	.+3446   	; 0x10f4 <__floatunsisf>
+     37e:	60 93 d0 00 	sts	0x00D0, r22	; 0x8000d0 <_ZZ12user_programvE11data_smooth>
+     382:	70 93 d1 00 	sts	0x00D1, r23	; 0x8000d1 <_ZZ12user_programvE11data_smooth+0x1>
+     386:	80 93 d2 00 	sts	0x00D2, r24	; 0x8000d2 <_ZZ12user_programvE11data_smooth+0x2>
+     38a:	90 93 d3 00 	sts	0x00D3, r25	; 0x8000d3 <_ZZ12user_programvE11data_smooth+0x3>
 				data_max = newSample;
-     398:	60 91 d9 00 	lds	r22, 0x00D9	; 0x8000d9 <newSample>
-     39c:	70 91 da 00 	lds	r23, 0x00DA	; 0x8000da <newSample+0x1>
-     3a0:	80 e0       	ldi	r24, 0x00	; 0
-     3a2:	90 e0       	ldi	r25, 0x00	; 0
-     3a4:	a7 d6       	rcall	.+3406   	; 0x10f4 <__floatunsisf>
-     3a6:	60 93 cc 00 	sts	0x00CC, r22	; 0x8000cc <_ZZ12user_programvE8data_max>
-     3aa:	70 93 cd 00 	sts	0x00CD, r23	; 0x8000cd <_ZZ12user_programvE8data_max+0x1>
-     3ae:	80 93 ce 00 	sts	0x00CE, r24	; 0x8000ce <_ZZ12user_programvE8data_max+0x2>
-     3b2:	90 93 cf 00 	sts	0x00CF, r25	; 0x8000cf <_ZZ12user_programvE8data_max+0x3>
+     38e:	60 91 d9 00 	lds	r22, 0x00D9	; 0x8000d9 <newSample>
+     392:	70 91 da 00 	lds	r23, 0x00DA	; 0x8000da <newSample+0x1>
+     396:	80 e0       	ldi	r24, 0x00	; 0
+     398:	90 e0       	ldi	r25, 0x00	; 0
+     39a:	ac d6       	rcall	.+3416   	; 0x10f4 <__floatunsisf>
+     39c:	60 93 cc 00 	sts	0x00CC, r22	; 0x8000cc <_ZZ12user_programvE8data_max>
+     3a0:	70 93 cd 00 	sts	0x00CD, r23	; 0x8000cd <_ZZ12user_programvE8data_max+0x1>
+     3a4:	80 93 ce 00 	sts	0x00CE, r24	; 0x8000ce <_ZZ12user_programvE8data_max+0x2>
+     3a8:	90 93 cf 00 	sts	0x00CF, r25	; 0x8000cf <_ZZ12user_programvE8data_max+0x3>
 				data_min = newSample;
-     3b6:	60 91 d9 00 	lds	r22, 0x00D9	; 0x8000d9 <newSample>
-     3ba:	70 91 da 00 	lds	r23, 0x00DA	; 0x8000da <newSample+0x1>
-     3be:	80 e0       	ldi	r24, 0x00	; 0
-     3c0:	90 e0       	ldi	r25, 0x00	; 0
-     3c2:	98 d6       	rcall	.+3376   	; 0x10f4 <__floatunsisf>
-     3c4:	60 93 c8 00 	sts	0x00C8, r22	; 0x8000c8 <_ZZ12user_programvE8data_min>
-     3c8:	70 93 c9 00 	sts	0x00C9, r23	; 0x8000c9 <_ZZ12user_programvE8data_min+0x1>
-     3cc:	80 93 ca 00 	sts	0x00CA, r24	; 0x8000ca <_ZZ12user_programvE8data_min+0x2>
-     3d0:	90 93 cb 00 	sts	0x00CB, r25	; 0x8000cb <_ZZ12user_programvE8data_min+0x3>
-     3d4:	e8 eb       	ldi	r30, 0xB8	; 184
-     3d6:	f0 e0       	ldi	r31, 0x00	; 0
-     3d8:	a8 ea       	ldi	r26, 0xA8	; 168
-     3da:	b0 e0       	ldi	r27, 0x00	; 0
+     3ac:	60 91 d9 00 	lds	r22, 0x00D9	; 0x8000d9 <newSample>
+     3b0:	70 91 da 00 	lds	r23, 0x00DA	; 0x8000da <newSample+0x1>
+     3b4:	80 e0       	ldi	r24, 0x00	; 0
+     3b6:	90 e0       	ldi	r25, 0x00	; 0
+     3b8:	9d d6       	rcall	.+3386   	; 0x10f4 <__floatunsisf>
+     3ba:	60 93 c8 00 	sts	0x00C8, r22	; 0x8000c8 <_ZZ12user_programvE8data_min>
+     3be:	70 93 c9 00 	sts	0x00C9, r23	; 0x8000c9 <_ZZ12user_programvE8data_min+0x1>
+     3c2:	80 93 ca 00 	sts	0x00CA, r24	; 0x8000ca <_ZZ12user_programvE8data_min+0x2>
+     3c6:	90 93 cb 00 	sts	0x00CB, r25	; 0x8000cb <_ZZ12user_programvE8data_min+0x3>
+     3ca:	e8 eb       	ldi	r30, 0xB8	; 184
+     3cc:	f0 e0       	ldi	r31, 0x00	; 0
+     3ce:	a8 ea       	ldi	r26, 0xA8	; 168
+     3d0:	b0 e0       	ldi	r27, 0x00	; 0
 				for(uint8_t block = 0; block < SAMPLE_HISTORY; block++){
 					max_bucket[block] = newSample;
-     3dc:	80 91 d9 00 	lds	r24, 0x00D9	; 0x8000d9 <newSample>
-     3e0:	90 91 da 00 	lds	r25, 0x00DA	; 0x8000da <newSample+0x1>
-     3e4:	81 93       	st	Z+, r24
-     3e6:	91 93       	st	Z+, r25
+     3d2:	80 91 d9 00 	lds	r24, 0x00D9	; 0x8000d9 <newSample>
+     3d6:	90 91 da 00 	lds	r25, 0x00DA	; 0x8000da <newSample+0x1>
+     3da:	81 93       	st	Z+, r24
+     3dc:	91 93       	st	Z+, r25
 					min_bucket[block] = newSample;
-     3e8:	80 91 d9 00 	lds	r24, 0x00D9	; 0x8000d9 <newSample>
-     3ec:	90 91 da 00 	lds	r25, 0x00DA	; 0x8000da <newSample+0x1>
-     3f0:	8d 93       	st	X+, r24
-     3f2:	9d 93       	st	X+, r25
+     3de:	80 91 d9 00 	lds	r24, 0x00D9	; 0x8000d9 <newSample>
+     3e2:	90 91 da 00 	lds	r25, 0x00DA	; 0x8000da <newSample+0x1>
+     3e6:	8d 93       	st	X+, r24
+     3e8:	9d 93       	st	X+, r25
 			if(first_read){
 				first_read = false;
 				data_smooth = newSample;
 				data_max = newSample;
 				data_min = newSample;
 				for(uint8_t block = 0; block < SAMPLE_HISTORY; block++){
-     3f4:	2e 16       	cp	r2, r30
-     3f6:	3f 06       	cpc	r3, r31
-     3f8:	89 f7       	brne	.-30     	; 0x3dc <_Z12user_programv+0xdc>
+     3ea:	2e 16       	cp	r2, r30
+     3ec:	3f 06       	cpc	r3, r31
+     3ee:	89 f7       	brne	.-30     	; 0x3d2 <_Z12user_programv+0xd2>
+					max_bucket[block] = newSample;
+					min_bucket[block] = newSample;
 				}
 			}
 			
-			//if(ADC_shorted) led_error(0);
-			
 			data_smooth = data_smooth * 0.5 + (float)newSample * 0.5;			
-     3fa:	e0 91 d9 00 	lds	r30, 0x00D9	; 0x8000d9 <newSample>
-     3fe:	f0 91 da 00 	lds	r31, 0x00DA	; 0x8000da <newSample+0x1>
-     402:	fe 83       	std	Y+6, r31	; 0x06
-     404:	ed 83       	std	Y+5, r30	; 0x05
-     406:	20 e0       	ldi	r18, 0x00	; 0
-     408:	30 e0       	ldi	r19, 0x00	; 0
-     40a:	40 e0       	ldi	r20, 0x00	; 0
-     40c:	5f e3       	ldi	r21, 0x3F	; 63
-     40e:	60 91 d0 00 	lds	r22, 0x00D0	; 0x8000d0 <_ZZ12user_programvE11data_smooth>
-     412:	70 91 d1 00 	lds	r23, 0x00D1	; 0x8000d1 <_ZZ12user_programvE11data_smooth+0x1>
-     416:	80 91 d2 00 	lds	r24, 0x00D2	; 0x8000d2 <_ZZ12user_programvE11data_smooth+0x2>
-     41a:	90 91 d3 00 	lds	r25, 0x00D3	; 0x8000d3 <_ZZ12user_programvE11data_smooth+0x3>
-     41e:	20 d7       	rcall	.+3648   	; 0x1260 <__mulsf3>
-     420:	6b 01       	movw	r12, r22
-     422:	7c 01       	movw	r14, r24
-     424:	2d 81       	ldd	r18, Y+5	; 0x05
-     426:	3e 81       	ldd	r19, Y+6	; 0x06
-     428:	b9 01       	movw	r22, r18
-     42a:	80 e0       	ldi	r24, 0x00	; 0
-     42c:	90 e0       	ldi	r25, 0x00	; 0
-     42e:	62 d6       	rcall	.+3268   	; 0x10f4 <__floatunsisf>
-     430:	20 e0       	ldi	r18, 0x00	; 0
-     432:	30 e0       	ldi	r19, 0x00	; 0
-     434:	40 e0       	ldi	r20, 0x00	; 0
-     436:	5f e3       	ldi	r21, 0x3F	; 63
-     438:	13 d7       	rcall	.+3622   	; 0x1260 <__mulsf3>
-     43a:	9b 01       	movw	r18, r22
-     43c:	ac 01       	movw	r20, r24
-     43e:	c7 01       	movw	r24, r14
-     440:	b6 01       	movw	r22, r12
-     442:	c4 d5       	rcall	.+2952   	; 0xfcc <__addsf3>
-     444:	6b 01       	movw	r12, r22
-     446:	7c 01       	movw	r14, r24
-     448:	60 93 d0 00 	sts	0x00D0, r22	; 0x8000d0 <_ZZ12user_programvE11data_smooth>
-     44c:	70 93 d1 00 	sts	0x00D1, r23	; 0x8000d1 <_ZZ12user_programvE11data_smooth+0x1>
-     450:	80 93 d2 00 	sts	0x00D2, r24	; 0x8000d2 <_ZZ12user_programvE11data_smooth+0x2>
-     454:	90 93 d3 00 	sts	0x00D3, r25	; 0x8000d3 <_ZZ12user_programvE11data_smooth+0x3>
+     3f0:	80 91 d9 00 	lds	r24, 0x00D9	; 0x8000d9 <newSample>
+     3f4:	90 91 da 00 	lds	r25, 0x00DA	; 0x8000da <newSample+0x1>
+     3f8:	9e 83       	std	Y+6, r25	; 0x06
+     3fa:	8d 83       	std	Y+5, r24	; 0x05
+     3fc:	20 e0       	ldi	r18, 0x00	; 0
+     3fe:	30 e0       	ldi	r19, 0x00	; 0
+     400:	40 e0       	ldi	r20, 0x00	; 0
+     402:	5f e3       	ldi	r21, 0x3F	; 63
+     404:	60 91 d0 00 	lds	r22, 0x00D0	; 0x8000d0 <_ZZ12user_programvE11data_smooth>
+     408:	70 91 d1 00 	lds	r23, 0x00D1	; 0x8000d1 <_ZZ12user_programvE11data_smooth+0x1>
+     40c:	80 91 d2 00 	lds	r24, 0x00D2	; 0x8000d2 <_ZZ12user_programvE11data_smooth+0x2>
+     410:	90 91 d3 00 	lds	r25, 0x00D3	; 0x8000d3 <_ZZ12user_programvE11data_smooth+0x3>
+     414:	25 d7       	rcall	.+3658   	; 0x1260 <__mulsf3>
+     416:	6b 01       	movw	r12, r22
+     418:	7c 01       	movw	r14, r24
+     41a:	ed 81       	ldd	r30, Y+5	; 0x05
+     41c:	fe 81       	ldd	r31, Y+6	; 0x06
+     41e:	bf 01       	movw	r22, r30
+     420:	80 e0       	ldi	r24, 0x00	; 0
+     422:	90 e0       	ldi	r25, 0x00	; 0
+     424:	67 d6       	rcall	.+3278   	; 0x10f4 <__floatunsisf>
+     426:	20 e0       	ldi	r18, 0x00	; 0
+     428:	30 e0       	ldi	r19, 0x00	; 0
+     42a:	40 e0       	ldi	r20, 0x00	; 0
+     42c:	5f e3       	ldi	r21, 0x3F	; 63
+     42e:	18 d7       	rcall	.+3632   	; 0x1260 <__mulsf3>
+     430:	9b 01       	movw	r18, r22
+     432:	ac 01       	movw	r20, r24
+     434:	c7 01       	movw	r24, r14
+     436:	b6 01       	movw	r22, r12
+     438:	c9 d5       	rcall	.+2962   	; 0xfcc <__addsf3>
+     43a:	6b 01       	movw	r12, r22
+     43c:	7c 01       	movw	r14, r24
+     43e:	60 93 d0 00 	sts	0x00D0, r22	; 0x8000d0 <_ZZ12user_programvE11data_smooth>
+     442:	70 93 d1 00 	sts	0x00D1, r23	; 0x8000d1 <_ZZ12user_programvE11data_smooth+0x1>
+     446:	80 93 d2 00 	sts	0x00D2, r24	; 0x8000d2 <_ZZ12user_programvE11data_smooth+0x2>
+     44a:	90 93 d3 00 	sts	0x00D3, r25	; 0x8000d3 <_ZZ12user_programvE11data_smooth+0x3>
 			
 			// windowed historic maximum/minimum over a large number of samples without storing every sample
 			// each bucket contains a max/min that represents 8 previous samples
 			// old buckets are overwritten, so historic data generally follows the signal
 			if(data_smooth > max_bucket[bucket_writepos]) max_bucket[bucket_writepos] = data_smooth;
-     458:	10 91 a7 00 	lds	r17, 0x00A7	; 0x8000a7 <_ZZ12user_programvE15bucket_writepos>
-     45c:	81 2f       	mov	r24, r17
-     45e:	90 e0       	ldi	r25, 0x00	; 0
-     460:	9e 83       	std	Y+6, r25	; 0x06
-     462:	8d 83       	std	Y+5, r24	; 0x05
-     464:	fc 01       	movw	r30, r24
-     466:	ee 0f       	add	r30, r30
-     468:	ff 1f       	adc	r31, r31
-     46a:	e8 54       	subi	r30, 0x48	; 72
-     46c:	ff 4f       	sbci	r31, 0xFF	; 255
-     46e:	60 81       	ld	r22, Z
-     470:	71 81       	ldd	r23, Z+1	; 0x01
-     472:	80 e0       	ldi	r24, 0x00	; 0
-     474:	90 e0       	ldi	r25, 0x00	; 0
-     476:	3e d6       	rcall	.+3196   	; 0x10f4 <__floatunsisf>
-     478:	9b 01       	movw	r18, r22
-     47a:	ac 01       	movw	r20, r24
-     47c:	c7 01       	movw	r24, r14
-     47e:	b6 01       	movw	r22, r12
-     480:	eb d6       	rcall	.+3542   	; 0x1258 <__gesf2>
-     482:	18 16       	cp	r1, r24
-     484:	84 f4       	brge	.+32     	; 0x4a6 <__LOCK_REGION_LENGTH__+0xa6>
-     486:	ed 81       	ldd	r30, Y+5	; 0x05
-     488:	fe 81       	ldd	r31, Y+6	; 0x06
-     48a:	ee 0f       	add	r30, r30
-     48c:	ff 1f       	adc	r31, r31
-     48e:	e8 54       	subi	r30, 0x48	; 72
-     490:	ff 4f       	sbci	r31, 0xFF	; 255
-     492:	fe 83       	std	Y+6, r31	; 0x06
-     494:	ed 83       	std	Y+5, r30	; 0x05
-     496:	c7 01       	movw	r24, r14
-     498:	b6 01       	movw	r22, r12
-     49a:	00 d6       	rcall	.+3072   	; 0x109c <__fixunssfsi>
+     44e:	10 91 a7 00 	lds	r17, 0x00A7	; 0x8000a7 <_ZZ12user_programvE15bucket_writepos>
+     452:	21 2f       	mov	r18, r17
+     454:	30 e0       	ldi	r19, 0x00	; 0
+     456:	3e 83       	std	Y+6, r19	; 0x06
+     458:	2d 83       	std	Y+5, r18	; 0x05
+     45a:	f9 01       	movw	r30, r18
+     45c:	ee 0f       	add	r30, r30
+     45e:	ff 1f       	adc	r31, r31
+     460:	e8 54       	subi	r30, 0x48	; 72
+     462:	ff 4f       	sbci	r31, 0xFF	; 255
+     464:	60 81       	ld	r22, Z
+     466:	71 81       	ldd	r23, Z+1	; 0x01
+     468:	80 e0       	ldi	r24, 0x00	; 0
+     46a:	90 e0       	ldi	r25, 0x00	; 0
+     46c:	43 d6       	rcall	.+3206   	; 0x10f4 <__floatunsisf>
+     46e:	9b 01       	movw	r18, r22
+     470:	ac 01       	movw	r20, r24
+     472:	c7 01       	movw	r24, r14
+     474:	b6 01       	movw	r22, r12
+     476:	f0 d6       	rcall	.+3552   	; 0x1258 <__gesf2>
+     478:	18 16       	cp	r1, r24
+     47a:	84 f4       	brge	.+32     	; 0x49c <__LOCK_REGION_LENGTH__+0x9c>
+     47c:	8d 81       	ldd	r24, Y+5	; 0x05
+     47e:	9e 81       	ldd	r25, Y+6	; 0x06
+     480:	88 0f       	add	r24, r24
+     482:	99 1f       	adc	r25, r25
+     484:	88 54       	subi	r24, 0x48	; 72
+     486:	9f 4f       	sbci	r25, 0xFF	; 255
+     488:	9e 83       	std	Y+6, r25	; 0x06
+     48a:	8d 83       	std	Y+5, r24	; 0x05
+     48c:	c7 01       	movw	r24, r14
+     48e:	b6 01       	movw	r22, r12
+     490:	05 d6       	rcall	.+3082   	; 0x109c <__fixunssfsi>
+     492:	ed 81       	ldd	r30, Y+5	; 0x05
+     494:	fe 81       	ldd	r31, Y+6	; 0x06
+     496:	71 83       	std	Z+1, r23	; 0x01
+     498:	60 83       	st	Z, r22
+     49a:	21 c0       	rjmp	.+66     	; 0x4de <__LOCK_REGION_LENGTH__+0xde>
+			else if(data_smooth < min_bucket[bucket_writepos]) min_bucket[bucket_writepos] = data_smooth;
      49c:	ed 81       	ldd	r30, Y+5	; 0x05
      49e:	fe 81       	ldd	r31, Y+6	; 0x06
-     4a0:	71 83       	std	Z+1, r23	; 0x01
-     4a2:	60 83       	st	Z, r22
-     4a4:	21 c0       	rjmp	.+66     	; 0x4e8 <__LOCK_REGION_LENGTH__+0xe8>
-			else if(data_smooth < min_bucket[bucket_writepos]) min_bucket[bucket_writepos] = data_smooth;
-     4a6:	ed 81       	ldd	r30, Y+5	; 0x05
-     4a8:	fe 81       	ldd	r31, Y+6	; 0x06
-     4aa:	ee 0f       	add	r30, r30
-     4ac:	ff 1f       	adc	r31, r31
-     4ae:	e8 55       	subi	r30, 0x58	; 88
-     4b0:	ff 4f       	sbci	r31, 0xFF	; 255
-     4b2:	60 81       	ld	r22, Z
-     4b4:	71 81       	ldd	r23, Z+1	; 0x01
-     4b6:	80 e0       	ldi	r24, 0x00	; 0
-     4b8:	90 e0       	ldi	r25, 0x00	; 0
-     4ba:	1c d6       	rcall	.+3128   	; 0x10f4 <__floatunsisf>
-     4bc:	9b 01       	movw	r18, r22
-     4be:	ac 01       	movw	r20, r24
-     4c0:	c7 01       	movw	r24, r14
-     4c2:	b6 01       	movw	r22, r12
-     4c4:	e7 d5       	rcall	.+3022   	; 0x1094 <__cmpsf2>
-     4c6:	88 23       	and	r24, r24
-     4c8:	7c f4       	brge	.+30     	; 0x4e8 <__LOCK_REGION_LENGTH__+0xe8>
-     4ca:	2d 81       	ldd	r18, Y+5	; 0x05
-     4cc:	3e 81       	ldd	r19, Y+6	; 0x06
-     4ce:	22 0f       	add	r18, r18
-     4d0:	33 1f       	adc	r19, r19
-     4d2:	28 55       	subi	r18, 0x58	; 88
-     4d4:	3f 4f       	sbci	r19, 0xFF	; 255
-     4d6:	3e 83       	std	Y+6, r19	; 0x06
-     4d8:	2d 83       	std	Y+5, r18	; 0x05
-     4da:	c7 01       	movw	r24, r14
-     4dc:	b6 01       	movw	r22, r12
-     4de:	de d5       	rcall	.+3004   	; 0x109c <__fixunssfsi>
-     4e0:	ed 81       	ldd	r30, Y+5	; 0x05
-     4e2:	fe 81       	ldd	r31, Y+6	; 0x06
-     4e4:	71 83       	std	Z+1, r23	; 0x01
-     4e6:	60 83       	st	Z, r22
+     4a0:	ee 0f       	add	r30, r30
+     4a2:	ff 1f       	adc	r31, r31
+     4a4:	e8 55       	subi	r30, 0x58	; 88
+     4a6:	ff 4f       	sbci	r31, 0xFF	; 255
+     4a8:	60 81       	ld	r22, Z
+     4aa:	71 81       	ldd	r23, Z+1	; 0x01
+     4ac:	80 e0       	ldi	r24, 0x00	; 0
+     4ae:	90 e0       	ldi	r25, 0x00	; 0
+     4b0:	21 d6       	rcall	.+3138   	; 0x10f4 <__floatunsisf>
+     4b2:	9b 01       	movw	r18, r22
+     4b4:	ac 01       	movw	r20, r24
+     4b6:	c7 01       	movw	r24, r14
+     4b8:	b6 01       	movw	r22, r12
+     4ba:	ec d5       	rcall	.+3032   	; 0x1094 <__cmpsf2>
+     4bc:	88 23       	and	r24, r24
+     4be:	7c f4       	brge	.+30     	; 0x4de <__LOCK_REGION_LENGTH__+0xde>
+     4c0:	2d 81       	ldd	r18, Y+5	; 0x05
+     4c2:	3e 81       	ldd	r19, Y+6	; 0x06
+     4c4:	22 0f       	add	r18, r18
+     4c6:	33 1f       	adc	r19, r19
+     4c8:	28 55       	subi	r18, 0x58	; 88
+     4ca:	3f 4f       	sbci	r19, 0xFF	; 255
+     4cc:	3e 83       	std	Y+6, r19	; 0x06
+     4ce:	2d 83       	std	Y+5, r18	; 0x05
+     4d0:	c7 01       	movw	r24, r14
+     4d2:	b6 01       	movw	r22, r12
+     4d4:	e3 d5       	rcall	.+3014   	; 0x109c <__fixunssfsi>
+     4d6:	ed 81       	ldd	r30, Y+5	; 0x05
+     4d8:	fe 81       	ldd	r31, Y+6	; 0x06
+     4da:	71 83       	std	Z+1, r23	; 0x01
+     4dc:	60 83       	st	Z, r22
 			
 			bucket_sample++;
-     4e8:	80 91 a6 00 	lds	r24, 0x00A6	; 0x8000a6 <_ZZ12user_programvE13bucket_sample>
-     4ec:	8f 5f       	subi	r24, 0xFF	; 255
+     4de:	80 91 a6 00 	lds	r24, 0x00A6	; 0x8000a6 <_ZZ12user_programvE13bucket_sample>
+     4e2:	8f 5f       	subi	r24, 0xFF	; 255
 			
 			if(bucket_sample >= OVERSAMPLE){
-     4ee:	88 30       	cpi	r24, 0x08	; 8
-     4f0:	18 f4       	brcc	.+6      	; 0x4f8 <__LOCK_REGION_LENGTH__+0xf8>
+     4e4:	88 30       	cpi	r24, 0x08	; 8
+     4e6:	18 f4       	brcc	.+6      	; 0x4ee <__LOCK_REGION_LENGTH__+0xee>
 			// each bucket contains a max/min that represents 8 previous samples
 			// old buckets are overwritten, so historic data generally follows the signal
 			if(data_smooth > max_bucket[bucket_writepos]) max_bucket[bucket_writepos] = data_smooth;
 			else if(data_smooth < min_bucket[bucket_writepos]) min_bucket[bucket_writepos] = data_smooth;
 			
 			bucket_sample++;
-     4f2:	80 93 a6 00 	sts	0x00A6, r24	; 0x8000a6 <_ZZ12user_programvE13bucket_sample>
-     4f6:	21 c0       	rjmp	.+66     	; 0x53a <__LOCK_REGION_LENGTH__+0x13a>
+     4e8:	80 93 a6 00 	sts	0x00A6, r24	; 0x8000a6 <_ZZ12user_programvE13bucket_sample>
+     4ec:	24 c0       	rjmp	.+72     	; 0x536 <__LOCK_REGION_LENGTH__+0x136>
 			
 			if(bucket_sample >= OVERSAMPLE){
 				bucket_sample = 0;
-     4f8:	10 92 a6 00 	sts	0x00A6, r1	; 0x8000a6 <_ZZ12user_programvE13bucket_sample>
+     4ee:	10 92 a6 00 	sts	0x00A6, r1	; 0x8000a6 <_ZZ12user_programvE13bucket_sample>
 				bucket_writepos++;
-     4fc:	1f 5f       	subi	r17, 0xFF	; 255
+     4f2:	1f 5f       	subi	r17, 0xFF	; 255
 				if(bucket_writepos >= SAMPLE_HISTORY) bucket_writepos = 0;
-     4fe:	18 30       	cpi	r17, 0x08	; 8
-     500:	18 f4       	brcc	.+6      	; 0x508 <__LOCK_REGION_LENGTH__+0x108>
+     4f4:	18 30       	cpi	r17, 0x08	; 8
+     4f6:	18 f4       	brcc	.+6      	; 0x4fe <__LOCK_REGION_LENGTH__+0xfe>
 			
 			bucket_sample++;
 			
 			if(bucket_sample >= OVERSAMPLE){
 				bucket_sample = 0;
 				bucket_writepos++;
-     502:	10 93 a7 00 	sts	0x00A7, r17	; 0x8000a7 <_ZZ12user_programvE15bucket_writepos>
-     506:	02 c0       	rjmp	.+4      	; 0x50c <__LOCK_REGION_LENGTH__+0x10c>
+     4f8:	10 93 a7 00 	sts	0x00A7, r17	; 0x8000a7 <_ZZ12user_programvE15bucket_writepos>
+     4fc:	02 c0       	rjmp	.+4      	; 0x502 <__LOCK_REGION_LENGTH__+0x102>
 				if(bucket_writepos >= SAMPLE_HISTORY) bucket_writepos = 0;
-     508:	10 92 a7 00 	sts	0x00A7, r1	; 0x8000a7 <_ZZ12user_programvE15bucket_writepos>
+     4fe:	10 92 a7 00 	sts	0x00A7, r1	; 0x8000a7 <_ZZ12user_programvE15bucket_writepos>
 				max_bucket[bucket_writepos] = data_smooth;
-     50c:	80 91 a7 00 	lds	r24, 0x00A7	; 0x8000a7 <_ZZ12user_programvE15bucket_writepos>
-     510:	28 2f       	mov	r18, r24
-     512:	30 e0       	ldi	r19, 0x00	; 0
-     514:	3e 83       	std	Y+6, r19	; 0x06
-     516:	2d 83       	std	Y+5, r18	; 0x05
-     518:	c7 01       	movw	r24, r14
-     51a:	b6 01       	movw	r22, r12
-     51c:	bf d5       	rcall	.+2942   	; 0x109c <__fixunssfsi>
-     51e:	2d 81       	ldd	r18, Y+5	; 0x05
-     520:	3e 81       	ldd	r19, Y+6	; 0x06
-     522:	22 0f       	add	r18, r18
-     524:	33 1f       	adc	r19, r19
-     526:	f9 01       	movw	r30, r18
-     528:	e8 54       	subi	r30, 0x48	; 72
-     52a:	ff 4f       	sbci	r31, 0xFF	; 255
-     52c:	71 83       	std	Z+1, r23	; 0x01
-     52e:	60 83       	st	Z, r22
+     502:	f0 91 a7 00 	lds	r31, 0x00A7	; 0x8000a7 <_ZZ12user_programvE15bucket_writepos>
+     506:	2f 2f       	mov	r18, r31
+     508:	30 e0       	ldi	r19, 0x00	; 0
+     50a:	3e 83       	std	Y+6, r19	; 0x06
+     50c:	2d 83       	std	Y+5, r18	; 0x05
+     50e:	c7 01       	movw	r24, r14
+     510:	b6 01       	movw	r22, r12
+     512:	c4 d5       	rcall	.+2952   	; 0x109c <__fixunssfsi>
+     514:	ed 81       	ldd	r30, Y+5	; 0x05
+     516:	fe 81       	ldd	r31, Y+6	; 0x06
+     518:	ee 0f       	add	r30, r30
+     51a:	ff 1f       	adc	r31, r31
+     51c:	fe 83       	std	Y+6, r31	; 0x06
+     51e:	ed 83       	std	Y+5, r30	; 0x05
+     520:	e8 54       	subi	r30, 0x48	; 72
+     522:	ff 4f       	sbci	r31, 0xFF	; 255
+     524:	71 83       	std	Z+1, r23	; 0x01
+     526:	60 83       	st	Z, r22
 				min_bucket[bucket_writepos] = data_smooth;
+     528:	2d 81       	ldd	r18, Y+5	; 0x05
+     52a:	3e 81       	ldd	r19, Y+6	; 0x06
+     52c:	28 55       	subi	r18, 0x58	; 88
+     52e:	3f 4f       	sbci	r19, 0xFF	; 255
      530:	f9 01       	movw	r30, r18
-     532:	e8 55       	subi	r30, 0x58	; 88
-     534:	ff 4f       	sbci	r31, 0xFF	; 255
-     536:	71 83       	std	Z+1, r23	; 0x01
-     538:	60 83       	st	Z, r22
+     532:	71 83       	std	Z+1, r23	; 0x01
+     534:	60 83       	st	Z, r22
 			}
 			
 			//lock the max/min values if data transfer is active
 			if(!data_incoming)
-     53a:	3c 81       	ldd	r19, Y+4	; 0x04
-     53c:	31 11       	cpse	r19, r1
-     53e:	95 c2       	rjmp	.+1322   	; 0xa6a <__LOCK_REGION_LENGTH__+0x66a>
+     536:	fc 81       	ldd	r31, Y+4	; 0x04
+     538:	f1 11       	cpse	r31, r1
+     53a:	97 c2       	rjmp	.+1326   	; 0xa6a <__LOCK_REGION_LENGTH__+0x66a>
 			{
 				data_max = max_bucket[0];
-     540:	e8 eb       	ldi	r30, 0xB8	; 184
-     542:	f0 e0       	ldi	r31, 0x00	; 0
-     544:	60 81       	ld	r22, Z
-     546:	71 81       	ldd	r23, Z+1	; 0x01
-     548:	80 e0       	ldi	r24, 0x00	; 0
-     54a:	90 e0       	ldi	r25, 0x00	; 0
-     54c:	d3 d5       	rcall	.+2982   	; 0x10f4 <__floatunsisf>
-     54e:	b6 2e       	mov	r11, r22
-     550:	a7 2e       	mov	r10, r23
-     552:	88 2e       	mov	r8, r24
-     554:	99 83       	std	Y+1, r25	; 0x01
+     53c:	e8 eb       	ldi	r30, 0xB8	; 184
+     53e:	f0 e0       	ldi	r31, 0x00	; 0
+     540:	60 81       	ld	r22, Z
+     542:	71 81       	ldd	r23, Z+1	; 0x01
+     544:	80 e0       	ldi	r24, 0x00	; 0
+     546:	90 e0       	ldi	r25, 0x00	; 0
+     548:	d5 d5       	rcall	.+2986   	; 0x10f4 <__floatunsisf>
+     54a:	b6 2e       	mov	r11, r22
+     54c:	a7 2e       	mov	r10, r23
+     54e:	88 2e       	mov	r8, r24
+     550:	99 83       	std	Y+1, r25	; 0x01
 				data_min = min_bucket[0];
-     556:	e8 ea       	ldi	r30, 0xA8	; 168
-     558:	f0 e0       	ldi	r31, 0x00	; 0
-     55a:	60 81       	ld	r22, Z
-     55c:	71 81       	ldd	r23, Z+1	; 0x01
-     55e:	80 e0       	ldi	r24, 0x00	; 0
-     560:	90 e0       	ldi	r25, 0x00	; 0
-     562:	c8 d5       	rcall	.+2960   	; 0x10f4 <__floatunsisf>
-     564:	76 2e       	mov	r7, r22
-     566:	67 2e       	mov	r6, r23
-     568:	58 2e       	mov	r5, r24
-     56a:	49 2e       	mov	r4, r25
-     56c:	2a eb       	ldi	r18, 0xBA	; 186
-     56e:	30 e0       	ldi	r19, 0x00	; 0
-     570:	08 ea       	ldi	r16, 0xA8	; 168
-     572:	10 e0       	ldi	r17, 0x00	; 0
-     574:	3e 83       	std	Y+6, r19	; 0x06
-     576:	2d 83       	std	Y+5, r18	; 0x05
+     552:	e8 ea       	ldi	r30, 0xA8	; 168
+     554:	f0 e0       	ldi	r31, 0x00	; 0
+     556:	60 81       	ld	r22, Z
+     558:	71 81       	ldd	r23, Z+1	; 0x01
+     55a:	80 e0       	ldi	r24, 0x00	; 0
+     55c:	90 e0       	ldi	r25, 0x00	; 0
+     55e:	ca d5       	rcall	.+2964   	; 0x10f4 <__floatunsisf>
+     560:	76 2e       	mov	r7, r22
+     562:	67 2e       	mov	r6, r23
+     564:	58 2e       	mov	r5, r24
+     566:	49 2e       	mov	r4, r25
+     568:	2a eb       	ldi	r18, 0xBA	; 186
+     56a:	30 e0       	ldi	r19, 0x00	; 0
+     56c:	08 ea       	ldi	r16, 0xA8	; 168
+     56e:	10 e0       	ldi	r17, 0x00	; 0
+     570:	3e 83       	std	Y+6, r19	; 0x06
+     572:	2d 83       	std	Y+5, r18	; 0x05
 			
 				for(uint8_t block = 1; block < SAMPLE_HISTORY; block++)
 				{
 					if(max_bucket[block] > data_max) data_max = max_bucket[block];
-     578:	ed 81       	ldd	r30, Y+5	; 0x05
-     57a:	fe 81       	ldd	r31, Y+6	; 0x06
-     57c:	61 91       	ld	r22, Z+
-     57e:	71 91       	ld	r23, Z+
-     580:	fe 83       	std	Y+6, r31	; 0x06
-     582:	ed 83       	std	Y+5, r30	; 0x05
-     584:	80 e0       	ldi	r24, 0x00	; 0
-     586:	90 e0       	ldi	r25, 0x00	; 0
-     588:	b5 d5       	rcall	.+2922   	; 0x10f4 <__floatunsisf>
-     58a:	c6 2e       	mov	r12, r22
-     58c:	d7 2e       	mov	r13, r23
-     58e:	e8 2e       	mov	r14, r24
-     590:	f9 2e       	mov	r15, r25
-     592:	2b 2d       	mov	r18, r11
-     594:	3a 2d       	mov	r19, r10
-     596:	48 2d       	mov	r20, r8
-     598:	59 81       	ldd	r21, Y+1	; 0x01
-     59a:	5e d6       	rcall	.+3260   	; 0x1258 <__gesf2>
-     59c:	18 16       	cp	r1, r24
-     59e:	d4 f0       	brlt	.+52     	; 0x5d4 <__LOCK_REGION_LENGTH__+0x1d4>
+     574:	ed 81       	ldd	r30, Y+5	; 0x05
+     576:	fe 81       	ldd	r31, Y+6	; 0x06
+     578:	61 91       	ld	r22, Z+
+     57a:	71 91       	ld	r23, Z+
+     57c:	fe 83       	std	Y+6, r31	; 0x06
+     57e:	ed 83       	std	Y+5, r30	; 0x05
+     580:	80 e0       	ldi	r24, 0x00	; 0
+     582:	90 e0       	ldi	r25, 0x00	; 0
+     584:	b7 d5       	rcall	.+2926   	; 0x10f4 <__floatunsisf>
+     586:	c6 2e       	mov	r12, r22
+     588:	d7 2e       	mov	r13, r23
+     58a:	e8 2e       	mov	r14, r24
+     58c:	f9 2e       	mov	r15, r25
+     58e:	2b 2d       	mov	r18, r11
+     590:	3a 2d       	mov	r19, r10
+     592:	48 2d       	mov	r20, r8
+     594:	59 81       	ldd	r21, Y+1	; 0x01
+     596:	60 d6       	rcall	.+3264   	; 0x1258 <__gesf2>
+     598:	18 16       	cp	r1, r24
+     59a:	d4 f0       	brlt	.+52     	; 0x5d0 <__LOCK_REGION_LENGTH__+0x1d0>
 					else if(min_bucket[block] < data_min) data_min = min_bucket[block];
-     5a0:	f8 01       	movw	r30, r16
-     5a2:	62 81       	ldd	r22, Z+2	; 0x02
-     5a4:	73 81       	ldd	r23, Z+3	; 0x03
-     5a6:	80 e0       	ldi	r24, 0x00	; 0
-     5a8:	90 e0       	ldi	r25, 0x00	; 0
-     5aa:	a4 d5       	rcall	.+2888   	; 0x10f4 <__floatunsisf>
-     5ac:	c6 2e       	mov	r12, r22
-     5ae:	d7 2e       	mov	r13, r23
-     5b0:	e8 2e       	mov	r14, r24
-     5b2:	f9 2e       	mov	r15, r25
-     5b4:	26 2f       	mov	r18, r22
-     5b6:	37 2f       	mov	r19, r23
-     5b8:	48 2f       	mov	r20, r24
-     5ba:	59 2f       	mov	r21, r25
-     5bc:	67 2d       	mov	r22, r7
-     5be:	76 2d       	mov	r23, r6
-     5c0:	85 2d       	mov	r24, r5
-     5c2:	94 2d       	mov	r25, r4
-     5c4:	49 d6       	rcall	.+3218   	; 0x1258 <__gesf2>
-     5c6:	18 16       	cp	r1, r24
-     5c8:	4c f4       	brge	.+18     	; 0x5dc <__LOCK_REGION_LENGTH__+0x1dc>
-     5ca:	7c 2c       	mov	r7, r12
-     5cc:	6d 2c       	mov	r6, r13
-     5ce:	5e 2c       	mov	r5, r14
-     5d0:	4f 2c       	mov	r4, r15
-     5d2:	04 c0       	rjmp	.+8      	; 0x5dc <__LOCK_REGION_LENGTH__+0x1dc>
+     59c:	f8 01       	movw	r30, r16
+     59e:	62 81       	ldd	r22, Z+2	; 0x02
+     5a0:	73 81       	ldd	r23, Z+3	; 0x03
+     5a2:	80 e0       	ldi	r24, 0x00	; 0
+     5a4:	90 e0       	ldi	r25, 0x00	; 0
+     5a6:	a6 d5       	rcall	.+2892   	; 0x10f4 <__floatunsisf>
+     5a8:	c6 2e       	mov	r12, r22
+     5aa:	d7 2e       	mov	r13, r23
+     5ac:	e8 2e       	mov	r14, r24
+     5ae:	f9 2e       	mov	r15, r25
+     5b0:	26 2f       	mov	r18, r22
+     5b2:	37 2f       	mov	r19, r23
+     5b4:	48 2f       	mov	r20, r24
+     5b6:	59 2f       	mov	r21, r25
+     5b8:	67 2d       	mov	r22, r7
+     5ba:	76 2d       	mov	r23, r6
+     5bc:	85 2d       	mov	r24, r5
+     5be:	94 2d       	mov	r25, r4
+     5c0:	4b d6       	rcall	.+3222   	; 0x1258 <__gesf2>
+     5c2:	18 16       	cp	r1, r24
+     5c4:	4c f4       	brge	.+18     	; 0x5d8 <__LOCK_REGION_LENGTH__+0x1d8>
+     5c6:	7c 2c       	mov	r7, r12
+     5c8:	6d 2c       	mov	r6, r13
+     5ca:	5e 2c       	mov	r5, r14
+     5cc:	4f 2c       	mov	r4, r15
+     5ce:	04 c0       	rjmp	.+8      	; 0x5d8 <__LOCK_REGION_LENGTH__+0x1d8>
 				data_max = max_bucket[0];
 				data_min = min_bucket[0];
 			
 				for(uint8_t block = 1; block < SAMPLE_HISTORY; block++)
 				{
 					if(max_bucket[block] > data_max) data_max = max_bucket[block];
-     5d4:	bc 2c       	mov	r11, r12
-     5d6:	ad 2c       	mov	r10, r13
-     5d8:	8e 2c       	mov	r8, r14
-     5da:	f9 82       	std	Y+1, r15	; 0x01
-     5dc:	0e 5f       	subi	r16, 0xFE	; 254
-     5de:	1f 4f       	sbci	r17, 0xFF	; 255
+     5d0:	bc 2c       	mov	r11, r12
+     5d2:	ad 2c       	mov	r10, r13
+     5d4:	8e 2c       	mov	r8, r14
+     5d6:	f9 82       	std	Y+1, r15	; 0x01
+     5d8:	0e 5f       	subi	r16, 0xFE	; 254
+     5da:	1f 4f       	sbci	r17, 0xFF	; 255
 			if(!data_incoming)
 			{
 				data_max = max_bucket[0];
 				data_min = min_bucket[0];
 			
 				for(uint8_t block = 1; block < SAMPLE_HISTORY; block++)
-     5e0:	2d 81       	ldd	r18, Y+5	; 0x05
-     5e2:	3e 81       	ldd	r19, Y+6	; 0x06
-     5e4:	22 16       	cp	r2, r18
-     5e6:	33 06       	cpc	r3, r19
-     5e8:	39 f6       	brne	.-114    	; 0x578 <__LOCK_REGION_LENGTH__+0x178>
-     5ea:	00 c2       	rjmp	.+1024   	; 0x9ec <__LOCK_REGION_LENGTH__+0x5ec>
+     5dc:	2d 81       	ldd	r18, Y+5	; 0x05
+     5de:	3e 81       	ldd	r19, Y+6	; 0x06
+     5e0:	22 15       	cp	r18, r2
+     5e2:	33 05       	cpc	r19, r3
+     5e4:	39 f6       	brne	.-114    	; 0x574 <__LOCK_REGION_LENGTH__+0x174>
+     5e6:	00 c2       	rjmp	.+1024   	; 0x9e8 <__LOCK_REGION_LENGTH__+0x5e8>
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     5ec:	c1 9a       	sbi	0x18, 1	; 24
+     5e8:	c1 9a       	sbi	0x18, 1	; 24
 			//good signal if optical signal has large enough contrast
 			//good signal if data transfer is active
 			if( data_incoming || amplitude >= data_max * (SIGNAL_STRENGTH_FACTOR / 100.0) ) signal_available = true;
 			else{
 				led_off(led_signal_steady);
 				stablewhen0 = 10;
-     5ee:	3a e0       	ldi	r19, 0x0A	; 10
-     5f0:	30 93 60 00 	sts	0x0060, r19	; 0x800060 <__DATA_REGION_ORIGIN__>
+     5ea:	3a e0       	ldi	r19, 0x0A	; 10
+     5ec:	30 93 60 00 	sts	0x0060, r19	; 0x800060 <__DATA_REGION_ORIGIN__>
 				signal_available = false;
-     5f4:	1d 82       	std	Y+5, r1	; 0x05
-     5f6:	01 c0       	rjmp	.+2      	; 0x5fa <__LOCK_REGION_LENGTH__+0x1fa>
+     5f0:	1d 82       	std	Y+5, r1	; 0x05
+     5f2:	01 c0       	rjmp	.+2      	; 0x5f6 <__LOCK_REGION_LENGTH__+0x1f6>
 			float amplitude = (data_max - data_min);
 			float midline = amplitude / 2 + data_min;	//threshold between high and low
 							
 			//good signal if optical signal has large enough contrast
 			//good signal if data transfer is active
 			if( data_incoming || amplitude >= data_max * (SIGNAL_STRENGTH_FACTOR / 100.0) ) signal_available = true;
-     5f8:	9d 82       	std	Y+5, r9	; 0x05
+     5f4:	9d 82       	std	Y+5, r9	; 0x05
 				stablewhen0 = 10;
 				signal_available = false;
 			}
 			
 			//convert analog signal to boolean
 			if (data_smooth < midline) state_now = 1;  //invert the reading
-     5fa:	c0 90 d0 00 	lds	r12, 0x00D0	; 0x8000d0 <_ZZ12user_programvE11data_smooth>
-     5fe:	d0 90 d1 00 	lds	r13, 0x00D1	; 0x8000d1 <_ZZ12user_programvE11data_smooth+0x1>
-     602:	e0 90 d2 00 	lds	r14, 0x00D2	; 0x8000d2 <_ZZ12user_programvE11data_smooth+0x2>
-     606:	f0 90 d3 00 	lds	r15, 0x00D3	; 0x8000d3 <_ZZ12user_programvE11data_smooth+0x3>
-     60a:	a3 01       	movw	r20, r6
-     60c:	92 01       	movw	r18, r4
-     60e:	c7 01       	movw	r24, r14
-     610:	b6 01       	movw	r22, r12
-     612:	40 d5       	rcall	.+2688   	; 0x1094 <__cmpsf2>
-     614:	88 0f       	add	r24, r24
-     616:	88 0b       	sbc	r24, r24
-     618:	89 21       	and	r24, r9
-     61a:	89 83       	std	Y+1, r24	; 0x01
+     5f6:	c0 90 d0 00 	lds	r12, 0x00D0	; 0x8000d0 <_ZZ12user_programvE11data_smooth>
+     5fa:	d0 90 d1 00 	lds	r13, 0x00D1	; 0x8000d1 <_ZZ12user_programvE11data_smooth+0x1>
+     5fe:	e0 90 d2 00 	lds	r14, 0x00D2	; 0x8000d2 <_ZZ12user_programvE11data_smooth+0x2>
+     602:	f0 90 d3 00 	lds	r15, 0x00D3	; 0x8000d3 <_ZZ12user_programvE11data_smooth+0x3>
+     606:	a3 01       	movw	r20, r6
+     608:	92 01       	movw	r18, r4
+     60a:	c7 01       	movw	r24, r14
+     60c:	b6 01       	movw	r22, r12
+     60e:	42 d5       	rcall	.+2692   	; 0x1094 <__cmpsf2>
+     610:	88 0f       	add	r24, r24
+     612:	88 0b       	sbc	r24, r24
+     614:	89 21       	and	r24, r9
+     616:	89 83       	std	Y+1, r24	; 0x01
 			*/
 				
 		}
 		
 		//------------ Convert to Bitstream -----------------
 		if (signal_available)
-     61c:	4d 81       	ldd	r20, Y+5	; 0x05
-     61e:	44 23       	and	r20, r20
-     620:	09 f4       	brne	.+2      	; 0x624 <__LOCK_REGION_LENGTH__+0x224>
-     622:	42 c2       	rjmp	.+1156   	; 0xaa8 <__LOCK_REGION_LENGTH__+0x6a8>
+     618:	8d 81       	ldd	r24, Y+5	; 0x05
+     61a:	88 23       	and	r24, r24
+     61c:	09 f4       	brne	.+2      	; 0x620 <__LOCK_REGION_LENGTH__+0x220>
+     61e:	44 c2       	rjmp	.+1160   	; 0xaa8 <__LOCK_REGION_LENGTH__+0x6a8>
 			static uint8_t next_bit = 0;
 			static uint8_t stable_counter = 0;
 			
 			signal_available = false;
 			
 			if(state_now) led_on(led_state_now);
-     624:	a3 01       	movw	r20, r6
-     626:	92 01       	movw	r18, r4
-     628:	c7 01       	movw	r24, r14
-     62a:	b6 01       	movw	r22, r12
-     62c:	33 d5       	rcall	.+2662   	; 0x1094 <__cmpsf2>
-     62e:	88 23       	and	r24, r24
-     630:	14 f4       	brge	.+4      	; 0x636 <__LOCK_REGION_LENGTH__+0x236>
+     620:	a3 01       	movw	r20, r6
+     622:	92 01       	movw	r18, r4
+     624:	c7 01       	movw	r24, r14
+     626:	b6 01       	movw	r22, r12
+     628:	35 d5       	rcall	.+2666   	; 0x1094 <__cmpsf2>
+     62a:	88 23       	and	r24, r24
+     62c:	14 f4       	brge	.+4      	; 0x632 <__LOCK_REGION_LENGTH__+0x232>
 //----------LED UTILITY---------------	
 
 inline void led_on(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
-     632:	c0 98       	cbi	0x18, 0	; 24
-     634:	01 c0       	rjmp	.+2      	; 0x638 <__LOCK_REGION_LENGTH__+0x238>
+     62e:	c0 98       	cbi	0x18, 0	; 24
+     630:	01 c0       	rjmp	.+2      	; 0x634 <__LOCK_REGION_LENGTH__+0x234>
 
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
-     636:	c0 9a       	sbi	0x18, 0	; 24
+     632:	c0 9a       	sbi	0x18, 0	; 24
 			
 			if(state_now) led_on(led_state_now);
 			else led_off(led_state_now);
 
 			//detect bit on edge
 			if (state_now != state_prev) 
-     638:	69 81       	ldd	r22, Y+1	; 0x01
-     63a:	8b 81       	ldd	r24, Y+3	; 0x03
-     63c:	68 17       	cp	r22, r24
-     63e:	e9 f0       	breq	.+58     	; 0x67a <__LOCK_REGION_LENGTH__+0x27a>
+     634:	99 81       	ldd	r25, Y+1	; 0x01
+     636:	eb 81       	ldd	r30, Y+3	; 0x03
+     638:	9e 17       	cp	r25, r30
+     63a:	e9 f0       	breq	.+58     	; 0x676 <__LOCK_REGION_LENGTH__+0x276>
 			{
 				if(stablewhen0 != 0){
-     640:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <__DATA_REGION_ORIGIN__>
-     644:	88 23       	and	r24, r24
-     646:	29 f0       	breq	.+10     	; 0x652 <__LOCK_REGION_LENGTH__+0x252>
+     63c:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <__DATA_REGION_ORIGIN__>
+     640:	88 23       	and	r24, r24
+     642:	29 f0       	breq	.+10     	; 0x64e <__LOCK_REGION_LENGTH__+0x24e>
 					stablewhen0--;
-     648:	81 50       	subi	r24, 0x01	; 1
-     64a:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__DATA_REGION_ORIGIN__>
+     644:	81 50       	subi	r24, 0x01	; 1
+     646:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__DATA_REGION_ORIGIN__>
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     64e:	c1 9a       	sbi	0x18, 1	; 24
-     650:	01 c0       	rjmp	.+2      	; 0x654 <__LOCK_REGION_LENGTH__+0x254>
+     64a:	c1 9a       	sbi	0x18, 1	; 24
+     64c:	01 c0       	rjmp	.+2      	; 0x650 <__LOCK_REGION_LENGTH__+0x250>
 	switch(led_num){
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
 			break;
 		case 0x1:
 			LED2_PORT &= ~(LED2_OFFSET);
-     652:	c1 98       	cbi	0x18, 1	; 24
+     64e:	c1 98       	cbi	0x18, 1	; 24
 				else led_on(led_signal_steady);
 				
 				//Serial.print("E");
 				state_prev = state_now;
 				//write the first bit
 				rx = (rx << 1) | state_now;  //load next bit
-     654:	8a 81       	ldd	r24, Y+2	; 0x02
-     656:	88 0f       	add	r24, r24
-     658:	99 81       	ldd	r25, Y+1	; 0x01
-     65a:	98 2b       	or	r25, r24
-     65c:	9a 83       	std	Y+2, r25	; 0x02
+     650:	8a 81       	ldd	r24, Y+2	; 0x02
+     652:	88 0f       	add	r24, r24
+     654:	f9 81       	ldd	r31, Y+1	; 0x01
+     656:	f8 2b       	or	r31, r24
+     658:	fa 83       	std	Y+2, r31	; 0x02
 				newbit_available = true;
 				next_bit = period + halfperiod + 1;
-     65e:	ed e0       	ldi	r30, 0x0D	; 13
-     660:	e0 93 a5 00 	sts	0x00A5, r30	; 0x8000a5 <_ZZ12user_programvE8next_bit>
+     65a:	2d e0       	ldi	r18, 0x0D	; 13
+     65c:	20 93 a5 00 	sts	0x00A5, r18	; 0x8000a5 <_ZZ12user_programvE8next_bit>
 				bit_count = 1;
-     664:	90 92 a4 00 	sts	0x00A4, r9	; 0x8000a4 <_ZZ12user_programvE9bit_count>
+     660:	90 92 a4 00 	sts	0x00A4, r9	; 0x8000a4 <_ZZ12user_programvE9bit_count>
 				width = 1;
-     668:	90 92 a3 00 	sts	0x00A3, r9	; 0x8000a3 <_ZZ12user_programvE5width>
+     664:	90 92 a3 00 	sts	0x00A3, r9	; 0x8000a3 <_ZZ12user_programvE5width>
 				stable_counter++;
-     66c:	80 91 a2 00 	lds	r24, 0x00A2	; 0x8000a2 <_ZZ12user_programvE14stable_counter>
-     670:	8f 5f       	subi	r24, 0xFF	; 255
-     672:	80 93 a2 00 	sts	0x00A2, r24	; 0x8000a2 <_ZZ12user_programvE14stable_counter>
+     668:	80 91 a2 00 	lds	r24, 0x00A2	; 0x8000a2 <_ZZ12user_programvE14stable_counter>
+     66c:	8f 5f       	subi	r24, 0xFF	; 255
+     66e:	80 93 a2 00 	sts	0x00A2, r24	; 0x8000a2 <_ZZ12user_programvE14stable_counter>
 				
 				//Serial.print("E");
 				state_prev = state_now;
 				//write the first bit
 				rx = (rx << 1) | state_now;  //load next bit
 				newbit_available = true;
-     676:	99 2d       	mov	r25, r9
-     678:	18 c0       	rjmp	.+48     	; 0x6aa <__LOCK_REGION_LENGTH__+0x2aa>
+     672:	99 2d       	mov	r25, r9
+     674:	18 c0       	rjmp	.+48     	; 0x6a6 <__LOCK_REGION_LENGTH__+0x2a6>
 				width = 1;
 				stable_counter++;
 			}
 
 			//detect bit on center
 			else if (width == next_bit) 
-     67a:	80 91 a3 00 	lds	r24, 0x00A3	; 0x8000a3 <_ZZ12user_programvE5width>
-     67e:	90 91 a5 00 	lds	r25, 0x00A5	; 0x8000a5 <_ZZ12user_programvE8next_bit>
-     682:	89 13       	cpse	r24, r25
-     684:	11 c0       	rjmp	.+34     	; 0x6a8 <__LOCK_REGION_LENGTH__+0x2a8>
+     676:	80 91 a3 00 	lds	r24, 0x00A3	; 0x8000a3 <_ZZ12user_programvE5width>
+     67a:	90 91 a5 00 	lds	r25, 0x00A5	; 0x8000a5 <_ZZ12user_programvE8next_bit>
+     67e:	89 13       	cpse	r24, r25
+     680:	11 c0       	rjmp	.+34     	; 0x6a4 <__LOCK_REGION_LENGTH__+0x2a4>
 			{
 				//Serial.print("C");
 				rx = (rx << 1) | state_now;  //load next bit
-     686:	9a 81       	ldd	r25, Y+2	; 0x02
-     688:	99 0f       	add	r25, r25
-     68a:	f9 81       	ldd	r31, Y+1	; 0x01
-     68c:	f9 2b       	or	r31, r25
-     68e:	fa 83       	std	Y+2, r31	; 0x02
+     682:	9a 81       	ldd	r25, Y+2	; 0x02
+     684:	99 0f       	add	r25, r25
+     686:	39 81       	ldd	r19, Y+1	; 0x01
+     688:	39 2b       	or	r19, r25
+     68a:	3a 83       	std	Y+2, r19	; 0x02
 				newbit_available = true;
 				next_bit += period;
-     690:	88 5f       	subi	r24, 0xF8	; 248
-     692:	80 93 a5 00 	sts	0x00A5, r24	; 0x8000a5 <_ZZ12user_programvE8next_bit>
+     68c:	88 5f       	subi	r24, 0xF8	; 248
+     68e:	80 93 a5 00 	sts	0x00A5, r24	; 0x8000a5 <_ZZ12user_programvE8next_bit>
 				bit_count++;
-     696:	80 91 a4 00 	lds	r24, 0x00A4	; 0x8000a4 <_ZZ12user_programvE9bit_count>
-     69a:	8f 5f       	subi	r24, 0xFF	; 255
-     69c:	80 93 a4 00 	sts	0x00A4, r24	; 0x8000a4 <_ZZ12user_programvE9bit_count>
+     692:	80 91 a4 00 	lds	r24, 0x00A4	; 0x8000a4 <_ZZ12user_programvE9bit_count>
+     696:	8f 5f       	subi	r24, 0xFF	; 255
+     698:	80 93 a4 00 	sts	0x00A4, r24	; 0x8000a4 <_ZZ12user_programvE9bit_count>
 				stable_counter = 0;
-     6a0:	10 92 a2 00 	sts	0x00A2, r1	; 0x8000a2 <_ZZ12user_programvE14stable_counter>
+     69c:	10 92 a2 00 	sts	0x00A2, r1	; 0x8000a2 <_ZZ12user_programvE14stable_counter>
 			//detect bit on center
 			else if (width == next_bit) 
 			{
 				//Serial.print("C");
 				rx = (rx << 1) | state_now;  //load next bit
 				newbit_available = true;
-     6a4:	99 2d       	mov	r25, r9
-     6a6:	01 c0       	rjmp	.+2      	; 0x6aa <__LOCK_REGION_LENGTH__+0x2aa>
-     6a8:	90 e0       	ldi	r25, 0x00	; 0
+     6a0:	99 2d       	mov	r25, r9
+     6a2:	01 c0       	rjmp	.+2      	; 0x6a6 <__LOCK_REGION_LENGTH__+0x2a6>
+     6a4:	90 e0       	ldi	r25, 0x00	; 0
 				next_bit += period;
 				bit_count++;
 				stable_counter = 0;
 			}
 			width++;
-     6aa:	80 91 a3 00 	lds	r24, 0x00A3	; 0x8000a3 <_ZZ12user_programvE5width>
-     6ae:	8f 5f       	subi	r24, 0xFF	; 255
-     6b0:	80 93 a3 00 	sts	0x00A3, r24	; 0x8000a3 <_ZZ12user_programvE5width>
+     6a6:	80 91 a3 00 	lds	r24, 0x00A3	; 0x8000a3 <_ZZ12user_programvE5width>
+     6aa:	8f 5f       	subi	r24, 0xFF	; 255
+     6ac:	80 93 a3 00 	sts	0x00A3, r24	; 0x8000a3 <_ZZ12user_programvE5width>
 				stablewhen0 = 10;
 				signal_available = false;
 			}
 			
 			//convert analog signal to boolean
 			if (data_smooth < midline) state_now = 1;  //invert the reading
-     6b4:	29 81       	ldd	r18, Y+1	; 0x01
-     6b6:	2b 83       	std	Y+3, r18	; 0x03
-     6b8:	20 e0       	ldi	r18, 0x00	; 0
-     6ba:	01 c0       	rjmp	.+2      	; 0x6be <__LOCK_REGION_LENGTH__+0x2be>
-     6bc:	90 e0       	ldi	r25, 0x00	; 0
+     6b0:	89 81       	ldd	r24, Y+1	; 0x01
+     6b2:	8b 83       	std	Y+3, r24	; 0x03
+     6b4:	20 e0       	ldi	r18, 0x00	; 0
+     6b6:	01 c0       	rjmp	.+2      	; 0x6ba <__LOCK_REGION_LENGTH__+0x2ba>
+     6b8:	90 e0       	ldi	r25, 0x00	; 0
 			}
 			width++;
 		}
 		
 		//------------ Process Bitstream -----------------
 		if (newbit_available) 
-     6be:	99 23       	and	r25, r25
-     6c0:	09 f4       	brne	.+2      	; 0x6c4 <__LOCK_REGION_LENGTH__+0x2c4>
-     6c2:	42 ce       	rjmp	.-892    	; 0x348 <_Z12user_programv+0x48>
+     6ba:	99 23       	and	r25, r25
+     6bc:	09 f4       	brne	.+2      	; 0x6c0 <__LOCK_REGION_LENGTH__+0x2c0>
+     6be:	4a ce       	rjmp	.-876    	; 0x354 <_Z12user_programv+0x54>
 		{			
 			newbit_available = false;
 			//Serial.print(state_now);
 			
 			//start flag detected
 			if(stablewhen0 != 0){
-     6c4:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <__DATA_REGION_ORIGIN__>
-     6c8:	88 23       	and	r24, r24
-     6ca:	19 f0       	breq	.+6      	; 0x6d2 <__LOCK_REGION_LENGTH__+0x2d2>
+     6c0:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <__DATA_REGION_ORIGIN__>
+     6c4:	88 23       	and	r24, r24
+     6c6:	19 f0       	breq	.+6      	; 0x6ce <__LOCK_REGION_LENGTH__+0x2ce>
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     6cc:	c1 9a       	sbi	0x18, 1	; 24
+     6c8:	c1 9a       	sbi	0x18, 1	; 24
 			newbit_available = false;
 			//Serial.print(state_now);
 			
 			//start flag detected
 			if(stablewhen0 != 0){
 				 rx = 0b0;  //clear RX
-     6ce:	1a 82       	std	Y+2, r1	; 0x02
-     6d0:	3b ce       	rjmp	.-906    	; 0x348 <_Z12user_programv+0x48>
+     6ca:	1a 82       	std	Y+2, r1	; 0x02
+     6cc:	43 ce       	rjmp	.-890    	; 0x354 <_Z12user_programv+0x54>
 				 led_off(led_signal_steady);
 			}
 			else if ((!data_incoming) && (rx & (0b1111)) == START_FLAG ) 
-     6d2:	3c 81       	ldd	r19, Y+4	; 0x04
-     6d4:	31 11       	cpse	r19, r1
-     6d6:	0b c0       	rjmp	.+22     	; 0x6ee <__LOCK_REGION_LENGTH__+0x2ee>
-     6d8:	8a 81       	ldd	r24, Y+2	; 0x02
-     6da:	8f 70       	andi	r24, 0x0F	; 15
-     6dc:	8e 30       	cpi	r24, 0x0E	; 14
-     6de:	09 f0       	breq	.+2      	; 0x6e2 <__LOCK_REGION_LENGTH__+0x2e2>
-     6e0:	33 ce       	rjmp	.-922    	; 0x348 <_Z12user_programv+0x48>
+     6ce:	9c 81       	ldd	r25, Y+4	; 0x04
+     6d0:	91 11       	cpse	r25, r1
+     6d2:	0b c0       	rjmp	.+22     	; 0x6ea <__LOCK_REGION_LENGTH__+0x2ea>
+     6d4:	8a 81       	ldd	r24, Y+2	; 0x02
+     6d6:	8f 70       	andi	r24, 0x0F	; 15
+     6d8:	8e 30       	cpi	r24, 0x0E	; 14
+     6da:	09 f0       	breq	.+2      	; 0x6de <__LOCK_REGION_LENGTH__+0x2de>
+     6dc:	3b ce       	rjmp	.-906    	; 0x354 <_Z12user_programv+0x54>
 			{
 				//Serial.print(":START");
 				data_incoming = true;
 				rx = 0b0;  //clear RX
 				data_buf[0] = 0b0;
-     6e2:	ed ed       	ldi	r30, 0xDD	; 221
-     6e4:	f0 e0       	ldi	r31, 0x00	; 0
-     6e6:	10 82       	st	Z, r1
+     6de:	ed ed       	ldi	r30, 0xDD	; 221
+     6e0:	f0 e0       	ldi	r31, 0x00	; 0
+     6e2:	10 82       	st	Z, r1
 				 led_off(led_signal_steady);
 			}
 			else if ((!data_incoming) && (rx & (0b1111)) == START_FLAG ) 
 			{
 				//Serial.print(":START");
 				data_incoming = true;
-     6e8:	9c 82       	std	Y+4, r9	; 0x04
+     6e4:	9c 82       	std	Y+4, r9	; 0x04
 				rx = 0b0;  //clear RX
-     6ea:	1a 82       	std	Y+2, r1	; 0x02
+     6e6:	1a 82       	std	Y+2, r1	; 0x02
 				data_buf[0] = 0b0;
-     6ec:	2d ce       	rjmp	.-934    	; 0x348 <_Z12user_programv+0x48>
+     6e8:	35 ce       	rjmp	.-918    	; 0x354 <_Z12user_programv+0x54>
 			else if (data_incoming) 
 			{
 				static uint8_t current_bit = 0;
 				static uint8_t current_byte = 0;
 				
 				data_buf[current_byte] |= (state_now << current_bit);
-     6ee:	f0 91 a1 00 	lds	r31, 0x00A1	; 0x8000a1 <_ZZ12user_programvE12current_byte>
-     6f2:	fd 83       	std	Y+5, r31	; 0x05
-     6f4:	8f 2f       	mov	r24, r31
-     6f6:	90 e0       	ldi	r25, 0x00	; 0
-     6f8:	30 91 a0 00 	lds	r19, 0x00A0	; 0x8000a0 <__data_end>
-     6fc:	fc 01       	movw	r30, r24
-     6fe:	e3 52       	subi	r30, 0x23	; 35
-     700:	ff 4f       	sbci	r31, 0xFF	; 255
-     702:	69 81       	ldd	r22, Y+1	; 0x01
-     704:	46 2f       	mov	r20, r22
-     706:	50 e0       	ldi	r21, 0x00	; 0
-     708:	03 2e       	mov	r0, r19
-     70a:	02 c0       	rjmp	.+4      	; 0x710 <__LOCK_REGION_LENGTH__+0x310>
-     70c:	44 0f       	add	r20, r20
-     70e:	55 1f       	adc	r21, r21
-     710:	0a 94       	dec	r0
-     712:	e2 f7       	brpl	.-8      	; 0x70c <__LOCK_REGION_LENGTH__+0x30c>
-     714:	50 81       	ld	r21, Z
-     716:	45 2b       	or	r20, r21
-     718:	40 83       	st	Z, r20
+     6ea:	f0 91 a1 00 	lds	r31, 0x00A1	; 0x8000a1 <_ZZ12user_programvE12current_byte>
+     6ee:	fd 83       	std	Y+5, r31	; 0x05
+     6f0:	ef 2f       	mov	r30, r31
+     6f2:	f0 e0       	ldi	r31, 0x00	; 0
+     6f4:	30 91 a0 00 	lds	r19, 0x00A0	; 0x8000a0 <__data_end>
+     6f8:	df 01       	movw	r26, r30
+     6fa:	a3 52       	subi	r26, 0x23	; 35
+     6fc:	bf 4f       	sbci	r27, 0xFF	; 255
+     6fe:	89 81       	ldd	r24, Y+1	; 0x01
+     700:	48 2f       	mov	r20, r24
+     702:	50 e0       	ldi	r21, 0x00	; 0
+     704:	03 2e       	mov	r0, r19
+     706:	02 c0       	rjmp	.+4      	; 0x70c <__LOCK_REGION_LENGTH__+0x30c>
+     708:	44 0f       	add	r20, r20
+     70a:	55 1f       	adc	r21, r21
+     70c:	0a 94       	dec	r0
+     70e:	e2 f7       	brpl	.-8      	; 0x708 <__LOCK_REGION_LENGTH__+0x308>
+     710:	8c 91       	ld	r24, X
+     712:	48 2b       	or	r20, r24
+     714:	4c 93       	st	X, r20
 
 				current_bit++;
-     71a:	3f 5f       	subi	r19, 0xFF	; 255
-     71c:	30 93 a0 00 	sts	0x00A0, r19	; 0x8000a0 <__data_end>
+     716:	3f 5f       	subi	r19, 0xFF	; 255
+     718:	30 93 a0 00 	sts	0x00A0, r19	; 0x8000a0 <__data_end>
 
 				if (current_bit > 5) {
-     720:	36 30       	cpi	r19, 0x06	; 6
-     722:	08 f4       	brcc	.+2      	; 0x726 <__LOCK_REGION_LENGTH__+0x326>
-     724:	11 ce       	rjmp	.-990    	; 0x348 <_Z12user_programv+0x48>
+     71c:	36 30       	cpi	r19, 0x06	; 6
+     71e:	08 f4       	brcc	.+2      	; 0x722 <__LOCK_REGION_LENGTH__+0x322>
+     720:	19 ce       	rjmp	.-974    	; 0x354 <_Z12user_programv+0x54>
 					//Serial.print(":BYTE");
 					//if 5th bit is 0, data is over, or read is corrupted
 					if (!(rx & 0b1)) {
-     726:	ea 81       	ldd	r30, Y+2	; 0x02
-     728:	e0 fd       	sbrc	r30, 0
-     72a:	f6 c0       	rjmp	.+492    	; 0x918 <__LOCK_REGION_LENGTH__+0x518>
+     722:	9a 81       	ldd	r25, Y+2	; 0x02
+     724:	90 fd       	sbrc	r25, 0
+     726:	f4 c0       	rjmp	.+488    	; 0x910 <__LOCK_REGION_LENGTH__+0x510>
 						data_incoming = false;
 						seekData = false;						
 						total_bytes = current_byte;
 						
 						// not a full frame detected
 						if ((current_byte + 1) % FRAME_WIDTH != 0) {
-     72c:	fc 01       	movw	r30, r24
-     72e:	31 96       	adiw	r30, 0x01	; 1
-     730:	cf 01       	movw	r24, r30
-     732:	66 e0       	ldi	r22, 0x06	; 6
-     734:	70 e0       	ldi	r23, 0x00	; 0
-     736:	ff d5       	rcall	.+3070   	; 0x1336 <__divmodhi4>
-     738:	89 2b       	or	r24, r25
-     73a:	09 f4       	brne	.+2      	; 0x73e <__LOCK_REGION_LENGTH__+0x33e>
-     73c:	49 c0       	rjmp	.+146    	; 0x7d0 <__LOCK_REGION_LENGTH__+0x3d0>
-     73e:	02 c0       	rjmp	.+4      	; 0x744 <__LOCK_REGION_LENGTH__+0x344>
-     740:	9f 5f       	subi	r25, 0xFF	; 255
-     742:	01 c0       	rjmp	.+2      	; 0x746 <__LOCK_REGION_LENGTH__+0x346>
-     744:	91 e0       	ldi	r25, 0x01	; 1
+     728:	31 96       	adiw	r30, 0x01	; 1
+     72a:	cf 01       	movw	r24, r30
+     72c:	66 e0       	ldi	r22, 0x06	; 6
+     72e:	70 e0       	ldi	r23, 0x00	; 0
+     730:	02 d6       	rcall	.+3076   	; 0x1336 <__divmodhi4>
+     732:	89 2b       	or	r24, r25
+     734:	09 f4       	brne	.+2      	; 0x738 <__LOCK_REGION_LENGTH__+0x338>
+     736:	49 c0       	rjmp	.+146    	; 0x7ca <__LOCK_REGION_LENGTH__+0x3ca>
+     738:	02 c0       	rjmp	.+4      	; 0x73e <__LOCK_REGION_LENGTH__+0x33e>
+     73a:	9f 5f       	subi	r25, 0xFF	; 255
+     73c:	01 c0       	rjmp	.+2      	; 0x740 <__LOCK_REGION_LENGTH__+0x340>
+     73e:	91 e0       	ldi	r25, 0x01	; 1
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) =  *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) | LED_OFFSETS[led_num];
 }
 
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
-     746:	8f ef       	ldi	r24, 0xFF	; 255
-     748:	89 0f       	add	r24, r25
-     74a:	82 30       	cpi	r24, 0x02	; 2
-     74c:	79 f0       	breq	.+30     	; 0x76c <__LOCK_REGION_LENGTH__+0x36c>
-     74e:	28 f4       	brcc	.+10     	; 0x75a <__LOCK_REGION_LENGTH__+0x35a>
-     750:	88 23       	and	r24, r24
-     752:	41 f0       	breq	.+16     	; 0x764 <__LOCK_REGION_LENGTH__+0x364>
-     754:	81 30       	cpi	r24, 0x01	; 1
-     756:	41 f0       	breq	.+16     	; 0x768 <__LOCK_REGION_LENGTH__+0x368>
-     758:	0f c0       	rjmp	.+30     	; 0x778 <__LOCK_REGION_LENGTH__+0x378>
-     75a:	83 30       	cpi	r24, 0x03	; 3
-     75c:	49 f0       	breq	.+18     	; 0x770 <__LOCK_REGION_LENGTH__+0x370>
-     75e:	84 30       	cpi	r24, 0x04	; 4
-     760:	49 f0       	breq	.+18     	; 0x774 <__LOCK_REGION_LENGTH__+0x374>
-     762:	0a c0       	rjmp	.+20     	; 0x778 <__LOCK_REGION_LENGTH__+0x378>
+     740:	8f ef       	ldi	r24, 0xFF	; 255
+     742:	89 0f       	add	r24, r25
+     744:	82 30       	cpi	r24, 0x02	; 2
+     746:	79 f0       	breq	.+30     	; 0x766 <__LOCK_REGION_LENGTH__+0x366>
+     748:	28 f4       	brcc	.+10     	; 0x754 <__LOCK_REGION_LENGTH__+0x354>
+     74a:	88 23       	and	r24, r24
+     74c:	41 f0       	breq	.+16     	; 0x75e <__LOCK_REGION_LENGTH__+0x35e>
+     74e:	81 30       	cpi	r24, 0x01	; 1
+     750:	41 f0       	breq	.+16     	; 0x762 <__LOCK_REGION_LENGTH__+0x362>
+     752:	0f c0       	rjmp	.+30     	; 0x772 <__LOCK_REGION_LENGTH__+0x372>
+     754:	83 30       	cpi	r24, 0x03	; 3
+     756:	49 f0       	breq	.+18     	; 0x76a <__LOCK_REGION_LENGTH__+0x36a>
+     758:	84 30       	cpi	r24, 0x04	; 4
+     75a:	49 f0       	breq	.+18     	; 0x76e <__LOCK_REGION_LENGTH__+0x36e>
+     75c:	0a c0       	rjmp	.+20     	; 0x772 <__LOCK_REGION_LENGTH__+0x372>
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
-     764:	c0 9a       	sbi	0x18, 0	; 24
-     766:	ec cf       	rjmp	.-40     	; 0x740 <__LOCK_REGION_LENGTH__+0x340>
+     75e:	c0 9a       	sbi	0x18, 0	; 24
+     760:	ec cf       	rjmp	.-40     	; 0x73a <__LOCK_REGION_LENGTH__+0x33a>
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     768:	c1 9a       	sbi	0x18, 1	; 24
-     76a:	ea cf       	rjmp	.-44     	; 0x740 <__LOCK_REGION_LENGTH__+0x340>
+     762:	c1 9a       	sbi	0x18, 1	; 24
+     764:	ea cf       	rjmp	.-44     	; 0x73a <__LOCK_REGION_LENGTH__+0x33a>
 			break;
 		case 0x2:
 			LED3_PORT |= (LED3_OFFSET);
-     76c:	c2 9a       	sbi	0x18, 2	; 24
-     76e:	e8 cf       	rjmp	.-48     	; 0x740 <__LOCK_REGION_LENGTH__+0x340>
+     766:	c2 9a       	sbi	0x18, 2	; 24
+     768:	e8 cf       	rjmp	.-48     	; 0x73a <__LOCK_REGION_LENGTH__+0x33a>
 			break;
 		case 0x3:
 			LED4_PORT |= (LED4_OFFSET);
-     770:	c3 9a       	sbi	0x18, 3	; 24
-     772:	e6 cf       	rjmp	.-52     	; 0x740 <__LOCK_REGION_LENGTH__+0x340>
+     76a:	c3 9a       	sbi	0x18, 3	; 24
+     76c:	e6 cf       	rjmp	.-52     	; 0x73a <__LOCK_REGION_LENGTH__+0x33a>
 			break;
 		case 0x4:
 			LED5_PORT |= (LED5_OFFSET);
-     774:	c4 9a       	sbi	0x18, 4	; 24
-     776:	02 c0       	rjmp	.+4      	; 0x77c <__LOCK_REGION_LENGTH__+0x37c>
+     76e:	c4 9a       	sbi	0x18, 4	; 24
+     770:	02 c0       	rjmp	.+4      	; 0x776 <__LOCK_REGION_LENGTH__+0x376>
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) = *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) & ~(LED_OFFSETS[led_num]);
 }
 
 inline void all_off(void){
 	for(uint8_t i = 0; i < NUM_LEDS; i++){
-     778:	95 30       	cpi	r25, 0x05	; 5
-     77a:	10 f3       	brcs	.-60     	; 0x740 <__LOCK_REGION_LENGTH__+0x340>
+     772:	95 30       	cpi	r25, 0x05	; 5
+     774:	10 f3       	brcs	.-60     	; 0x73a <__LOCK_REGION_LENGTH__+0x33a>
 }
 
 inline void led_error(uint8_t led_num){
 	all_off();
 	//for(uint8_t i = 0; i < 5; i++){
 	if(run_mode != 2) return;
-     77c:	80 91 d7 00 	lds	r24, 0x00D7	; 0x8000d7 <run_mode>
-     780:	82 30       	cpi	r24, 0x02	; 2
-     782:	09 f0       	breq	.+2      	; 0x786 <__LOCK_REGION_LENGTH__+0x386>
-     784:	bc c0       	rjmp	.+376    	; 0x8fe <__LOCK_REGION_LENGTH__+0x4fe>
+     776:	80 91 d7 00 	lds	r24, 0x00D7	; 0x8000d7 <run_mode>
+     77a:	82 30       	cpi	r24, 0x02	; 2
+     77c:	09 f0       	breq	.+2      	; 0x780 <__LOCK_REGION_LENGTH__+0x380>
+     77e:	bc c0       	rjmp	.+376    	; 0x8f8 <__LOCK_REGION_LENGTH__+0x4f8>
 //----------LED UTILITY---------------	
 
 inline void led_on(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
-     786:	c0 98       	cbi	0x18, 0	; 24
+     780:	c0 98       	cbi	0x18, 0	; 24
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     788:	c1 9a       	sbi	0x18, 1	; 24
-     78a:	ef ef       	ldi	r30, 0xFF	; 255
-     78c:	f0 e7       	ldi	r31, 0x70	; 112
-     78e:	32 e0       	ldi	r19, 0x02	; 2
-     790:	e1 50       	subi	r30, 0x01	; 1
-     792:	f0 40       	sbci	r31, 0x00	; 0
-     794:	30 40       	sbci	r19, 0x00	; 0
-     796:	e1 f7       	brne	.-8      	; 0x790 <__LOCK_REGION_LENGTH__+0x390>
-     798:	00 c0       	rjmp	.+0      	; 0x79a <__LOCK_REGION_LENGTH__+0x39a>
-     79a:	00 00       	nop
+     782:	c1 9a       	sbi	0x18, 1	; 24
+	#else
+		//round up by default
+		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
+	#endif
+
+	__builtin_avr_delay_cycles(__ticks_dc);
+     784:	ff ef       	ldi	r31, 0xFF	; 255
+     786:	30 e7       	ldi	r19, 0x70	; 112
+     788:	82 e0       	ldi	r24, 0x02	; 2
+     78a:	f1 50       	subi	r31, 0x01	; 1
+     78c:	30 40       	sbci	r19, 0x00	; 0
+     78e:	80 40       	sbci	r24, 0x00	; 0
+     790:	e1 f7       	brne	.-8      	; 0x78a <__LOCK_REGION_LENGTH__+0x38a>
+     792:	00 c0       	rjmp	.+0      	; 0x794 <__LOCK_REGION_LENGTH__+0x394>
+     794:	00 00       	nop
 
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
-     79c:	c0 9a       	sbi	0x18, 0	; 24
+     796:	c0 9a       	sbi	0x18, 0	; 24
 	switch(led_num){
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
 			break;
 		case 0x1:
 			LED2_PORT &= ~(LED2_OFFSET);
-     79e:	c1 98       	cbi	0x18, 1	; 24
-     7a0:	4f ef       	ldi	r20, 0xFF	; 255
-     7a2:	60 e7       	ldi	r22, 0x70	; 112
-     7a4:	82 e0       	ldi	r24, 0x02	; 2
-     7a6:	41 50       	subi	r20, 0x01	; 1
-     7a8:	60 40       	sbci	r22, 0x00	; 0
-     7aa:	80 40       	sbci	r24, 0x00	; 0
-     7ac:	e1 f7       	brne	.-8      	; 0x7a6 <__LOCK_REGION_LENGTH__+0x3a6>
-     7ae:	00 c0       	rjmp	.+0      	; 0x7b0 <__LOCK_REGION_LENGTH__+0x3b0>
-     7b0:	00 00       	nop
+     798:	c1 98       	cbi	0x18, 1	; 24
+     79a:	9f ef       	ldi	r25, 0xFF	; 255
+     79c:	e0 e7       	ldi	r30, 0x70	; 112
+     79e:	f2 e0       	ldi	r31, 0x02	; 2
+     7a0:	91 50       	subi	r25, 0x01	; 1
+     7a2:	e0 40       	sbci	r30, 0x00	; 0
+     7a4:	f0 40       	sbci	r31, 0x00	; 0
+     7a6:	e1 f7       	brne	.-8      	; 0x7a0 <__LOCK_REGION_LENGTH__+0x3a0>
+     7a8:	00 c0       	rjmp	.+0      	; 0x7aa <__LOCK_REGION_LENGTH__+0x3aa>
+     7aa:	00 00       	nop
 //----------LED UTILITY---------------	
 
 inline void led_on(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
-     7b2:	c0 98       	cbi	0x18, 0	; 24
+     7ac:	c0 98       	cbi	0x18, 0	; 24
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     7b4:	c1 9a       	sbi	0x18, 1	; 24
-     7b6:	9f ef       	ldi	r25, 0xFF	; 255
-     7b8:	e0 e7       	ldi	r30, 0x70	; 112
-     7ba:	f2 e0       	ldi	r31, 0x02	; 2
-     7bc:	91 50       	subi	r25, 0x01	; 1
-     7be:	e0 40       	sbci	r30, 0x00	; 0
-     7c0:	f0 40       	sbci	r31, 0x00	; 0
-     7c2:	e1 f7       	brne	.-8      	; 0x7bc <__LOCK_REGION_LENGTH__+0x3bc>
-     7c4:	00 c0       	rjmp	.+0      	; 0x7c6 <__LOCK_REGION_LENGTH__+0x3c6>
-     7c6:	00 00       	nop
+     7ae:	c1 9a       	sbi	0x18, 1	; 24
+     7b0:	3f ef       	ldi	r19, 0xFF	; 255
+     7b2:	80 e7       	ldi	r24, 0x70	; 112
+     7b4:	92 e0       	ldi	r25, 0x02	; 2
+     7b6:	31 50       	subi	r19, 0x01	; 1
+     7b8:	80 40       	sbci	r24, 0x00	; 0
+     7ba:	90 40       	sbci	r25, 0x00	; 0
+     7bc:	e1 f7       	brne	.-8      	; 0x7b6 <__LOCK_REGION_LENGTH__+0x3b6>
+     7be:	00 c0       	rjmp	.+0      	; 0x7c0 <__LOCK_REGION_LENGTH__+0x3c0>
+     7c0:	00 00       	nop
 
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
-     7c8:	c0 9a       	sbi	0x18, 0	; 24
+     7c2:	c0 9a       	sbi	0x18, 0	; 24
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     7ca:	c1 9a       	sbi	0x18, 1	; 24
+     7c4:	c1 9a       	sbi	0x18, 1	; 24
 						total_bytes = current_byte;
 						
 						// not a full frame detected
 						if ((current_byte + 1) % FRAME_WIDTH != 0) {
 							led_error(0);
 							seekData = true;
-     7cc:	89 2d       	mov	r24, r9
-     7ce:	9c c0       	rjmp	.+312    	; 0x908 <__LOCK_REGION_LENGTH__+0x508>
+     7c6:	89 2d       	mov	r24, r9
+     7c8:	9c c0       	rjmp	.+312    	; 0x902 <__LOCK_REGION_LENGTH__+0x502>
 							//return 0;	
 						} 
 						// didn't end on a full vertical line (minus the stop bit)
 						else if (current_bit != 6) {
-     7d0:	36 30       	cpi	r19, 0x06	; 6
-     7d2:	19 f4       	brne	.+6      	; 0x7da <__LOCK_REGION_LENGTH__+0x3da>
-     7d4:	48 c0       	rjmp	.+144    	; 0x866 <__LOCK_REGION_LENGTH__+0x466>
-     7d6:	9f 5f       	subi	r25, 0xFF	; 255
-     7d8:	01 c0       	rjmp	.+2      	; 0x7dc <__LOCK_REGION_LENGTH__+0x3dc>
-     7da:	91 e0       	ldi	r25, 0x01	; 1
+     7ca:	36 30       	cpi	r19, 0x06	; 6
+     7cc:	19 f4       	brne	.+6      	; 0x7d4 <__LOCK_REGION_LENGTH__+0x3d4>
+     7ce:	48 c0       	rjmp	.+144    	; 0x860 <__LOCK_REGION_LENGTH__+0x460>
+     7d0:	9f 5f       	subi	r25, 0xFF	; 255
+     7d2:	01 c0       	rjmp	.+2      	; 0x7d6 <__LOCK_REGION_LENGTH__+0x3d6>
+     7d4:	91 e0       	ldi	r25, 0x01	; 1
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) =  *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) | LED_OFFSETS[led_num];
 }
 
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
-     7dc:	8f ef       	ldi	r24, 0xFF	; 255
-     7de:	89 0f       	add	r24, r25
-     7e0:	82 30       	cpi	r24, 0x02	; 2
-     7e2:	79 f0       	breq	.+30     	; 0x802 <__LOCK_REGION_LENGTH__+0x402>
-     7e4:	28 f4       	brcc	.+10     	; 0x7f0 <__LOCK_REGION_LENGTH__+0x3f0>
-     7e6:	88 23       	and	r24, r24
-     7e8:	41 f0       	breq	.+16     	; 0x7fa <__LOCK_REGION_LENGTH__+0x3fa>
-     7ea:	81 30       	cpi	r24, 0x01	; 1
-     7ec:	41 f0       	breq	.+16     	; 0x7fe <__LOCK_REGION_LENGTH__+0x3fe>
-     7ee:	0f c0       	rjmp	.+30     	; 0x80e <__LOCK_REGION_LENGTH__+0x40e>
-     7f0:	83 30       	cpi	r24, 0x03	; 3
-     7f2:	49 f0       	breq	.+18     	; 0x806 <__LOCK_REGION_LENGTH__+0x406>
-     7f4:	84 30       	cpi	r24, 0x04	; 4
-     7f6:	49 f0       	breq	.+18     	; 0x80a <__LOCK_REGION_LENGTH__+0x40a>
-     7f8:	0a c0       	rjmp	.+20     	; 0x80e <__LOCK_REGION_LENGTH__+0x40e>
+     7d6:	8f ef       	ldi	r24, 0xFF	; 255
+     7d8:	89 0f       	add	r24, r25
+     7da:	82 30       	cpi	r24, 0x02	; 2
+     7dc:	79 f0       	breq	.+30     	; 0x7fc <__LOCK_REGION_LENGTH__+0x3fc>
+     7de:	28 f4       	brcc	.+10     	; 0x7ea <__LOCK_REGION_LENGTH__+0x3ea>
+     7e0:	88 23       	and	r24, r24
+     7e2:	41 f0       	breq	.+16     	; 0x7f4 <__LOCK_REGION_LENGTH__+0x3f4>
+     7e4:	81 30       	cpi	r24, 0x01	; 1
+     7e6:	41 f0       	breq	.+16     	; 0x7f8 <__LOCK_REGION_LENGTH__+0x3f8>
+     7e8:	0f c0       	rjmp	.+30     	; 0x808 <__LOCK_REGION_LENGTH__+0x408>
+     7ea:	83 30       	cpi	r24, 0x03	; 3
+     7ec:	49 f0       	breq	.+18     	; 0x800 <__LOCK_REGION_LENGTH__+0x400>
+     7ee:	84 30       	cpi	r24, 0x04	; 4
+     7f0:	49 f0       	breq	.+18     	; 0x804 <__LOCK_REGION_LENGTH__+0x404>
+     7f2:	0a c0       	rjmp	.+20     	; 0x808 <__LOCK_REGION_LENGTH__+0x408>
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
-     7fa:	c0 9a       	sbi	0x18, 0	; 24
-     7fc:	ec cf       	rjmp	.-40     	; 0x7d6 <__LOCK_REGION_LENGTH__+0x3d6>
+     7f4:	c0 9a       	sbi	0x18, 0	; 24
+     7f6:	ec cf       	rjmp	.-40     	; 0x7d0 <__LOCK_REGION_LENGTH__+0x3d0>
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     7fe:	c1 9a       	sbi	0x18, 1	; 24
-     800:	ea cf       	rjmp	.-44     	; 0x7d6 <__LOCK_REGION_LENGTH__+0x3d6>
+     7f8:	c1 9a       	sbi	0x18, 1	; 24
+     7fa:	ea cf       	rjmp	.-44     	; 0x7d0 <__LOCK_REGION_LENGTH__+0x3d0>
 			break;
 		case 0x2:
 			LED3_PORT |= (LED3_OFFSET);
-     802:	c2 9a       	sbi	0x18, 2	; 24
-     804:	e8 cf       	rjmp	.-48     	; 0x7d6 <__LOCK_REGION_LENGTH__+0x3d6>
+     7fc:	c2 9a       	sbi	0x18, 2	; 24
+     7fe:	e8 cf       	rjmp	.-48     	; 0x7d0 <__LOCK_REGION_LENGTH__+0x3d0>
 			break;
 		case 0x3:
 			LED4_PORT |= (LED4_OFFSET);
-     806:	c3 9a       	sbi	0x18, 3	; 24
-     808:	e6 cf       	rjmp	.-52     	; 0x7d6 <__LOCK_REGION_LENGTH__+0x3d6>
+     800:	c3 9a       	sbi	0x18, 3	; 24
+     802:	e6 cf       	rjmp	.-52     	; 0x7d0 <__LOCK_REGION_LENGTH__+0x3d0>
 			break;
 		case 0x4:
 			LED5_PORT |= (LED5_OFFSET);
-     80a:	c4 9a       	sbi	0x18, 4	; 24
-     80c:	02 c0       	rjmp	.+4      	; 0x812 <__LOCK_REGION_LENGTH__+0x412>
+     804:	c4 9a       	sbi	0x18, 4	; 24
+     806:	02 c0       	rjmp	.+4      	; 0x80c <__LOCK_REGION_LENGTH__+0x40c>
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) = *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) & ~(LED_OFFSETS[led_num]);
 }
 
 inline void all_off(void){
 	for(uint8_t i = 0; i < NUM_LEDS; i++){
-     80e:	95 30       	cpi	r25, 0x05	; 5
-     810:	10 f3       	brcs	.-60     	; 0x7d6 <__LOCK_REGION_LENGTH__+0x3d6>
+     808:	95 30       	cpi	r25, 0x05	; 5
+     80a:	10 f3       	brcs	.-60     	; 0x7d0 <__LOCK_REGION_LENGTH__+0x3d0>
 }
 
 inline void led_error(uint8_t led_num){
 	all_off();
 	//for(uint8_t i = 0; i < 5; i++){
 	if(run_mode != 2) return;
-     812:	80 91 d7 00 	lds	r24, 0x00D7	; 0x8000d7 <run_mode>
-     816:	82 30       	cpi	r24, 0x02	; 2
-     818:	09 f0       	breq	.+2      	; 0x81c <__LOCK_REGION_LENGTH__+0x41c>
-     81a:	73 c0       	rjmp	.+230    	; 0x902 <__LOCK_REGION_LENGTH__+0x502>
+     80c:	80 91 d7 00 	lds	r24, 0x00D7	; 0x8000d7 <run_mode>
+     810:	82 30       	cpi	r24, 0x02	; 2
+     812:	09 f0       	breq	.+2      	; 0x816 <__LOCK_REGION_LENGTH__+0x416>
+     814:	73 c0       	rjmp	.+230    	; 0x8fc <__LOCK_REGION_LENGTH__+0x4fc>
 //----------LED UTILITY---------------	
 
 inline void led_on(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
-     81c:	c0 98       	cbi	0x18, 0	; 24
+     816:	c0 98       	cbi	0x18, 0	; 24
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     81e:	c1 9a       	sbi	0x18, 1	; 24
-     820:	ff ef       	ldi	r31, 0xFF	; 255
-     822:	30 e7       	ldi	r19, 0x70	; 112
-     824:	42 e0       	ldi	r20, 0x02	; 2
-     826:	f1 50       	subi	r31, 0x01	; 1
-     828:	30 40       	sbci	r19, 0x00	; 0
-     82a:	40 40       	sbci	r20, 0x00	; 0
-     82c:	e1 f7       	brne	.-8      	; 0x826 <__LOCK_REGION_LENGTH__+0x426>
-     82e:	00 c0       	rjmp	.+0      	; 0x830 <__LOCK_REGION_LENGTH__+0x430>
-     830:	00 00       	nop
+     818:	c1 9a       	sbi	0x18, 1	; 24
+     81a:	ff ef       	ldi	r31, 0xFF	; 255
+     81c:	30 e7       	ldi	r19, 0x70	; 112
+     81e:	82 e0       	ldi	r24, 0x02	; 2
+     820:	f1 50       	subi	r31, 0x01	; 1
+     822:	30 40       	sbci	r19, 0x00	; 0
+     824:	80 40       	sbci	r24, 0x00	; 0
+     826:	e1 f7       	brne	.-8      	; 0x820 <__LOCK_REGION_LENGTH__+0x420>
+     828:	00 c0       	rjmp	.+0      	; 0x82a <__LOCK_REGION_LENGTH__+0x42a>
+     82a:	00 00       	nop
 
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
-     832:	c0 9a       	sbi	0x18, 0	; 24
+     82c:	c0 9a       	sbi	0x18, 0	; 24
 	switch(led_num){
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
 			break;
 		case 0x1:
 			LED2_PORT &= ~(LED2_OFFSET);
-     834:	c1 98       	cbi	0x18, 1	; 24
-     836:	6f ef       	ldi	r22, 0xFF	; 255
-     838:	80 e7       	ldi	r24, 0x70	; 112
-     83a:	92 e0       	ldi	r25, 0x02	; 2
-     83c:	61 50       	subi	r22, 0x01	; 1
-     83e:	80 40       	sbci	r24, 0x00	; 0
-     840:	90 40       	sbci	r25, 0x00	; 0
-     842:	e1 f7       	brne	.-8      	; 0x83c <__LOCK_REGION_LENGTH__+0x43c>
-     844:	00 c0       	rjmp	.+0      	; 0x846 <__LOCK_REGION_LENGTH__+0x446>
-     846:	00 00       	nop
+     82e:	c1 98       	cbi	0x18, 1	; 24
+     830:	9f ef       	ldi	r25, 0xFF	; 255
+     832:	e0 e7       	ldi	r30, 0x70	; 112
+     834:	f2 e0       	ldi	r31, 0x02	; 2
+     836:	91 50       	subi	r25, 0x01	; 1
+     838:	e0 40       	sbci	r30, 0x00	; 0
+     83a:	f0 40       	sbci	r31, 0x00	; 0
+     83c:	e1 f7       	brne	.-8      	; 0x836 <__LOCK_REGION_LENGTH__+0x436>
+     83e:	00 c0       	rjmp	.+0      	; 0x840 <__LOCK_REGION_LENGTH__+0x440>
+     840:	00 00       	nop
 //----------LED UTILITY---------------	
 
 inline void led_on(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
-     848:	c0 98       	cbi	0x18, 0	; 24
+     842:	c0 98       	cbi	0x18, 0	; 24
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     84a:	c1 9a       	sbi	0x18, 1	; 24
-     84c:	ef ef       	ldi	r30, 0xFF	; 255
-     84e:	f0 e7       	ldi	r31, 0x70	; 112
-     850:	32 e0       	ldi	r19, 0x02	; 2
-     852:	e1 50       	subi	r30, 0x01	; 1
-     854:	f0 40       	sbci	r31, 0x00	; 0
-     856:	30 40       	sbci	r19, 0x00	; 0
-     858:	e1 f7       	brne	.-8      	; 0x852 <__LOCK_REGION_LENGTH__+0x452>
-     85a:	00 c0       	rjmp	.+0      	; 0x85c <__LOCK_REGION_LENGTH__+0x45c>
-     85c:	00 00       	nop
+     844:	c1 9a       	sbi	0x18, 1	; 24
+     846:	3f ef       	ldi	r19, 0xFF	; 255
+     848:	80 e7       	ldi	r24, 0x70	; 112
+     84a:	92 e0       	ldi	r25, 0x02	; 2
+     84c:	31 50       	subi	r19, 0x01	; 1
+     84e:	80 40       	sbci	r24, 0x00	; 0
+     850:	90 40       	sbci	r25, 0x00	; 0
+     852:	e1 f7       	brne	.-8      	; 0x84c <__LOCK_REGION_LENGTH__+0x44c>
+     854:	00 c0       	rjmp	.+0      	; 0x856 <__LOCK_REGION_LENGTH__+0x456>
+     856:	00 00       	nop
 
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
-     85e:	c0 9a       	sbi	0x18, 0	; 24
+     858:	c0 9a       	sbi	0x18, 0	; 24
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     860:	c1 9a       	sbi	0x18, 1	; 24
+     85a:	c1 9a       	sbi	0x18, 1	; 24
 							//return 0;	
 						} 
 						// didn't end on a full vertical line (minus the stop bit)
 						else if (current_bit != 6) {
 							led_error(0);
 							seekData = true;
-     862:	89 2d       	mov	r24, r9
-     864:	51 c0       	rjmp	.+162    	; 0x908 <__LOCK_REGION_LENGTH__+0x508>
+     85c:	89 2d       	mov	r24, r9
+     85e:	51 c0       	rjmp	.+162    	; 0x902 <__LOCK_REGION_LENGTH__+0x502>
 							//return 0;	
 						} 
 						// too many frames
 						else if ((current_byte + 1) / FRAME_WIDTH > MAX_FRAMES) {
-     866:	ee 34       	cpi	r30, 0x4E	; 78
-     868:	f1 05       	cpc	r31, r1
-     86a:	24 f4       	brge	.+8      	; 0x874 <__LOCK_REGION_LENGTH__+0x474>
+     860:	ee 34       	cpi	r30, 0x4E	; 78
+     862:	f1 05       	cpc	r31, r1
+     864:	24 f4       	brge	.+8      	; 0x86e <__LOCK_REGION_LENGTH__+0x46e>
 					//if 5th bit is 0, data is over, or read is corrupted
 					if (!(rx & 0b1)) {
 						//Serial.println(":FINISH");
 						//data read is finished, or data is corrupted
 						data_incoming = false;
 						seekData = false;						
-     86c:	80 e0       	ldi	r24, 0x00	; 0
-     86e:	4c c0       	rjmp	.+152    	; 0x908 <__LOCK_REGION_LENGTH__+0x508>
-     870:	9f 5f       	subi	r25, 0xFF	; 255
-     872:	01 c0       	rjmp	.+2      	; 0x876 <__LOCK_REGION_LENGTH__+0x476>
-     874:	91 e0       	ldi	r25, 0x01	; 1
+     866:	80 e0       	ldi	r24, 0x00	; 0
+     868:	4c c0       	rjmp	.+152    	; 0x902 <__LOCK_REGION_LENGTH__+0x502>
+     86a:	9f 5f       	subi	r25, 0xFF	; 255
+     86c:	01 c0       	rjmp	.+2      	; 0x870 <__LOCK_REGION_LENGTH__+0x470>
+     86e:	91 e0       	ldi	r25, 0x01	; 1
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) =  *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) | LED_OFFSETS[led_num];
 }
 
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
-     876:	8f ef       	ldi	r24, 0xFF	; 255
-     878:	89 0f       	add	r24, r25
-     87a:	82 30       	cpi	r24, 0x02	; 2
-     87c:	79 f0       	breq	.+30     	; 0x89c <__LOCK_REGION_LENGTH__+0x49c>
-     87e:	28 f4       	brcc	.+10     	; 0x88a <__LOCK_REGION_LENGTH__+0x48a>
-     880:	88 23       	and	r24, r24
-     882:	41 f0       	breq	.+16     	; 0x894 <__LOCK_REGION_LENGTH__+0x494>
-     884:	81 30       	cpi	r24, 0x01	; 1
-     886:	41 f0       	breq	.+16     	; 0x898 <__LOCK_REGION_LENGTH__+0x498>
-     888:	0f c0       	rjmp	.+30     	; 0x8a8 <__LOCK_REGION_LENGTH__+0x4a8>
-     88a:	83 30       	cpi	r24, 0x03	; 3
-     88c:	49 f0       	breq	.+18     	; 0x8a0 <__LOCK_REGION_LENGTH__+0x4a0>
-     88e:	84 30       	cpi	r24, 0x04	; 4
-     890:	49 f0       	breq	.+18     	; 0x8a4 <__LOCK_REGION_LENGTH__+0x4a4>
-     892:	0a c0       	rjmp	.+20     	; 0x8a8 <__LOCK_REGION_LENGTH__+0x4a8>
+     870:	8f ef       	ldi	r24, 0xFF	; 255
+     872:	89 0f       	add	r24, r25
+     874:	82 30       	cpi	r24, 0x02	; 2
+     876:	79 f0       	breq	.+30     	; 0x896 <__LOCK_REGION_LENGTH__+0x496>
+     878:	28 f4       	brcc	.+10     	; 0x884 <__LOCK_REGION_LENGTH__+0x484>
+     87a:	88 23       	and	r24, r24
+     87c:	41 f0       	breq	.+16     	; 0x88e <__LOCK_REGION_LENGTH__+0x48e>
+     87e:	81 30       	cpi	r24, 0x01	; 1
+     880:	41 f0       	breq	.+16     	; 0x892 <__LOCK_REGION_LENGTH__+0x492>
+     882:	0f c0       	rjmp	.+30     	; 0x8a2 <__LOCK_REGION_LENGTH__+0x4a2>
+     884:	83 30       	cpi	r24, 0x03	; 3
+     886:	49 f0       	breq	.+18     	; 0x89a <__LOCK_REGION_LENGTH__+0x49a>
+     888:	84 30       	cpi	r24, 0x04	; 4
+     88a:	49 f0       	breq	.+18     	; 0x89e <__LOCK_REGION_LENGTH__+0x49e>
+     88c:	0a c0       	rjmp	.+20     	; 0x8a2 <__LOCK_REGION_LENGTH__+0x4a2>
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
-     894:	c0 9a       	sbi	0x18, 0	; 24
-     896:	ec cf       	rjmp	.-40     	; 0x870 <__LOCK_REGION_LENGTH__+0x470>
+     88e:	c0 9a       	sbi	0x18, 0	; 24
+     890:	ec cf       	rjmp	.-40     	; 0x86a <__LOCK_REGION_LENGTH__+0x46a>
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     898:	c1 9a       	sbi	0x18, 1	; 24
-     89a:	ea cf       	rjmp	.-44     	; 0x870 <__LOCK_REGION_LENGTH__+0x470>
+     892:	c1 9a       	sbi	0x18, 1	; 24
+     894:	ea cf       	rjmp	.-44     	; 0x86a <__LOCK_REGION_LENGTH__+0x46a>
 			break;
 		case 0x2:
 			LED3_PORT |= (LED3_OFFSET);
-     89c:	c2 9a       	sbi	0x18, 2	; 24
-     89e:	e8 cf       	rjmp	.-48     	; 0x870 <__LOCK_REGION_LENGTH__+0x470>
+     896:	c2 9a       	sbi	0x18, 2	; 24
+     898:	e8 cf       	rjmp	.-48     	; 0x86a <__LOCK_REGION_LENGTH__+0x46a>
 			break;
 		case 0x3:
 			LED4_PORT |= (LED4_OFFSET);
-     8a0:	c3 9a       	sbi	0x18, 3	; 24
-     8a2:	e6 cf       	rjmp	.-52     	; 0x870 <__LOCK_REGION_LENGTH__+0x470>
+     89a:	c3 9a       	sbi	0x18, 3	; 24
+     89c:	e6 cf       	rjmp	.-52     	; 0x86a <__LOCK_REGION_LENGTH__+0x46a>
 			break;
 		case 0x4:
 			LED5_PORT |= (LED5_OFFSET);
-     8a4:	c4 9a       	sbi	0x18, 4	; 24
-     8a6:	02 c0       	rjmp	.+4      	; 0x8ac <__LOCK_REGION_LENGTH__+0x4ac>
+     89e:	c4 9a       	sbi	0x18, 4	; 24
+     8a0:	02 c0       	rjmp	.+4      	; 0x8a6 <__LOCK_REGION_LENGTH__+0x4a6>
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) = *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) & ~(LED_OFFSETS[led_num]);
 }
 
 inline void all_off(void){
 	for(uint8_t i = 0; i < NUM_LEDS; i++){
-     8a8:	95 30       	cpi	r25, 0x05	; 5
-     8aa:	10 f3       	brcs	.-60     	; 0x870 <__LOCK_REGION_LENGTH__+0x470>
+     8a2:	95 30       	cpi	r25, 0x05	; 5
+     8a4:	10 f3       	brcs	.-60     	; 0x86a <__LOCK_REGION_LENGTH__+0x46a>
 }
 
 inline void led_error(uint8_t led_num){
 	all_off();
 	//for(uint8_t i = 0; i < 5; i++){
 	if(run_mode != 2) return;
-     8ac:	80 91 d7 00 	lds	r24, 0x00D7	; 0x8000d7 <run_mode>
-     8b0:	82 30       	cpi	r24, 0x02	; 2
-     8b2:	49 f5       	brne	.+82     	; 0x906 <__LOCK_REGION_LENGTH__+0x506>
+     8a6:	80 91 d7 00 	lds	r24, 0x00D7	; 0x8000d7 <run_mode>
+     8aa:	82 30       	cpi	r24, 0x02	; 2
+     8ac:	49 f5       	brne	.+82     	; 0x900 <__LOCK_REGION_LENGTH__+0x500>
 //----------LED UTILITY---------------	
 
 inline void led_on(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
-     8b4:	c0 98       	cbi	0x18, 0	; 24
+     8ae:	c0 98       	cbi	0x18, 0	; 24
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     8b6:	c1 9a       	sbi	0x18, 1	; 24
-     8b8:	3f ef       	ldi	r19, 0xFF	; 255
-     8ba:	40 e7       	ldi	r20, 0x70	; 112
-     8bc:	62 e0       	ldi	r22, 0x02	; 2
-     8be:	31 50       	subi	r19, 0x01	; 1
-     8c0:	40 40       	sbci	r20, 0x00	; 0
-     8c2:	60 40       	sbci	r22, 0x00	; 0
-     8c4:	e1 f7       	brne	.-8      	; 0x8be <__LOCK_REGION_LENGTH__+0x4be>
-     8c6:	00 c0       	rjmp	.+0      	; 0x8c8 <__LOCK_REGION_LENGTH__+0x4c8>
-     8c8:	00 00       	nop
+     8b0:	c1 9a       	sbi	0x18, 1	; 24
+     8b2:	ff ef       	ldi	r31, 0xFF	; 255
+     8b4:	30 e7       	ldi	r19, 0x70	; 112
+     8b6:	82 e0       	ldi	r24, 0x02	; 2
+     8b8:	f1 50       	subi	r31, 0x01	; 1
+     8ba:	30 40       	sbci	r19, 0x00	; 0
+     8bc:	80 40       	sbci	r24, 0x00	; 0
+     8be:	e1 f7       	brne	.-8      	; 0x8b8 <__LOCK_REGION_LENGTH__+0x4b8>
+     8c0:	00 c0       	rjmp	.+0      	; 0x8c2 <__LOCK_REGION_LENGTH__+0x4c2>
+     8c2:	00 00       	nop
 
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
-     8ca:	c0 9a       	sbi	0x18, 0	; 24
+     8c4:	c0 9a       	sbi	0x18, 0	; 24
 	switch(led_num){
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
 			break;
 		case 0x1:
 			LED2_PORT &= ~(LED2_OFFSET);
-     8cc:	c1 98       	cbi	0x18, 1	; 24
-     8ce:	8f ef       	ldi	r24, 0xFF	; 255
-     8d0:	90 e7       	ldi	r25, 0x70	; 112
-     8d2:	e2 e0       	ldi	r30, 0x02	; 2
-     8d4:	81 50       	subi	r24, 0x01	; 1
-     8d6:	90 40       	sbci	r25, 0x00	; 0
-     8d8:	e0 40       	sbci	r30, 0x00	; 0
-     8da:	e1 f7       	brne	.-8      	; 0x8d4 <__LOCK_REGION_LENGTH__+0x4d4>
-     8dc:	00 c0       	rjmp	.+0      	; 0x8de <__LOCK_REGION_LENGTH__+0x4de>
-     8de:	00 00       	nop
+     8c6:	c1 98       	cbi	0x18, 1	; 24
+     8c8:	9f ef       	ldi	r25, 0xFF	; 255
+     8ca:	e0 e7       	ldi	r30, 0x70	; 112
+     8cc:	f2 e0       	ldi	r31, 0x02	; 2
+     8ce:	91 50       	subi	r25, 0x01	; 1
+     8d0:	e0 40       	sbci	r30, 0x00	; 0
+     8d2:	f0 40       	sbci	r31, 0x00	; 0
+     8d4:	e1 f7       	brne	.-8      	; 0x8ce <__LOCK_REGION_LENGTH__+0x4ce>
+     8d6:	00 c0       	rjmp	.+0      	; 0x8d8 <__LOCK_REGION_LENGTH__+0x4d8>
+     8d8:	00 00       	nop
 //----------LED UTILITY---------------	
 
 inline void led_on(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT &= ~(LED1_OFFSET);
-     8e0:	c0 98       	cbi	0x18, 0	; 24
+     8da:	c0 98       	cbi	0x18, 0	; 24
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     8e2:	c1 9a       	sbi	0x18, 1	; 24
-     8e4:	ff ef       	ldi	r31, 0xFF	; 255
-     8e6:	30 e7       	ldi	r19, 0x70	; 112
-     8e8:	42 e0       	ldi	r20, 0x02	; 2
-     8ea:	f1 50       	subi	r31, 0x01	; 1
-     8ec:	30 40       	sbci	r19, 0x00	; 0
-     8ee:	40 40       	sbci	r20, 0x00	; 0
-     8f0:	e1 f7       	brne	.-8      	; 0x8ea <__LOCK_REGION_LENGTH__+0x4ea>
-     8f2:	00 c0       	rjmp	.+0      	; 0x8f4 <__LOCK_REGION_LENGTH__+0x4f4>
-     8f4:	00 00       	nop
+     8dc:	c1 9a       	sbi	0x18, 1	; 24
+     8de:	3f ef       	ldi	r19, 0xFF	; 255
+     8e0:	80 e7       	ldi	r24, 0x70	; 112
+     8e2:	92 e0       	ldi	r25, 0x02	; 2
+     8e4:	31 50       	subi	r19, 0x01	; 1
+     8e6:	80 40       	sbci	r24, 0x00	; 0
+     8e8:	90 40       	sbci	r25, 0x00	; 0
+     8ea:	e1 f7       	brne	.-8      	; 0x8e4 <__LOCK_REGION_LENGTH__+0x4e4>
+     8ec:	00 c0       	rjmp	.+0      	; 0x8ee <__LOCK_REGION_LENGTH__+0x4ee>
+     8ee:	00 00       	nop
 
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
-     8f6:	c0 9a       	sbi	0x18, 0	; 24
+     8f0:	c0 9a       	sbi	0x18, 0	; 24
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     8f8:	c1 9a       	sbi	0x18, 1	; 24
+     8f2:	c1 9a       	sbi	0x18, 1	; 24
 							//return 0;	
 						} 
 						// too many frames
 						else if ((current_byte + 1) / FRAME_WIDTH > MAX_FRAMES) {
 							led_error(0);
 							seekData = true;
-     8fa:	89 2d       	mov	r24, r9
-     8fc:	05 c0       	rjmp	.+10     	; 0x908 <__LOCK_REGION_LENGTH__+0x508>
+     8f4:	89 2d       	mov	r24, r9
+     8f6:	05 c0       	rjmp	.+10     	; 0x902 <__LOCK_REGION_LENGTH__+0x502>
 						total_bytes = current_byte;
 						
 						// not a full frame detected
 						if ((current_byte + 1) % FRAME_WIDTH != 0) {
 							led_error(0);
 							seekData = true;
-     8fe:	89 2d       	mov	r24, r9
-     900:	03 c0       	rjmp	.+6      	; 0x908 <__LOCK_REGION_LENGTH__+0x508>
+     8f8:	89 2d       	mov	r24, r9
+     8fa:	03 c0       	rjmp	.+6      	; 0x902 <__LOCK_REGION_LENGTH__+0x502>
 							//return 0;	
 						} 
 						// didn't end on a full vertical line (minus the stop bit)
 						else if (current_bit != 6) {
 							led_error(0);
 							seekData = true;
-     902:	89 2d       	mov	r24, r9
-     904:	01 c0       	rjmp	.+2      	; 0x908 <__LOCK_REGION_LENGTH__+0x508>
+     8fc:	89 2d       	mov	r24, r9
+     8fe:	01 c0       	rjmp	.+2      	; 0x902 <__LOCK_REGION_LENGTH__+0x502>
 							//return 0;	
 						} 
 						// too many frames
 						else if ((current_byte + 1) / FRAME_WIDTH > MAX_FRAMES) {
 							led_error(0);
 							seekData = true;
-     906:	89 2d       	mov	r24, r9
+     900:	89 2d       	mov	r24, r9
 							//return 0;	
 						}
 						
 						//reset for new data transmission
 						current_byte = 0;
-     908:	10 92 a1 00 	sts	0x00A1, r1	; 0x8000a1 <_ZZ12user_programvE12current_byte>
+     902:	10 92 a1 00 	sts	0x00A1, r1	; 0x8000a1 <_ZZ12user_programvE12current_byte>
 						current_bit = 0;
-     90c:	10 92 a0 00 	sts	0x00A0, r1	; 0x8000a0 <__data_end>
-					//Serial.print(":BYTE");
-					//if 5th bit is 0, data is over, or read is corrupted
-					if (!(rx & 0b1)) {
-						//Serial.println(":FINISH");
-						//data read is finished, or data is corrupted
-						data_incoming = false;
-     910:	1c 82       	std	Y+4, r1	; 0x04
+     906:	10 92 a0 00 	sts	0x00A0, r1	; 0x8000a0 <__data_end>
 	
 	const uint8_t led_signal_steady = 1;
 	const uint8_t led_state_now = 0;
 	
 	// ------------- Seek until successful transfer ------------------
 	while(seekData)
-     912:	88 23       	and	r24, r24
-     914:	69 f0       	breq	.+26     	; 0x930 <__LOCK_REGION_LENGTH__+0x530>
-     916:	18 cd       	rjmp	.-1488   	; 0x348 <_Z12user_programv+0x48>
+     90a:	88 23       	and	r24, r24
+     90c:	69 f0       	breq	.+26     	; 0x928 <__LOCK_REGION_LENGTH__+0x528>
+     90e:	21 cd       	rjmp	.-1470   	; 0x352 <_Z12user_programv+0x52>
 						current_bit = 0;
 						
 					}
 					//finished reading column, move onto next byte
 					else {
 						current_byte++;
-     918:	ed 81       	ldd	r30, Y+5	; 0x05
-     91a:	ef 5f       	subi	r30, 0xFF	; 255
-     91c:	ed 83       	std	Y+5, r30	; 0x05
-     91e:	e0 93 a1 00 	sts	0x00A1, r30	; 0x8000a1 <_ZZ12user_programvE12current_byte>
+     910:	ed 81       	ldd	r30, Y+5	; 0x05
+     912:	ef 5f       	subi	r30, 0xFF	; 255
+     914:	ed 83       	std	Y+5, r30	; 0x05
+     916:	e0 93 a1 00 	sts	0x00A1, r30	; 0x8000a1 <_ZZ12user_programvE12current_byte>
 						current_bit = 0;
-     922:	10 92 a0 00 	sts	0x00A0, r1	; 0x8000a0 <__data_end>
+     91a:	10 92 a0 00 	sts	0x00A0, r1	; 0x8000a0 <__data_end>
 						data_buf[current_byte] = 0b0;
-     926:	f0 e0       	ldi	r31, 0x00	; 0
-     928:	e3 52       	subi	r30, 0x23	; 35
-     92a:	ff 4f       	sbci	r31, 0xFF	; 255
-     92c:	10 82       	st	Z, r1
-     92e:	0c cd       	rjmp	.-1512   	; 0x348 <_Z12user_programv+0x48>
-     930:	4d 81       	ldd	r20, Y+5	; 0x05
-     932:	49 83       	std	Y+1, r20	; 0x01
+     91e:	f0 e0       	ldi	r31, 0x00	; 0
+     920:	e3 52       	subi	r30, 0x23	; 35
+     922:	ff 4f       	sbci	r31, 0xFF	; 255
+     924:	10 82       	st	Z, r1
+     926:	16 cd       	rjmp	.-1492   	; 0x354 <_Z12user_programv+0x54>
+     928:	ed 81       	ldd	r30, Y+5	; 0x05
+     92a:	e9 83       	std	Y+1, r30	; 0x01
 			}
 			//Seriali.println();
 		}		
 	}
 					
 	timer0_tick_100us_disable();
-     934:	00 dc       	rcall	.-2048   	; 0x136 <_Z25timer0_tick_100us_disablev>
+     92c:	04 dc       	rcall	.-2040   	; 0x136 <_Z25timer0_tick_100us_disablev>
 	
 	EEPROM_write(0, 0);	// 0x0 is used as the frame count, set to zero while writing
-     936:	60 e0       	ldi	r22, 0x00	; 0
-     938:	80 e0       	ldi	r24, 0x00	; 0
-     93a:	d4 dc       	rcall	.-1624   	; 0x2e4 <_Z12EEPROM_writehh>
+     92e:	60 e0       	ldi	r22, 0x00	; 0
+     930:	80 e0       	ldi	r24, 0x00	; 0
+     932:	d8 dc       	rcall	.-1616   	; 0x2e4 <_Z12EEPROM_writehh>
 	
 	for(uint8_t i = 0; i < total_bytes+1; i++){
-     93c:	69 81       	ldd	r22, Y+1	; 0x01
-     93e:	06 2f       	mov	r16, r22
-     940:	10 e0       	ldi	r17, 0x00	; 0
-     942:	0f 5f       	subi	r16, 0xFF	; 255
-     944:	1f 4f       	sbci	r17, 0xFF	; 255
-     946:	80 e0       	ldi	r24, 0x00	; 0
-     948:	90 e0       	ldi	r25, 0x00	; 0
-     94a:	19 82       	std	Y+1, r1	; 0x01
+     934:	f9 81       	ldd	r31, Y+1	; 0x01
+     936:	0f 2f       	mov	r16, r31
+     938:	10 e0       	ldi	r17, 0x00	; 0
+     93a:	0f 5f       	subi	r16, 0xFF	; 255
+     93c:	1f 4f       	sbci	r17, 0xFF	; 255
+     93e:	80 e0       	ldi	r24, 0x00	; 0
+     940:	90 e0       	ldi	r25, 0x00	; 0
+     942:	19 82       	std	Y+1, r1	; 0x01
 		EEPROM_write(i+1, data_buf[i]);
-     94c:	f9 81       	ldd	r31, Y+1	; 0x01
-     94e:	ff 5f       	subi	r31, 0xFF	; 255
-     950:	f9 83       	std	Y+1, r31	; 0x01
-     952:	fc 01       	movw	r30, r24
-     954:	e3 52       	subi	r30, 0x23	; 35
-     956:	ff 4f       	sbci	r31, 0xFF	; 255
-     958:	60 81       	ld	r22, Z
-     95a:	89 81       	ldd	r24, Y+1	; 0x01
-     95c:	c3 dc       	rcall	.-1658   	; 0x2e4 <_Z12EEPROM_writehh>
+     944:	39 81       	ldd	r19, Y+1	; 0x01
+     946:	3f 5f       	subi	r19, 0xFF	; 255
+     948:	39 83       	std	Y+1, r19	; 0x01
+     94a:	fc 01       	movw	r30, r24
+     94c:	e3 52       	subi	r30, 0x23	; 35
+     94e:	ff 4f       	sbci	r31, 0xFF	; 255
+     950:	60 81       	ld	r22, Z
+     952:	83 2f       	mov	r24, r19
+     954:	c7 dc       	rcall	.-1650   	; 0x2e4 <_Z12EEPROM_writehh>
 					
 	timer0_tick_100us_disable();
 	
 	EEPROM_write(0, 0);	// 0x0 is used as the frame count, set to zero while writing
 	
 	for(uint8_t i = 0; i < total_bytes+1; i++){
-     95e:	29 81       	ldd	r18, Y+1	; 0x01
-     960:	82 2f       	mov	r24, r18
-     962:	90 e0       	ldi	r25, 0x00	; 0
-     964:	80 17       	cp	r24, r16
-     966:	91 07       	cpc	r25, r17
-     968:	8c f3       	brlt	.-30     	; 0x94c <__LOCK_REGION_LENGTH__+0x54c>
+     956:	e9 81       	ldd	r30, Y+1	; 0x01
+     958:	8e 2f       	mov	r24, r30
+     95a:	90 e0       	ldi	r25, 0x00	; 0
+     95c:	80 17       	cp	r24, r16
+     95e:	91 07       	cpc	r25, r17
+     960:	8c f3       	brlt	.-30     	; 0x944 <__LOCK_REGION_LENGTH__+0x544>
 		EEPROM_write(i+1, data_buf[i]);
 	}
 	
 	// now write the size
 	EEPROM_write(0, (total_bytes+1)/FRAME_WIDTH);
-     96a:	c8 01       	movw	r24, r16
-     96c:	66 e0       	ldi	r22, 0x06	; 6
-     96e:	70 e0       	ldi	r23, 0x00	; 0
-     970:	e2 d4       	rcall	.+2500   	; 0x1336 <__divmodhi4>
-     972:	80 e0       	ldi	r24, 0x00	; 0
-     974:	b7 dc       	rcall	.-1682   	; 0x2e4 <_Z12EEPROM_writehh>
-     976:	91 e0       	ldi	r25, 0x01	; 1
-     978:	03 c0       	rjmp	.+6      	; 0x980 <__LOCK_REGION_LENGTH__+0x580>
-     97a:	8f e0       	ldi	r24, 0x0F	; 15
-     97c:	1d c0       	rjmp	.+58     	; 0x9b8 <__LOCK_REGION_LENGTH__+0x5b8>
-     97e:	9f 5f       	subi	r25, 0xFF	; 255
+     962:	c8 01       	movw	r24, r16
+     964:	66 e0       	ldi	r22, 0x06	; 6
+     966:	70 e0       	ldi	r23, 0x00	; 0
+     968:	e6 d4       	rcall	.+2508   	; 0x1336 <__divmodhi4>
+     96a:	80 e0       	ldi	r24, 0x00	; 0
+     96c:	bb dc       	rcall	.-1674   	; 0x2e4 <_Z12EEPROM_writehh>
+     96e:	91 e0       	ldi	r25, 0x01	; 1
+     970:	03 c0       	rjmp	.+6      	; 0x978 <__LOCK_REGION_LENGTH__+0x578>
+     972:	8f e0       	ldi	r24, 0x0F	; 15
+     974:	1d c0       	rjmp	.+58     	; 0x9b0 <__LOCK_REGION_LENGTH__+0x5b0>
+     976:	9f 5f       	subi	r25, 0xFF	; 255
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) =  *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) | LED_OFFSETS[led_num];
 }
 
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
-     980:	8f ef       	ldi	r24, 0xFF	; 255
-     982:	89 0f       	add	r24, r25
-     984:	82 30       	cpi	r24, 0x02	; 2
-     986:	79 f0       	breq	.+30     	; 0x9a6 <__LOCK_REGION_LENGTH__+0x5a6>
-     988:	28 f4       	brcc	.+10     	; 0x994 <__LOCK_REGION_LENGTH__+0x594>
-     98a:	88 23       	and	r24, r24
-     98c:	41 f0       	breq	.+16     	; 0x99e <__LOCK_REGION_LENGTH__+0x59e>
-     98e:	81 30       	cpi	r24, 0x01	; 1
-     990:	41 f0       	breq	.+16     	; 0x9a2 <__LOCK_REGION_LENGTH__+0x5a2>
-     992:	0f c0       	rjmp	.+30     	; 0x9b2 <__LOCK_REGION_LENGTH__+0x5b2>
-     994:	83 30       	cpi	r24, 0x03	; 3
-     996:	49 f0       	breq	.+18     	; 0x9aa <__LOCK_REGION_LENGTH__+0x5aa>
-     998:	84 30       	cpi	r24, 0x04	; 4
-     99a:	49 f0       	breq	.+18     	; 0x9ae <__LOCK_REGION_LENGTH__+0x5ae>
-     99c:	0a c0       	rjmp	.+20     	; 0x9b2 <__LOCK_REGION_LENGTH__+0x5b2>
+     978:	8f ef       	ldi	r24, 0xFF	; 255
+     97a:	89 0f       	add	r24, r25
+     97c:	82 30       	cpi	r24, 0x02	; 2
+     97e:	79 f0       	breq	.+30     	; 0x99e <__LOCK_REGION_LENGTH__+0x59e>
+     980:	28 f4       	brcc	.+10     	; 0x98c <__LOCK_REGION_LENGTH__+0x58c>
+     982:	88 23       	and	r24, r24
+     984:	41 f0       	breq	.+16     	; 0x996 <__LOCK_REGION_LENGTH__+0x596>
+     986:	81 30       	cpi	r24, 0x01	; 1
+     988:	41 f0       	breq	.+16     	; 0x99a <__LOCK_REGION_LENGTH__+0x59a>
+     98a:	0f c0       	rjmp	.+30     	; 0x9aa <__LOCK_REGION_LENGTH__+0x5aa>
+     98c:	83 30       	cpi	r24, 0x03	; 3
+     98e:	49 f0       	breq	.+18     	; 0x9a2 <__LOCK_REGION_LENGTH__+0x5a2>
+     990:	84 30       	cpi	r24, 0x04	; 4
+     992:	49 f0       	breq	.+18     	; 0x9a6 <__LOCK_REGION_LENGTH__+0x5a6>
+     994:	0a c0       	rjmp	.+20     	; 0x9aa <__LOCK_REGION_LENGTH__+0x5aa>
 		case 0x0:
 			LED1_PORT |= (LED1_OFFSET);
-     99e:	c0 9a       	sbi	0x18, 0	; 24
-     9a0:	ee cf       	rjmp	.-36     	; 0x97e <__LOCK_REGION_LENGTH__+0x57e>
+     996:	c0 9a       	sbi	0x18, 0	; 24
+     998:	ee cf       	rjmp	.-36     	; 0x976 <__LOCK_REGION_LENGTH__+0x576>
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
-     9a2:	c1 9a       	sbi	0x18, 1	; 24
-     9a4:	ec cf       	rjmp	.-40     	; 0x97e <__LOCK_REGION_LENGTH__+0x57e>
+     99a:	c1 9a       	sbi	0x18, 1	; 24
+     99c:	ec cf       	rjmp	.-40     	; 0x976 <__LOCK_REGION_LENGTH__+0x576>
 			break;
 		case 0x2:
 			LED3_PORT |= (LED3_OFFSET);
-     9a6:	c2 9a       	sbi	0x18, 2	; 24
-     9a8:	ea cf       	rjmp	.-44     	; 0x97e <__LOCK_REGION_LENGTH__+0x57e>
+     99e:	c2 9a       	sbi	0x18, 2	; 24
+     9a0:	ea cf       	rjmp	.-44     	; 0x976 <__LOCK_REGION_LENGTH__+0x576>
 			break;
 		case 0x3:
 			LED4_PORT |= (LED4_OFFSET);
-     9aa:	c3 9a       	sbi	0x18, 3	; 24
-     9ac:	e8 cf       	rjmp	.-48     	; 0x97e <__LOCK_REGION_LENGTH__+0x57e>
+     9a2:	c3 9a       	sbi	0x18, 3	; 24
+     9a4:	e8 cf       	rjmp	.-48     	; 0x976 <__LOCK_REGION_LENGTH__+0x576>
 			break;
 		case 0x4:
 			LED5_PORT |= (LED5_OFFSET);
-     9ae:	c4 9a       	sbi	0x18, 4	; 24
-     9b0:	e4 cf       	rjmp	.-56     	; 0x97a <__LOCK_REGION_LENGTH__+0x57a>
+     9a6:	c4 9a       	sbi	0x18, 4	; 24
+     9a8:	e4 cf       	rjmp	.-56     	; 0x972 <__LOCK_REGION_LENGTH__+0x572>
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) = *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) & ~(LED_OFFSETS[led_num]);
 }
 
 inline void all_off(void){
 	for(uint8_t i = 0; i < NUM_LEDS; i++){
-     9b2:	95 30       	cpi	r25, 0x05	; 5
-     9b4:	20 f3       	brcs	.-56     	; 0x97e <__LOCK_REGION_LENGTH__+0x57e>
-     9b6:	e1 cf       	rjmp	.-62     	; 0x97a <__LOCK_REGION_LENGTH__+0x57a>
+     9aa:	95 30       	cpi	r25, 0x05	; 5
+     9ac:	20 f3       	brcs	.-56     	; 0x976 <__LOCK_REGION_LENGTH__+0x576>
+     9ae:	e1 cf       	rjmp	.-62     	; 0x972 <__LOCK_REGION_LENGTH__+0x572>
 			break;
 		case 0x1:
 			LED2_PORT &= ~(LED2_OFFSET);
 			break;
 		case 0x2:
 			LED3_PORT &= ~(LED3_OFFSET);
-     9b8:	c2 98       	cbi	0x18, 2	; 24
-     9ba:	3f e7       	ldi	r19, 0x7F	; 127
-     9bc:	48 e3       	ldi	r20, 0x38	; 56
-     9be:	61 e0       	ldi	r22, 0x01	; 1
-     9c0:	31 50       	subi	r19, 0x01	; 1
-     9c2:	40 40       	sbci	r20, 0x00	; 0
-     9c4:	60 40       	sbci	r22, 0x00	; 0
-     9c6:	e1 f7       	brne	.-8      	; 0x9c0 <__LOCK_REGION_LENGTH__+0x5c0>
-     9c8:	00 c0       	rjmp	.+0      	; 0x9ca <__LOCK_REGION_LENGTH__+0x5ca>
-     9ca:	00 00       	nop
+     9b0:	c2 98       	cbi	0x18, 2	; 24
+     9b2:	ff e7       	ldi	r31, 0x7F	; 127
+     9b4:	28 e3       	ldi	r18, 0x38	; 56
+     9b6:	31 e0       	ldi	r19, 0x01	; 1
+     9b8:	f1 50       	subi	r31, 0x01	; 1
+     9ba:	20 40       	sbci	r18, 0x00	; 0
+     9bc:	30 40       	sbci	r19, 0x00	; 0
+     9be:	e1 f7       	brne	.-8      	; 0x9b8 <__LOCK_REGION_LENGTH__+0x5b8>
+     9c0:	00 c0       	rjmp	.+0      	; 0x9c2 <__LOCK_REGION_LENGTH__+0x5c2>
+     9c2:	00 00       	nop
 			break;
 		case 0x1:
 			LED2_PORT |= (LED2_OFFSET);
 			break;
 		case 0x2:
 			LED3_PORT |= (LED3_OFFSET);
-     9cc:	c2 9a       	sbi	0x18, 2	; 24
-     9ce:	9f e7       	ldi	r25, 0x7F	; 127
-     9d0:	e8 e3       	ldi	r30, 0x38	; 56
-     9d2:	f1 e0       	ldi	r31, 0x01	; 1
-     9d4:	91 50       	subi	r25, 0x01	; 1
-     9d6:	e0 40       	sbci	r30, 0x00	; 0
-     9d8:	f0 40       	sbci	r31, 0x00	; 0
-     9da:	e1 f7       	brne	.-8      	; 0x9d4 <__LOCK_REGION_LENGTH__+0x5d4>
-     9dc:	00 c0       	rjmp	.+0      	; 0x9de <__LOCK_REGION_LENGTH__+0x5de>
-     9de:	00 00       	nop
-     9e0:	81 50       	subi	r24, 0x01	; 1
+     9c4:	c2 9a       	sbi	0x18, 2	; 24
+     9c6:	9f e7       	ldi	r25, 0x7F	; 127
+     9c8:	e8 e3       	ldi	r30, 0x38	; 56
+     9ca:	f1 e0       	ldi	r31, 0x01	; 1
+     9cc:	91 50       	subi	r25, 0x01	; 1
+     9ce:	e0 40       	sbci	r30, 0x00	; 0
+     9d0:	f0 40       	sbci	r31, 0x00	; 0
+     9d2:	e1 f7       	brne	.-8      	; 0x9cc <__LOCK_REGION_LENGTH__+0x5cc>
+     9d4:	00 c0       	rjmp	.+0      	; 0x9d6 <__LOCK_REGION_LENGTH__+0x5d6>
+     9d6:	00 00       	nop
+     9d8:	81 50       	subi	r24, 0x01	; 1
 	//}
 }
 
 inline void led_success(uint8_t led_num){
 	all_off();
 	for(uint8_t i = 0; i < 15; i++){
-     9e2:	51 f7       	brne	.-44     	; 0x9b8 <__LOCK_REGION_LENGTH__+0x5b8>
+     9da:	51 f7       	brne	.-44     	; 0x9b0 <__LOCK_REGION_LENGTH__+0x5b0>
 	EEPROM_write(0, (total_bytes+1)/FRAME_WIDTH);
 	
 	//flash LED for success
 	led_success(2);
 
 	return 1;
-     9e4:	81 e0       	ldi	r24, 0x01	; 1
-     9e6:	62 c0       	rjmp	.+196    	; 0xaac <__LOCK_REGION_LENGTH__+0x6ac>
-		
-		led_on(0);
-		_delay_ms(100);
-		led_off(0);
+     9dc:	81 e0       	ldi	r24, 0x01	; 1
+     9de:	66 c0       	rjmp	.+204    	; 0xaac <__LOCK_REGION_LENGTH__+0x6ac>
+	// ------------- Seek until successful transfer ------------------
+	while(seekData)
+	{
+		static uint8_t stablewhen0 = 10;
 		
 		if(run_mode != 0) return 0; //exit programming mode early
-     9e8:	80 e0       	ldi	r24, 0x00	; 0
-     9ea:	60 c0       	rjmp	.+192    	; 0xaac <__LOCK_REGION_LENGTH__+0x6ac>
-     9ec:	8b 2d       	mov	r24, r11
-     9ee:	9a 2d       	mov	r25, r10
-     9f0:	a8 2d       	mov	r26, r8
-     9f2:	b9 81       	ldd	r27, Y+1	; 0x01
-     9f4:	80 93 cc 00 	sts	0x00CC, r24	; 0x8000cc <_ZZ12user_programvE8data_max>
-     9f8:	90 93 cd 00 	sts	0x00CD, r25	; 0x8000cd <_ZZ12user_programvE8data_max+0x1>
-     9fc:	a0 93 ce 00 	sts	0x00CE, r26	; 0x8000ce <_ZZ12user_programvE8data_max+0x2>
-     a00:	b0 93 cf 00 	sts	0x00CF, r27	; 0x8000cf <_ZZ12user_programvE8data_max+0x3>
-     a04:	87 2d       	mov	r24, r7
-     a06:	96 2d       	mov	r25, r6
-     a08:	a5 2d       	mov	r26, r5
-     a0a:	b4 2d       	mov	r27, r4
-     a0c:	80 93 c8 00 	sts	0x00C8, r24	; 0x8000c8 <_ZZ12user_programvE8data_min>
-     a10:	90 93 c9 00 	sts	0x00C9, r25	; 0x8000c9 <_ZZ12user_programvE8data_min+0x1>
-     a14:	a0 93 ca 00 	sts	0x00CA, r26	; 0x8000ca <_ZZ12user_programvE8data_min+0x2>
-     a18:	b0 93 cb 00 	sts	0x00CB, r27	; 0x8000cb <_ZZ12user_programvE8data_min+0x3>
+     9e0:	80 e0       	ldi	r24, 0x00	; 0
+     9e2:	64 c0       	rjmp	.+200    	; 0xaac <__LOCK_REGION_LENGTH__+0x6ac>
+     9e4:	80 e0       	ldi	r24, 0x00	; 0
+     9e6:	62 c0       	rjmp	.+196    	; 0xaac <__LOCK_REGION_LENGTH__+0x6ac>
+     9e8:	8b 2d       	mov	r24, r11
+     9ea:	9a 2d       	mov	r25, r10
+     9ec:	a8 2d       	mov	r26, r8
+     9ee:	b9 81       	ldd	r27, Y+1	; 0x01
+     9f0:	80 93 cc 00 	sts	0x00CC, r24	; 0x8000cc <_ZZ12user_programvE8data_max>
+     9f4:	90 93 cd 00 	sts	0x00CD, r25	; 0x8000cd <_ZZ12user_programvE8data_max+0x1>
+     9f8:	a0 93 ce 00 	sts	0x00CE, r26	; 0x8000ce <_ZZ12user_programvE8data_max+0x2>
+     9fc:	b0 93 cf 00 	sts	0x00CF, r27	; 0x8000cf <_ZZ12user_programvE8data_max+0x3>
+     a00:	87 2d       	mov	r24, r7
+     a02:	96 2d       	mov	r25, r6
+     a04:	a5 2d       	mov	r26, r5
+     a06:	b4 2d       	mov	r27, r4
+     a08:	80 93 c8 00 	sts	0x00C8, r24	; 0x8000c8 <_ZZ12user_programvE8data_min>
+     a0c:	90 93 c9 00 	sts	0x00C9, r25	; 0x8000c9 <_ZZ12user_programvE8data_min+0x1>
+     a10:	a0 93 ca 00 	sts	0x00CA, r26	; 0x8000ca <_ZZ12user_programvE8data_min+0x2>
+     a14:	b0 93 cb 00 	sts	0x00CB, r27	; 0x8000cb <_ZZ12user_programvE8data_min+0x3>
 					if(max_bucket[block] > data_max) data_max = max_bucket[block];
 					else if(min_bucket[block] < data_min) data_min = min_bucket[block];
 				}
 			}
 
 			float amplitude = (data_max - data_min);
-     a1c:	27 2d       	mov	r18, r7
-     a1e:	36 2d       	mov	r19, r6
-     a20:	45 2d       	mov	r20, r5
-     a22:	54 2d       	mov	r21, r4
-     a24:	6b 2d       	mov	r22, r11
-     a26:	7a 2d       	mov	r23, r10
-     a28:	88 2d       	mov	r24, r8
-     a2a:	99 81       	ldd	r25, Y+1	; 0x01
-     a2c:	ce d2       	rcall	.+1436   	; 0xfca <__subsf3>
-     a2e:	6b 01       	movw	r12, r22
-     a30:	7c 01       	movw	r14, r24
+     a18:	27 2d       	mov	r18, r7
+     a1a:	36 2d       	mov	r19, r6
+     a1c:	45 2d       	mov	r20, r5
+     a1e:	54 2d       	mov	r21, r4
+     a20:	6b 2d       	mov	r22, r11
+     a22:	7a 2d       	mov	r23, r10
+     a24:	88 2d       	mov	r24, r8
+     a26:	99 81       	ldd	r25, Y+1	; 0x01
+     a28:	d0 d2       	rcall	.+1440   	; 0xfca <__subsf3>
+     a2a:	6b 01       	movw	r12, r22
+     a2c:	7c 01       	movw	r14, r24
 			float midline = amplitude / 2 + data_min;	//threshold between high and low
-     a32:	20 e0       	ldi	r18, 0x00	; 0
-     a34:	30 e0       	ldi	r19, 0x00	; 0
-     a36:	40 e0       	ldi	r20, 0x00	; 0
-     a38:	5f e3       	ldi	r21, 0x3F	; 63
-     a3a:	12 d4       	rcall	.+2084   	; 0x1260 <__mulsf3>
-     a3c:	27 2d       	mov	r18, r7
-     a3e:	36 2d       	mov	r19, r6
-     a40:	45 2d       	mov	r20, r5
-     a42:	54 2d       	mov	r21, r4
-     a44:	c3 d2       	rcall	.+1414   	; 0xfcc <__addsf3>
-     a46:	2b 01       	movw	r4, r22
-     a48:	3c 01       	movw	r6, r24
+     a2e:	20 e0       	ldi	r18, 0x00	; 0
+     a30:	30 e0       	ldi	r19, 0x00	; 0
+     a32:	40 e0       	ldi	r20, 0x00	; 0
+     a34:	5f e3       	ldi	r21, 0x3F	; 63
+     a36:	14 d4       	rcall	.+2088   	; 0x1260 <__mulsf3>
+     a38:	27 2d       	mov	r18, r7
+     a3a:	36 2d       	mov	r19, r6
+     a3c:	45 2d       	mov	r20, r5
+     a3e:	54 2d       	mov	r21, r4
+     a40:	c5 d2       	rcall	.+1418   	; 0xfcc <__addsf3>
+     a42:	2b 01       	movw	r4, r22
+     a44:	3c 01       	movw	r6, r24
 							
 			//good signal if optical signal has large enough contrast
 			//good signal if data transfer is active
 			if( data_incoming || amplitude >= data_max * (SIGNAL_STRENGTH_FACTOR / 100.0) ) signal_available = true;
-     a4a:	2d ec       	ldi	r18, 0xCD	; 205
-     a4c:	3c ec       	ldi	r19, 0xCC	; 204
-     a4e:	4c e4       	ldi	r20, 0x4C	; 76
-     a50:	5e e3       	ldi	r21, 0x3E	; 62
-     a52:	6b 2d       	mov	r22, r11
-     a54:	7a 2d       	mov	r23, r10
-     a56:	88 2d       	mov	r24, r8
-     a58:	99 81       	ldd	r25, Y+1	; 0x01
-     a5a:	02 d4       	rcall	.+2052   	; 0x1260 <__mulsf3>
-     a5c:	a7 01       	movw	r20, r14
-     a5e:	96 01       	movw	r18, r12
-     a60:	19 d3       	rcall	.+1586   	; 0x1094 <__cmpsf2>
-     a62:	18 16       	cp	r1, r24
+     a46:	2d ec       	ldi	r18, 0xCD	; 205
+     a48:	3c ec       	ldi	r19, 0xCC	; 204
+     a4a:	4c e4       	ldi	r20, 0x4C	; 76
+     a4c:	5e e3       	ldi	r21, 0x3E	; 62
+     a4e:	6b 2d       	mov	r22, r11
+     a50:	7a 2d       	mov	r23, r10
+     a52:	88 2d       	mov	r24, r8
+     a54:	99 81       	ldd	r25, Y+1	; 0x01
+     a56:	04 d4       	rcall	.+2056   	; 0x1260 <__mulsf3>
+     a58:	9b 01       	movw	r18, r22
+     a5a:	ac 01       	movw	r20, r24
+     a5c:	c7 01       	movw	r24, r14
+     a5e:	b6 01       	movw	r22, r12
+     a60:	fb d3       	rcall	.+2038   	; 0x1258 <__gesf2>
+     a62:	88 23       	and	r24, r24
      a64:	0c f0       	brlt	.+2      	; 0xa68 <__LOCK_REGION_LENGTH__+0x668>
-     a66:	c8 cd       	rjmp	.-1136   	; 0x5f8 <__LOCK_REGION_LENGTH__+0x1f8>
-     a68:	c1 cd       	rjmp	.-1150   	; 0x5ec <__LOCK_REGION_LENGTH__+0x1ec>
+     a66:	c6 cd       	rjmp	.-1140   	; 0x5f4 <__LOCK_REGION_LENGTH__+0x1f4>
+     a68:	bf cd       	rjmp	.-1154   	; 0x5e8 <__LOCK_REGION_LENGTH__+0x1e8>
 					if(max_bucket[block] > data_max) data_max = max_bucket[block];
 					else if(min_bucket[block] < data_min) data_min = min_bucket[block];
 				}
@@ -2031,9 +1994,9 @@ inline void led_success(uint8_t led_num){
 			//good signal if data transfer is active
 			if( data_incoming || amplitude >= data_max * (SIGNAL_STRENGTH_FACTOR / 100.0) ) signal_available = true;
      aa4:	9d 82       	std	Y+5, r9	; 0x05
-     aa6:	a9 cd       	rjmp	.-1198   	; 0x5fa <__LOCK_REGION_LENGTH__+0x1fa>
+     aa6:	a7 cd       	rjmp	.-1202   	; 0x5f6 <__LOCK_REGION_LENGTH__+0x1f6>
      aa8:	20 e0       	ldi	r18, 0x00	; 0
-     aaa:	4e cc       	rjmp	.-1892   	; 0x348 <_Z12user_programv+0x48>
+     aaa:	54 cc       	rjmp	.-1880   	; 0x354 <_Z12user_programv+0x54>
 	
 	//flash LED for success
 	led_success(2);
