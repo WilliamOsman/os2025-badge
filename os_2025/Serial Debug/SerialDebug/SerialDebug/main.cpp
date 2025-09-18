@@ -502,6 +502,10 @@ bool user_program(void){
 	{
 		static uint8_t stablewhen0 = 10;
 		
+		led_on(0);
+		_delay_ms(100);
+		led_off(0);
+		
 		if(run_mode != 0) return 0; //exit programming mode early
 		
 		//------------ Process ADC Sample -----------------
@@ -906,18 +910,23 @@ void run(void){
 	load_frames();
 	
 	while(1){
+		all_off();
 		switch(run_mode){
 			case 0:
-				user_program();
+				//user_program();
+				led_on(0);
 				break;
 			case 1:
-				animate2();
+				led_on(1);
+				//animate2();
 				break;
 			case 2:
-				led_error(0);
+				led_on(2);
+				//led_error(0);
 				break;
 			default:
-				led_error(0);
+				led_on(3);
+				//led_error(0);
 				break;
 		}
 	}
