@@ -156,7 +156,7 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 volatile bool newSample_available = false;
 volatile uint16_t newSample = 0;
 volatile bool ADC_shorted = false;	//if first ADC reading is 0v, the 0ohm resistor is shorted
-volatile uint16_t ADC_shorted_cycles = 0;
+volatile uint16_t ADC_shorted_cycles = 100;
 volatile uint8_t run_mode = 0;
 const uint8_t clock_offset = 1;	//tick needs slight auto-adjustment for inaccurate programming app fps
 	
@@ -388,12 +388,12 @@ ISR(ADC_vect)
 			ADC_shorted_cycles = 1;
 		}
 		//state change to open circuit
-		else{
+		else if(reading >= 10 && ADC_shorted){
 			ADC_shorted = false;
 			ADC_shorted_cycles = 1;
 		}		
 		ADC_shorted_cycles++;
-		if(ADC_shorted_cycles > 1000) ADC_shorted_cycles = 1000;
+		if(ADC_shorted_cycles >= 1000) ADC_shorted_cycles = 1000;
 		
 		//if ADC hasn't been shorted recently run in program mode
 		if(!ADC_shorted && ADC_shorted_cycles > 100) run_mode = 0;
@@ -401,6 +401,7 @@ ISR(ADC_vect)
 		else if(ADC_shorted && ADC_shorted_cycles > 10) run_mode = 2;
 		//if ADC shorted run in animation mode for
 		else run_mode = 1;
+		
 	}
 
 	integrate += ADC;								// ADC is a macro that does ADCL then ADCH
@@ -913,20 +914,20 @@ void run(void){
 		all_off();
 		switch(run_mode){
 			case 0:
-				//user_program();
-				led_on(0);
+				user_program();
+				//led_on(0);
 				break;
 			case 1:
-				led_on(1);
-				//animate2();
+				//led_on(1);
+				animate2();
 				break;
 			case 2:
-				led_on(2);
-				//led_error(0);
+				//led_on(2);
+				led_error(0);
 				break;
 			default:
-				led_on(3);
-				//led_error(0);
+				//led_on(3);
+				led_error(0);
 				break;
 		}
 	}
