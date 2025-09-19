@@ -2390,7 +2390,7 @@ inline void led_success(uint8_t led_num){
      c14:	e2 f7       	brpl	.-8      	; 0xc0e <_Z12animate_lefth+0x8a>
      c16:	60 ff       	sbrs	r22, 0
      c18:	17 c0       	rjmp	.+46     	; 0xc48 <_Z12animate_lefth+0xc4>
-const uint8_t clock_offset = 1;	//tick needs slight auto-adjustment for inaccurate programming app fps
+
 	
 //----------LED UTILITY---------------	
 

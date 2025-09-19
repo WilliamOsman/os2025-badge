@@ -102,7 +102,6 @@ void animate2(void);
 
 uint8_t data_buf[FRAME_WIDTH*MAX_FRAMES] = {0};	// frame buffer
 uint8_t data_frame_count = 0;
-
 uint8_t default_data_size = 5;	// number of frames
 
 //OPEN SAUCE
@@ -136,6 +135,7 @@ volatile bool ADC_shorted = false;	//if first ADC reading is 0v, the 0ohm resist
 volatile uint16_t ADC_shorted_cycles = 100;
 volatile uint8_t run_mode = 0;
 const uint8_t clock_offset = 1;	//tick needs slight auto-adjustment for inaccurate programming app fps
+
 	
 //----------LED UTILITY---------------	
 
