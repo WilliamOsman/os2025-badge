@@ -865,6 +865,8 @@ int main(void)
 	
 	// handle quick power on/off to select a mode
 	uint8_t mode = EEPROM_read(0xff);
+	if(mode > 4) mode = 0;
+	
 	if(mode < 4) led_on(0);
 	else led_on(4);
 	
