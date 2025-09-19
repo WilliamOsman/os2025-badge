@@ -662,8 +662,6 @@ bool user_program(void){
 			}
 		}		
 	}
-					
-	timer0_tick_100us_disable();
 	
 	EEPROM_write(0, 0);	// 0x0 is used as the frame count, set to zero while writing
 	
