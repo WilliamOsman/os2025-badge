@@ -829,7 +829,7 @@ void run(void){
 		//run_mode is determined in timer0_tick_100us_init ISR routine
 		switch(run_mode){
 			case 0:
-				user_program();
+				if(user_program()) load_frames();
 				break;
 			case 1:
 				animate2();
