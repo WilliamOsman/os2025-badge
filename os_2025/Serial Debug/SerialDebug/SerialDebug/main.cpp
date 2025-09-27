@@ -135,6 +135,7 @@ volatile bool ADC_shorted = false;	//if first ADC reading is 0v, the 0ohm resist
 volatile uint16_t ADC_shorted_cycles = 100;
 volatile uint8_t run_mode = 0;
 const uint8_t clock_offset = 1;	//tick needs slight auto-adjustment for inaccurate programming app fps
+volatile uint16_t tick_time = 0;
 
 	
 //----------LED UTILITY---------------	
@@ -342,6 +343,11 @@ ISR(TIMER0_COMPA_vect) {
 		default:  break;
 	}
 	tick++;
+	tick_time++;
+	
+	//if(delay_ticks <= 1) delay_ticks--;
+	//else delay_ticks = 0;
+	
 	if (tick >= 125 + clock_offset) {              // t = 12.5 ms + slight offset for drift
 		tick = 0;                                  // next cycle
 	}
@@ -398,6 +404,10 @@ ISR(ADC_vect)
 	
 }
 
+inline void delayTicks(uint16_t durration){
+	uint16_t start_time = tick_time;
+	while(tick_time - start_time <= durration);
+}
 //----------EEPROM---------------	
 
 void EEPROM_write(uint8_t ucAddress, uint8_t ucData)
@@ -680,12 +690,16 @@ bool user_program(void){
 
 
 
-uint8_t animate_left(uint8_t frame){
+uint8_t animate_left(uint8_t frame, uint16_t durration){
+	
+	uint16_t off_dur = durration >> 2;
+	uint16_t on_dur = on_dur * 3;
 
 	#ifdef DISPLAY_MODE_FULL
 		_delay_ms(20);
 		// all frames at once
 		uint8_t total_cols = FRAME_WIDTH * data_frame_count;
+
 		
 		for(uint8_t i = 0; i < total_cols; i++) {
 			uint8_t index = total_cols-1-i;
@@ -743,9 +757,11 @@ uint8_t animate_left(uint8_t frame){
 			}
 		}
 		
-		_delay_us(1800);		
+		//_delay_us(1800);
+		delayTicks(on_dur);
 		all_off();
-		_delay_us(500);
+		delayTicks(off_dur);
+		//_delay_us(500);
 	}
 	return word_end;
 #endif
@@ -791,9 +807,13 @@ void animate2(void){
 		else bump = 0;
 
 		if(bump & !last_bump){
+			static uint16_t last_ticks = 0;
+			
+			uint16_t dur = (tick_time - last_ticks) >> 4;
+			
 			// rising edge
 			_delay_ms(55);
-			uint8_t ret = animate_left(frame_num);
+			uint8_t ret = animate_left(frame_num, dur);
 			if (ret >= data_frame_count)
 				ret = 0;
 			all_off();
