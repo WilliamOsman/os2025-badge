@@ -691,9 +691,6 @@ bool user_program(void){
 
 
 uint8_t animate_left(uint8_t frame, uint16_t durration){
-	
-	uint16_t off_dur = durration >> 2;
-	uint16_t on_dur = on_dur * 3;
 
 	#ifdef DISPLAY_MODE_FULL
 		_delay_ms(20);
@@ -741,6 +738,9 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
 			break;
 		}
 	}
+	
+	uint16_t off_dur = (durration / data_frame_count) >> 2;
+	uint16_t on_dur = off_dur * 3;
 	
 	uint8_t col_min = frame*FRAME_WIDTH;
 	uint8_t col_max = word_end*FRAME_WIDTH;
@@ -810,6 +810,8 @@ void animate2(void){
 			static uint16_t last_ticks = 0;
 			
 			uint16_t dur = (tick_time - last_ticks) >> 4;
+			last_ticks = tick_time;
+			tick_time = 0;
 			
 			// rising edge
 			_delay_ms(55);
