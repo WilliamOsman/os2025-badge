@@ -135,7 +135,7 @@ volatile bool ADC_shorted = false;	//if first ADC reading is 0v, the 0ohm resist
 volatile uint16_t ADC_shorted_cycles = 100;
 volatile uint8_t run_mode = 0;
 const uint8_t clock_offset = 1;	//tick needs slight auto-adjustment for inaccurate programming app fps
-volatile uint16_t tick_time = 0;
+volatile uint32_t tick_time = 0;
 
 	
 //----------LED UTILITY---------------	
@@ -405,7 +405,7 @@ ISR(ADC_vect)
 }
 
 inline void delayTicks(uint16_t durration){
-	uint16_t start_time = tick_time;
+	uint32_t start_time = tick_time;
 	while(tick_time - start_time <= durration);
 }
 //----------EEPROM---------------	
@@ -739,7 +739,7 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
 		}
 	}
 	
-	uint16_t off_dur = (durration / data_frame_count) >> 2;
+	uint16_t off_dur = (durration / (data_frame_count * FRAME_WIDTH)) >> 2;
 	uint16_t on_dur = off_dur * 3;
 	
 	uint8_t col_min = frame*FRAME_WIDTH;
@@ -757,8 +757,8 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
 			}
 		}
 		
-		//_delay_us(1800);
-		delayTicks(on_dur);
+		_delay_us(1800);
+		//delayTicks(on_dur);
 		all_off();
 		delayTicks(off_dur);
 		//_delay_us(500);
@@ -807,10 +807,11 @@ void animate2(void){
 		else bump = 0;
 
 		if(bump & !last_bump){
-			static uint16_t last_ticks = 0;
+			static uint32_t last_time = 0;
 			
-			uint16_t dur = (tick_time - last_ticks) >> 4;
-			last_ticks = tick_time;
+			uint16_t dur = (tick_time - last_time) >> 4;
+			if(dur >= 1500) dur = 625;
+			last_time = tick_time;
 			tick_time = 0;
 			
 			// rising edge
@@ -890,19 +891,15 @@ int main(void)
 	if(mode < 4) led_on(0);
 	else led_on(4);
 	
-	if(mode+1 > 4){
-		EEPROM_write(0xff, 0);
-	}
-	else{
-		EEPROM_write(0xff, mode+1);
-	}
+	if(mode+1 > 4) EEPROM_write(0xff, 0);
+	else EEPROM_write(0xff, mode+1);
 	
 	_delay_ms(1000);
 	EEPROM_write(0xff, 0);
 	
 	all_off();
 	
-	//mode = 2;	// for testing
+	//mode = 4;	// for testing
 	
     while(1) 
     {
