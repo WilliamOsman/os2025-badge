@@ -122,10 +122,10 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 
 //SAUCE
 uint8_t default_data[10*FRAME_WIDTH] = {
-	0b10000, 0b10111, 0b10101, 0b11101, 0b1, 0b0,		// S
+	0b10010, 0b10101, 0b10101, 0b10101, 0b01001, 0b0,		// S
 	0b0, 0b11110, 0b101, 0b101, 0b11110, 0b0,			// A
-	0b1111, 0b11000, 0b10000, 0b11000, 0b1111, 0b0,		// U
-	0b1110, 0b10001, 0b10001, 0b10001, 0b10001, 0b0,	// C
+	0b01111, 0b10000, 0b10000, 0b10000, 0b01111, 0b0,		// U
+	0b01110, 0b10001, 0b10001, 0b10001, 0b10001, 0b0,	// C
 	0b0, 0b11111, 0b10101, 0b10101, 0b10001, 0b0,		// E
 };
 
@@ -717,7 +717,9 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
 	#endif
 	
 #ifdef DISPLAY_MODE_WORD
-	_delay_ms(20);
+	//_delay_ms(20);
+	uint16_t start_delay = durration / 5;
+	delayTicks(start_delay);
 	// all frames up to a blank one
 	
 	uint8_t word_end = data_frame_count;
@@ -739,8 +741,10 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
 		}
 	}
 	
-	uint16_t off_dur = (durration / (data_frame_count * FRAME_WIDTH)) >> 2;
-	uint16_t on_dur = off_dur * 3;
+	uint16_t col_dur = (durration - start_delay) / (data_frame_count * FRAME_WIDTH);
+	uint16_t on_dur = col_dur * 4 / 5;
+	if (on_dur >= 25) on_dur = 25;
+	uint16_t off_dur = col_dur - on_dur;
 	
 	uint8_t col_min = frame*FRAME_WIDTH;
 	uint8_t col_max = word_end*FRAME_WIDTH;
@@ -757,8 +761,8 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
 			}
 		}
 		
-		_delay_us(1800);
-		//delayTicks(on_dur);
+		//_delay_us(1400);
+		delayTicks(on_dur);
 		all_off();
 		delayTicks(off_dur);
 		//_delay_us(500);
@@ -807,20 +811,21 @@ void animate2(void){
 		else bump = 0;
 
 		if(bump & !last_bump){
-			static uint32_t last_time = 0;
+			//static uint32_t last_time = 0;
 			
-			uint16_t dur = (tick_time - last_time) >> 4;
-			if(dur >= 1500) dur = 625;
-			last_time = tick_time;
+			uint32_t dur = tick_time / 2;
+			if(dur >= 3000) dur = 3000;
+			//last_time = tick_time;
 			tick_time = 0;
 			
 			// rising edge
-			_delay_ms(55);
-			uint8_t ret = animate_left(frame_num, dur);
+			//_delay_ms(55);
+			
+			uint8_t ret = animate_left(frame_num, (uint16_t)dur);
 			if (ret >= data_frame_count)
 				ret = 0;
 			all_off();
-			_delay_ms(80);
+			//_delay_ms(80);
 			cycles++;
 			if(cycles > FRAME_CYCLES){
 				cycles = 0;
