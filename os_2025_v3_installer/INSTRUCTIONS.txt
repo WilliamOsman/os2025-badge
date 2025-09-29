@@ -1,0 +1,13 @@
+1) Double click 'RUN_THIS.sh'
+
+2) Insert a new chip into the teal holder on the desk:
+	- Align the dot and notch with drawing on orange pad
+	- Lift ZIF handle up to open, handle down to lock chip in
+
+3) Press the <ENTER> key on the keyboard
+
+4) Wait for chip to program and verify
+
+5) Remove programmed chip
+
+6) Repeat from step 2
