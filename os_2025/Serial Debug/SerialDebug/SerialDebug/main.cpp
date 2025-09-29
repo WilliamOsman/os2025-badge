@@ -102,7 +102,7 @@ void animate2(void);
 
 uint8_t data_buf[FRAME_WIDTH*MAX_FRAMES] = {0};	// frame buffer
 uint8_t data_frame_count = 0;
-uint8_t default_data_size = 4;	// number of frames
+uint8_t default_data_size = 5;	// number of frames
 
 //OPEN SAUCE
 /*
