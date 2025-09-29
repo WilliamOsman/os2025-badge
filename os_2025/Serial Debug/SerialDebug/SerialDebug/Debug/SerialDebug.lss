@@ -259,11 +259,11 @@ ISR(TIMER0_COMPA_vect) {
 			break;
 		default:  break;
 	}
-	tick++;
+	tick++;			//used inside ISR
      16e:	80 91 71 01 	lds	r24, 0x0171	; 0x800171 <tick>
      172:	8f 5f       	subi	r24, 0xFF	; 255
      174:	80 93 71 01 	sts	0x0171, r24	; 0x800171 <tick>
-	tick_time++;
+	tick_time++;	//use outside of ISR
      178:	80 91 d7 00 	lds	r24, 0x00D7	; 0x8000d7 <tick_time>
      17c:	90 91 d8 00 	lds	r25, 0x00D8	; 0x8000d8 <tick_time+0x1>
      180:	a0 91 d9 00 	lds	r26, 0x00D9	; 0x8000d9 <tick_time+0x2>
@@ -275,9 +275,6 @@ ISR(TIMER0_COMPA_vect) {
      192:	90 93 d8 00 	sts	0x00D8, r25	; 0x8000d8 <tick_time+0x1>
      196:	a0 93 d9 00 	sts	0x00D9, r26	; 0x8000d9 <tick_time+0x2>
      19a:	b0 93 da 00 	sts	0x00DA, r27	; 0x8000da <tick_time+0x3>
-	
-	//if(delay_ticks <= 1) delay_ticks--;
-	//else delay_ticks = 0;
 	
 	if (tick >= 125 + clock_offset) {              // t = 12.5 ms + slight offset for drift
      19e:	80 91 71 01 	lds	r24, 0x0171	; 0x800171 <tick>
@@ -411,7 +408,6 @@ ISR(ADC_vect)
 		newSample_available = true;					//flag indicates new data ready
      26e:	81 e0       	ldi	r24, 0x01	; 1
      270:	80 93 df 00 	sts	0x00DF, r24	; 0x8000df <newSample_available>
-		//newSample = integrate >> INTEGRATION_SHIFT;	//divide by total samples for average
 		newSample = integrate;
      274:	30 93 de 00 	sts	0x00DE, r19	; 0x8000de <newSample+0x1>
      278:	20 93 dd 00 	sts	0x00DD, r18	; 0x8000dd <newSample>
@@ -2291,7 +2287,7 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
      bb0:	f8 2f       	mov	r31, r24
 	#endif
 	
-#ifdef DISPLAY_MODE_WORD
+	#ifdef DISPLAY_MODE_WORD
 
 	// all frames up to a blank one
 	uint8_t word_end = data_frame_count;
@@ -2348,7 +2344,7 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
      bec:	46 30       	cpi	r20, 0x06	; 6
      bee:	30 f4       	brcc	.+12     	; 0xbfc <_Z12animate_lefthj+0x5a>
 	
-#ifdef DISPLAY_MODE_WORD
+	#ifdef DISPLAY_MODE_WORD
 
 	// all frames up to a blank one
 	uint8_t word_end = data_frame_count;
@@ -2358,7 +2354,7 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
      bf4:	20 f3       	brcs	.-56     	; 0xbbe <_Z12animate_lefthj+0x1c>
 	#endif
 	
-#ifdef DISPLAY_MODE_WORD
+	#ifdef DISPLAY_MODE_WORD
 
 	// all frames up to a blank one
 	uint8_t word_end = data_frame_count;
@@ -2456,11 +2452,11 @@ inline void delayTicks(uint16_t durration){
      c8e:	2a 07       	cpc	r18, r26
      c90:	3b 07       	cpc	r19, r27
      c92:	78 f7       	brcc	.-34     	; 0xc72 <_Z12animate_lefthj+0xd0>
-	uint8_t col_min = frame*FRAME_WIDTH;
 	uint8_t col_max = word_end*FRAME_WIDTH;
 	
 	delayTicks(start_delay + 100);
 	
+	//write out all colums to the display
 	for (uint8_t col = col_max; col > col_min; col--) {
      c94:	cf 17       	cp	r28, r31
      c96:	08 f0       	brcs	.+2      	; 0xc9a <_Z12animate_lefthj+0xf8>
@@ -2476,10 +2472,10 @@ inline void delayTicks(uint16_t durration){
      c9e:	30 e0       	ldi	r19, 0x00	; 0
      ca0:	60 e0       	ldi	r22, 0x00	; 0
      ca2:	70 e0       	ldi	r23, 0x00	; 0
-	uint8_t col_max = word_end*FRAME_WIDTH;
 	
 	delayTicks(start_delay + 100);
 	
+	//write out all colums to the display
 	for (uint8_t col = col_max; col > col_min; col--) {
 		uint8_t column = data_buf[col-1];
      ca4:	af 2f       	mov	r26, r31
@@ -2592,7 +2588,7 @@ inline void led_off(uint8_t led_num){
 			LED5_PORT |= (LED5_OFFSET);
      d24:	c4 9a       	sbi	0x18, 4	; 24
      d26:	02 c0       	rjmp	.+4      	; 0xd2c <_Z12animate_lefthj+0x18a>
-	
+	//write out all colums to the display
 	for (uint8_t col = col_max; col > col_min; col--) {
 		uint8_t column = data_buf[col-1];
 		
@@ -2704,18 +2700,18 @@ inline void delayTicks(uint16_t durration){
      dc6:	6a 07       	cpc	r22, r26
      dc8:	7b 07       	cpc	r23, r27
      dca:	78 f7       	brcc	.-34     	; 0xdaa <_Z12animate_lefthj+0x208>
-	uint8_t col_min = frame*FRAME_WIDTH;
 	uint8_t col_max = word_end*FRAME_WIDTH;
 	
 	delayTicks(start_delay + 100);
 	
+	//write out all colums to the display
 	for (uint8_t col = col_max; col > col_min; col--) {
      dcc:	f1 50       	subi	r31, 0x01	; 1
      dce:	cf 13       	cpse	r28, r31
      dd0:	69 cf       	rjmp	.-302    	; 0xca4 <_Z12animate_lefthj+0x102>
 			_delay_us(800);
 		}
-#endif
+	#endif
 	
 	return 0;
 }
@@ -2751,19 +2747,19 @@ void animate2(void){
      dfa:	60 c0       	rjmp	.+192    	; 0xebc <_Z8animate2v+0xd8>
      dfc:	30 e0       	ldi	r19, 0x00	; 0
      dfe:	90 e0       	ldi	r25, 0x00	; 0
-			// rising edge
-			//_delay_ms(55);
+			if(dur >= 3000) dur = 3000;		//prevent
+			tick_time = 0;
 			
 			uint8_t ret = animate_left(frame_num, (uint16_t)dur);
 			if (ret >= data_frame_count)
 				ret = 0;
      e00:	d1 2c       	mov	r13, r1
 
+		//rising edge
 		if(bump & !last_bump){
-			//static uint32_t last_time = 0;
 			
-			uint32_t dur = tick_time / 2;
-			if(dur >= 3000) dur = 3000;
+			uint32_t dur = tick_time / 2;	//display for first half of shake
+			if(dur >= 3000) dur = 3000;		//prevent
      e02:	0f 2e       	mov	r0, r31
      e04:	f8 eb       	ldi	r31, 0xB8	; 184
      e06:	ef 2e       	mov	r14, r31
@@ -2783,13 +2779,13 @@ void animate2(void){
      e16:	c0 91 dc 00 	lds	r28, 0x00DC	; 0x8000dc <ADC_shorted>
 		else bump = 0;
 
+		//rising edge
 		if(bump & !last_bump){
      e1a:	9c 17       	cp	r25, r28
      e1c:	08 f0       	brcs	.+2      	; 0xe20 <_Z8animate2v+0x3c>
      e1e:	44 c0       	rjmp	.+136    	; 0xea8 <_Z8animate2v+0xc4>
-			//static uint32_t last_time = 0;
 			
-			uint32_t dur = tick_time / 2;
+			uint32_t dur = tick_time / 2;	//display for first half of shake
      e20:	80 91 d7 00 	lds	r24, 0x00D7	; 0x8000d7 <tick_time>
      e24:	90 91 d8 00 	lds	r25, 0x00D8	; 0x8000d8 <tick_time+0x1>
      e28:	a0 91 d9 00 	lds	r26, 0x00D9	; 0x8000d9 <tick_time+0x2>
@@ -2800,7 +2796,7 @@ void animate2(void){
      e36:	87 95       	ror	r24
      e38:	77 95       	ror	r23
      e3a:	67 95       	ror	r22
-			if(dur >= 3000) dur = 3000;
+			if(dur >= 3000) dur = 3000;		//prevent
      e3c:	68 3b       	cpi	r22, 0xB8	; 184
      e3e:	2b e0       	ldi	r18, 0x0B	; 11
      e40:	72 07       	cpc	r23, r18
@@ -2809,15 +2805,11 @@ void animate2(void){
      e46:	10 f0       	brcs	.+4      	; 0xe4c <_Z8animate2v+0x68>
      e48:	6e 2d       	mov	r22, r14
      e4a:	7f 2d       	mov	r23, r15
-			//last_time = tick_time;
 			tick_time = 0;
      e4c:	10 92 d7 00 	sts	0x00D7, r1	; 0x8000d7 <tick_time>
      e50:	10 92 d8 00 	sts	0x00D8, r1	; 0x8000d8 <tick_time+0x1>
      e54:	10 92 d9 00 	sts	0x00D9, r1	; 0x8000d9 <tick_time+0x2>
      e58:	10 92 da 00 	sts	0x00DA, r1	; 0x8000da <tick_time+0x3>
-			
-			// rising edge
-			//_delay_ms(55);
 			
 			uint8_t ret = animate_left(frame_num, (uint16_t)dur);
      e5c:	83 2f       	mov	r24, r19

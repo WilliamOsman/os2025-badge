@@ -118,7 +118,7 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 	0b1110, 0b10001, 0b10001, 0b10001, 0b10001, 0b0,	// C
 	0b0, 0b11111, 0b10101, 0b10101, 0b10001, 0b0,		// E
 	};
-
+*/
 
 //SAUCE
 uint8_t default_data[10*FRAME_WIDTH] = {
@@ -128,15 +128,16 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 	0b01110, 0b10001, 0b10001, 0b10001, 0b10001, 0b0,	// C
 	0b0, 0b11111, 0b10101, 0b10101, 0b10001, 0b0,		// E
 };
-*/
 
-//SAUCE - short
+/*
+//SAUCE - sort, squeezed into 4 frames to reduce width
 uint8_t default_data[10*FRAME_WIDTH] = {
 	0b10010, 0b10101, 0b10101, 0b01001, 0b00000, 0b11110,		// SA
 	0b00101, 0b00101, 0b11110, 0b00000,	0b01111, 0b10000,		// AU
 	0b10000, 0b01111, 0b00000, 0b01110, 0b10001, 0b10001,		// UC
 	0b10001, 0b00000, 0b11111, 0b10101, 0b10101, 0b10001,		// CE
 };
+*/
 
 volatile bool newSample_available = false;
 volatile uint16_t newSample = 0;
@@ -351,11 +352,8 @@ ISR(TIMER0_COMPA_vect) {
 			break;
 		default:  break;
 	}
-	tick++;
-	tick_time++;
-	
-	//if(delay_ticks <= 1) delay_ticks--;
-	//else delay_ticks = 0;
+	tick++;			//used inside ISR
+	tick_time++;	//use outside of ISR
 	
 	if (tick >= 125 + clock_offset) {              // t = 12.5 ms + slight offset for drift
 		tick = 0;                                  // next cycle
@@ -404,7 +402,6 @@ ISR(ADC_vect)
 	}
 	else {
 		newSample_available = true;					//flag indicates new data ready
-		//newSample = integrate >> INTEGRATION_SHIFT;	//divide by total samples for average
 		newSample = integrate;
 		integrate = 0;								//reset integration
 		count = 0;									//reset count
@@ -700,7 +697,7 @@ bool user_program(void){
 
 
 uint8_t animate_left(uint8_t frame, uint16_t durration){
-
+	//have not implemented dynamic timing
 	#ifdef DISPLAY_MODE_FULL
 		_delay_ms(20);
 		// all frames at once
@@ -725,7 +722,7 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
 		}
 	#endif
 	
-#ifdef DISPLAY_MODE_WORD
+	#ifdef DISPLAY_MODE_WORD
 
 	// all frames up to a blank one
 	uint8_t word_end = data_frame_count;
@@ -760,6 +757,7 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
 	
 	delayTicks(start_delay + 100);
 	
+	//write out all colums to the display
 	for (uint8_t col = col_max; col > col_min; col--) {
 		uint8_t column = data_buf[col-1];
 		
@@ -778,9 +776,11 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
 		delayTicks(off_dur);
 	}
 	return word_end;
-#endif
+	#endif
 
-#ifdef DISPLAY_MODE_FRAME
+	//Have not implemented dynamic timing code
+	//This mode is for animating across single frames
+	#ifdef DISPLAY_MODE_FRAME
 		// one frame at a time
 		
 		_delay_ms(30);
@@ -802,7 +802,7 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
 			
 			_delay_us(800);
 		}
-#endif
+	#endif
 	
 	return 0;
 }
@@ -820,22 +820,17 @@ void animate2(void){
 		if(ADC_shorted) bump = 1;
 		else bump = 0;
 
+		//rising edge
 		if(bump & !last_bump){
-			//static uint32_t last_time = 0;
 			
-			uint32_t dur = tick_time / 2;
-			if(dur >= 3000) dur = 3000;
-			//last_time = tick_time;
+			uint32_t dur = tick_time / 2;	//display for first half of shake
+			if(dur >= 3000) dur = 3000;		//prevent
 			tick_time = 0;
-			
-			// rising edge
-			//_delay_ms(55);
 			
 			uint8_t ret = animate_left(frame_num, (uint16_t)dur);
 			if (ret >= data_frame_count)
 				ret = 0;
 			all_off();
-			//_delay_ms(80);
 			cycles++;
 			if(cycles > FRAME_CYCLES){
 				cycles = 0;
