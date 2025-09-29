@@ -102,7 +102,7 @@ void animate2(void);
 
 uint8_t data_buf[FRAME_WIDTH*MAX_FRAMES] = {0};	// frame buffer
 uint8_t data_frame_count = 0;
-uint8_t default_data_size = 5;	// number of frames
+uint8_t default_data_size = 4;	// number of frames
 
 //OPEN SAUCE
 /*
@@ -118,7 +118,7 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 	0b1110, 0b10001, 0b10001, 0b10001, 0b10001, 0b0,	// C
 	0b0, 0b11111, 0b10101, 0b10101, 0b10001, 0b0,		// E
 	};
-*/
+
 
 //SAUCE
 uint8_t default_data[10*FRAME_WIDTH] = {
@@ -127,6 +127,15 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 	0b01111, 0b10000, 0b10000, 0b10000, 0b01111, 0b0,		// U
 	0b01110, 0b10001, 0b10001, 0b10001, 0b10001, 0b0,	// C
 	0b0, 0b11111, 0b10101, 0b10101, 0b10001, 0b0,		// E
+};
+*/
+
+//SAUCE - short
+uint8_t default_data[10*FRAME_WIDTH] = {
+	0b10010, 0b10101, 0b10101, 0b01001, 0b00000, 0b11110,		// SA
+	0b00101, 0b00101, 0b11110, 0b00000,	0b01111, 0b10000,		// AU
+	0b10000, 0b01111, 0b00000, 0b01110, 0b10001, 0b10001,		// UC
+	0b10001, 0b00000, 0b11111, 0b10101, 0b10101, 0b10001,		// CE
 };
 
 volatile bool newSample_available = false;
@@ -717,11 +726,8 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
 	#endif
 	
 #ifdef DISPLAY_MODE_WORD
-	//_delay_ms(20);
-	uint16_t start_delay = durration / 5;
-	delayTicks(start_delay);
+
 	// all frames up to a blank one
-	
 	uint8_t word_end = data_frame_count;
 	for (uint8_t f=frame+1; f < data_frame_count; f++) {
 		uint8_t blank_cnt = 0;
@@ -741,13 +747,19 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
 		}
 	}
 	
-	uint16_t col_dur = (durration - start_delay) / (data_frame_count * FRAME_WIDTH);
-	uint16_t on_dur = col_dur * 4 / 5;
-	if (on_dur >= 25) on_dur = 25;
+	//Dynamic LED timing calculations
+	uint16_t start_delay = durration / 4;
+		
+	uint16_t col_dur = (durration - (start_delay * 2)) / (data_frame_count * FRAME_WIDTH);
+	uint16_t on_dur = col_dur * 4 / 5;	//column on/off ration of 4:5
+	if (on_dur >= 25) on_dur = 25; //limit LED on-time to reduce long streaks
 	uint16_t off_dur = col_dur - on_dur;
 	
 	uint8_t col_min = frame*FRAME_WIDTH;
 	uint8_t col_max = word_end*FRAME_WIDTH;
+	
+	delayTicks(start_delay + 100);
+	
 	for (uint8_t col = col_max; col > col_min; col--) {
 		uint8_t column = data_buf[col-1];
 		
@@ -761,11 +773,9 @@ uint8_t animate_left(uint8_t frame, uint16_t durration){
 			}
 		}
 		
-		//_delay_us(1400);
 		delayTicks(on_dur);
 		all_off();
 		delayTicks(off_dur);
-		//_delay_us(500);
 	}
 	return word_end;
 #endif
