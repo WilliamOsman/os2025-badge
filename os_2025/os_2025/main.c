@@ -15,15 +15,18 @@
 #include <stdbool.h>
 #include <avr/wdt.h>
 
-// range of accepted programming frequencies
-#define PHOTO_HZ_MIN 5
-#define PHOTO_HZ_MAX 60
+// -----Optical PROGRAMMING------
+#define PHOTO_RATE_HZ	10		//doesn't do anything, rate is set by tick comparison in timer0 ISR
+#define OVERSAMPLE	8			//changing won't affect oversample rate, only used as reference
+#define SAMPLE_HISTORY	8		//number of bits to store subsample min/max data for exposure tracking
+#define CHARGE_TICKS	2		//100us ticks to keep pull-up pin engaged
+#define INTEGRATION_COUNT	32	//number of samples per ADC integration (power of 2)
+#define SIGNAL_STRENGTH_FACTOR 20	//(0 to 100) Higher value requires more contrast between bright/dark
+#define START_FLAG	0b1110		//bits indicating transfer start
 
 #define FRAME_WIDTH 6
-#define MAX_FRAMES 64
-#define FRAME_CYCLES 0	// number of shake cycles to display each frame
-
-#define BUMP_FILTER 50
+#define MAX_FRAMES 24
+#define FRAME_CYCLES 0			// number of shake cycles to display each frame
 
 //#define DISPLAY_MODE_FULL	// all frames at once
 //#define DISPLAY_MODE_FRAME	// one frame at a time
@@ -48,10 +51,6 @@
 #define LED4_PORT	PORTA
 #define LED5_PORT	PORTA
 
-#define BUMP_OFFSET		(1 << 2)
-#define BUMP_PORT	PORTB
-#define BUMP_PIN	PINB
-
 #define PHOTODIODE_PORT PORTA
 #define PHOTODIODE_OFFSET (1 << 1)
 #define PHOTODIODE_PIN PINA
@@ -74,10 +73,6 @@
 #define LED4_PORT	PORTB
 #define LED5_PORT	PORTB
 
-#define BUMP_OFFSET		(1 << 5)
-#define BUMP_PORT	PORTB
-#define BUMP_PIN	PINB
-
 #define PHOTODIODE_PORT PORTB
 #define PHOTODIODE_OFFSET (1 << 5)
 #define PHOTODIODE_PIN PINB
@@ -85,25 +80,19 @@
 
 volatile uint8_t tim_cnt_low = 0;
 volatile uint8_t tim_cnt_high = 0;
+volatile uint8_t tick = 0;
 
-ISR(TIMER0_OVF_vect) {
-	tim_cnt_high++;
-	tim_cnt_low = 0;
-}
+
 
 #endif
 
-
+void run(void);
 void init_leds(void);
 void init(void);
 void set_led(uint8_t led_num, uint8_t state);
-void set_led_frame(uint8_t led_frame);
-void animate(uint8_t* led_frames, uint8_t num_frames);
 void all_off(void);
 
 // stuff for user programming
-void init_timer(void);
-uint16_t timer1_get_us(void);
 void init_adc(void);
 uint16_t sample_adc(void);
 bool user_program(void);
@@ -113,8 +102,10 @@ void animate2(void);
 
 uint8_t data_buf[FRAME_WIDTH*MAX_FRAMES] = {0};	// frame buffer
 uint8_t data_frame_count = 0;
+uint8_t default_data_size = 5;	// number of frames
 
-uint8_t default_data_size = 10;	// number of frames
+//OPEN SAUCE
+/*
 uint8_t default_data[10*FRAME_WIDTH] = {
 	0b1110, 0b10001, 0b10001, 0b10001, 0b1110, 0b0,		// O
 	0b0, 0b11111, 0b1001, 0b1001, 0b0110, 0b0,			// P
@@ -127,35 +118,26 @@ uint8_t default_data[10*FRAME_WIDTH] = {
 	0b1110, 0b10001, 0b10001, 0b10001, 0b10001, 0b0,	// C
 	0b0, 0b11111, 0b10101, 0b10101, 0b10001, 0b0,		// E
 	};
+*/
 
-void EEPROM_write(uint8_t ucAddress, uint8_t ucData)
-{
-	/* Wait for completion of previous write */
-	while(EECR & (1<<EEPE))
-	;
-	/* Set Programming mode */
-	EECR = (0<<EEPM1)|(0>>EEPM0);
-	/* Set up address and data registers */
-	EEARL = ucAddress;
-	EEDR = ucData;
-	/* Write logical one to EEMPE */
-	EECR |= (1<<EEMPE);
-	/* Start eeprom write by setting EEPE */
-	EECR |= (1<<EEPE);
-}
+//SAUCE
+uint8_t default_data[10*FRAME_WIDTH] = {
+	0b10000, 0b10111, 0b10101, 0b11101, 0b1, 0b0,		// S
+	0b0, 0b11110, 0b101, 0b101, 0b11110, 0b0,			// A
+	0b1111, 0b11000, 0b10000, 0b11000, 0b1111, 0b0,		// U
+	0b1110, 0b10001, 0b10001, 0b10001, 0b10001, 0b0,	// C
+	0b0, 0b11111, 0b10101, 0b10101, 0b10001, 0b0,		// E
+};
 
-uint8_t EEPROM_read(uint8_t ucAddress)
-{
-	/* Wait for completion of previous write */
-	while(EECR & (1<<EEPE))
-	;
-	/* Set up address register */
-	EEARL = ucAddress;
-	/* Start eeprom read by writing EERE */
-	EECR |= (1<<EERE);
-	/* Return data from data register */
-	return EEDR;
-}
+volatile bool newSample_available = false;
+volatile uint16_t newSample = 0;
+volatile bool ADC_shorted = false;	//if first ADC reading is 0v, the 0ohm resistor is shorted
+volatile uint16_t ADC_shorted_cycles = 100;
+volatile uint8_t run_mode = 0;
+const uint8_t clock_offset = 1;	//tick needs slight auto-adjustment for inaccurate programming app fps
+
+	
+//----------LED UTILITY---------------	
 
 inline void led_on(uint8_t led_num){
 	switch(led_num){
@@ -177,6 +159,7 @@ inline void led_on(uint8_t led_num){
 	}
 	//*((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) =  *((uint8_t*)pgm_read_word_near(LED_PORTS + led_num)) | LED_OFFSETS[led_num];
 }
+
 
 inline void led_off(uint8_t led_num){
 	switch(led_num){
@@ -205,11 +188,45 @@ inline void all_off(void){
 	}
 }
 
-
 inline void all_on(void){
 	for(uint8_t i = 0; i < NUM_LEDS; i++){
 		led_on(i);
 	}
+}
+
+inline void led_error(uint8_t led_num){
+	all_off();
+	//for(uint8_t i = 0; i < 5; i++){
+	if(run_mode != 2) return;
+	led_on(0);
+	led_off(1);
+	_delay_ms(100);
+	led_off(0);
+	led_on(1);
+	_delay_ms(100);
+	led_on(0);
+	led_off(1);
+	_delay_ms(100);
+	led_off(0);
+	led_off(1);
+	//}
+}
+
+inline void led_success(uint8_t led_num){
+	all_off();
+	for(uint8_t i = 0; i < 15; i++){
+		led_on(led_num);
+		_delay_ms(50);
+		led_off(led_num);
+		_delay_ms(50);
+
+	}
+}
+
+void test_leds(void){
+	all_on();
+	_delay_us(10000);
+	all_off();
 }
 
 void init_leds(void){
@@ -255,99 +272,45 @@ void init_leds(void){
 	#endif
 	
 	all_off();
-}
+}	
 
-void init_bumpers(void){
-	// Set up the bumpers with pull ups
-	BUMP_PORT |= (BUMP_OFFSET);
-}
-
-void test_leds(void){
-	all_on();
-	_delay_us(10000);
-	all_off();
-}
-
-static inline int bump_hit(void){
-	static uint8_t high_count = 0;
-	static uint8_t low_count = 0;
-	static bool bump_state = 0;
-	if(BUMP_PIN & BUMP_OFFSET){
-		low_count++;
-		high_count = 0;
-	}
-	else{
-		high_count++;
-		low_count = 0;
-	}
-	if(high_count >= BUMP_FILTER) bump_state = 1;
-	if(low_count >= BUMP_FILTER) bump_state = 0;
-	return bump_state;
-}
-
-void init_timer(void){
+//----------PHOTODIODE DATA---------------	
 	
-	// prescaler set to get 128*microsecond ticks
-	#ifdef ATTINY84
-		TCCR1B |= (1<<CS12 | 1<<CS10);
-		TCNT1 = 0;
-	#endif
-	#ifdef ATTINY85
-		TCCR0B = (1<<CS02) | (1<<CS00);
-		TCNT0 = 0;
-		TIMSK  = (1<<TOIE0);           // Enable overflow interrupt
-		sei();
-	#endif
+void timer0_tick_100us_init(void) {
+	// CTC, OCR0A = 99, prescaler = 8  => 8 MHz / 8 = 1 MHz (1 µs/tick). 100 µs per interrupt.
+	TCCR0A = (1<<WGM01);       // CTC
+	OCR0A  = 99;               // 100 counts -> 100 µs
+	TCCR0B = (1<<CS01);        // prescaler 8
+	TIMSK  |= (1<<OCIE0A);     // enable compare A interrupt
 }
 
-inline uint16_t get_timer(void){
-	#ifdef ATTINY84
-		return TCNT1;
-	#endif
-	#ifdef ATTINY85
-		uint8_t sreg = SREG;
-		cli();
-		tim_cnt_low = TCNT0;
-		uint8_t low  = tim_cnt_low;
-		uint8_t high = tim_cnt_high;
-		SREG = sreg;
-		return ((uint16_t)(high) << 8) | low;
-	#endif
+void timer0_tick_100us_disable(void) {
+	// CTC, OCR0A = 99, prescaler = 8  => 8 MHz / 8 = 1 MHz (1 µs/tick). 100 µs per interrupt.
+	TCCR0A = (1<<WGM01);       // CTC
+	OCR0A  = 99;               // 100 counts -> 100 µs
+	TCCR0B = (1<<CS01);        // prescaler 8
+	TIMSK  &= ~(1<<OCIE0A);     // enable compare A interrupt
 }
-
-inline void set_timer(uint16_t cnt){
-	#ifdef ATTINY84
-		TCNT1 = cnt;
-	#endif
-	#ifdef ATTINY85
-		uint8_t sreg = SREG;
-		cli();
-		tim_cnt_low = (uint8_t)(cnt & 0xff);
-		TCNT0 = tim_cnt_low;
-		tim_cnt_high = cnt >> 8;
-		SREG = sreg;
-	#endif
-}
-
 
 void init_adc(){
 	
 	// Enable ADC by clearing Power Reduction ADC bit
 	PRR &= ~(1 << PRADC);
 
-	// Select reference = AVcc, channel = ADCn (0Â…5)
+	// Select reference = AVcc, channel = ADCn (05)
 	// REFS1:0 = 00 ? Vcc as ref
 	// MUX[5:0] = channel
-	ADMUX = (PHOTODIODE_ADC_CH); // ADC0Â…ADC5
+	ADMUX = (PHOTODIODE_ADC_CH); // ADC0ADC5
 
 	// Data alignment: for 10-bit read, clear ADLAR (left adjust);
 	ADMUX &= ~(1 << ADLAR);
 
 	// Set prescaler and enable ADC:
-	// ADPS[2:0]=111 ? Ã·128 (62.5? kHz at 8 MHz); ADEN=1
+	// ADPS[2:0]=111 ? ÷128 (62.5? kHz at 8 MHz); ADEN=1
 	// slowest we can sample
-	ADCSRA = (1 << ADEN)
-	| (1 << ADPS2) | (0 << ADPS1) | (0 << ADPS0);
+	ADCSRA = (1<<ADEN) // enable ADC
+			| (1<<ADIE) // ADC interrupt enable
+			| (1<<ADPS2) | (1<<ADPS1) | (1<<ADPS0); // divided 128
 }
 
 uint16_t sample_adc(void) {
@@ -363,207 +326,107 @@ uint16_t sample_adc(void) {
 	return result;
 }
 
-bool user_program(void){
-	const uint32_t min_us128 = 1e6 / PHOTO_HZ_MAX / 128;
-	const uint32_t max_us128 = 1e6 / PHOTO_HZ_MIN / 128;
-	
-	uint16_t invalid_cycles = 5000;
-	
-	bool auto_adjust = true;
-
-	uint16_t high_val = 0;
-	uint16_t low_val = 0xffff;
-	uint16_t thresh_val = 0x7fff;
-	bool current_state = 0;
-	uint8_t state_flter = 0;
-	bool last_state = 0;
-	volatile uint16_t clk_period_us128 = 0;
-	uint8_t valid_clk_cnt = 0;
-	
-	uint8_t current_bit = 0;
-	uint8_t current_byte = 0;
-	uint8_t data_started = 0;
-	uint8_t guess_centers = 0;
-	
-	set_timer(0);	// reset timer for next edge
-		
-	while(invalid_cycles != 0){
-		
-		// fancy adc reading to get higher dynamic range
-		uint16_t new_sample = 0;
-		// charge up port with pull-up
-		PHOTODIODE_PORT |= PHOTODIODE_OFFSET;
-		_delay_us(800);
-		PHOTODIODE_PORT &= ~PHOTODIODE_OFFSET;
-		for(uint8_t i = 0; i < 64; i++){	// measure voltage as the photodiode drains the pin capacitance
-			new_sample += sample_adc();
-		}
-		
-		// automatic threshold to adapt to different lighting and screens
-		if(auto_adjust){
-			if(new_sample < low_val){
-				low_val -= (low_val-new_sample)>>3;
-			}
-			if(new_sample > high_val){
-				high_val += (new_sample-high_val)>>3;
-			}
-			low_val += 50;
-			high_val -= 50;
-		
-			thresh_val = (high_val>>1) + (low_val>>1);
-		}
-		
-		bool raw_state = new_sample > thresh_val ? 0 : 1;
-		
-		state_flter = (state_flter << 1) | raw_state;
-		
-		// must have consecutive values to change the accepted state
-		if(state_flter & 0b11111){
-			current_state = 1;
-		}
-		if(~state_flter & 0b11111){
-			current_state = 0;
-		}
-		
-		bool rising_edge = current_state & ~last_state;
-		bool falling_edge  = ~current_state & last_state;
-		last_state = current_state;
-				
-		uint16_t edge_time = get_timer();
-		
-		if(current_state){	// led 0 always just shows the detected color
-			led_on(0);
-		}
-		else{
-			led_off(0);
-		}
-		
-		if(valid_clk_cnt < 10){
-			invalid_cycles--;
-		}
-		
-		// attempt to sync to the clk
-		if(valid_clk_cnt < 10 && rising_edge){
-			set_timer(0);	// reset timer for next edge
-			if(edge_time < min_us128 || edge_time > max_us128*2){
-				valid_clk_cnt = 0;
-				continue;
-			}
-			uint16_t edge_variance = edge_time > clk_period_us128 ? edge_time-clk_period_us128 : clk_period_us128-edge_time;
-			clk_period_us128 = (clk_period_us128/4) * 3 + edge_time/4;
-			if(edge_variance > edge_time>>4){	// variance is over 1/16 of the expected time
-				valid_clk_cnt = 0;
-				continue;
-			}
-			valid_clk_cnt++;
-			if(valid_clk_cnt >= 10){
-				led_on(1);	// signify sync, now we're ready for data
-				auto_adjust = 0;	// no longer try to adapt to brightness
-				clk_period_us128 = clk_period_us128/2;	// use half of the total period to get a single bit time
-				//clk_period_us128 += clk_period_us128/16;
-			}
-			continue;
-		}
-		
-		if(valid_clk_cnt < 10){
-			continue;
-		}
-		
-		if(edge_time > clk_period_us128*16){
-			break;	// no recent valid edges
-		}
-		
-		// decode the data
-		
-		
-		// start condition is data being on for longer than 3 periods then a falling edge
-		switch(data_started){
-			case 0:	// wait for high pulse
-				if(falling_edge){
-					set_timer(0);	// reset timer
-				}
-				else if(current_state && edge_time > clk_period_us128*3){
-					data_started = 1;
-				}
-				break;
-			case 1:	// wait for falling edge
-				if(falling_edge){
-					set_timer(0);
-					data_started = 2;
-				}
-				break;
-			case 2:	// skip first bit to get into the actual data
-				if(edge_time > clk_period_us128>>1){
-					set_timer(0);
-					data_started = 3;
-					led_on(2);
-				}
-				break;
-		}
-		if(data_started!=3) continue;
-		
-		// reset timer on all edges to half a bit period
-		if(rising_edge || falling_edge){
-			guess_centers = 0;
-			set_timer(clk_period_us128/2);
-			continue;
-		}
-		
-		if(edge_time > clk_period_us128){	// center of a data bit, save data
-			guess_centers++;
-			set_timer(0);	// reset for next bit
-			data_buf[current_byte] |= current_state<<current_bit;
-			current_bit++;
-			if(current_bit > 5){
-				if(!current_state){
-					// bit 5 should always be 1 for keeping clock sync
-					// if its not, we had a failure somewhere or are complete, exit programming mode
-					break;
-				}
-				current_bit = 0;
-				current_byte++;
-			}
-		}
-		
-		if(guess_centers > 8){
+ISR(TIMER0_COMPA_vect) {
+	// 100 µs tick scheduler
+	switch (tick) {
+		case 0: // t = 0
+			// charge up port with pull-up
+			PHOTODIODE_PORT |= PHOTODIODE_OFFSET;
+			break;  
+		case CHARGE_TICKS: // t = 200us
+			//stop charging port after ~200us
+			PHOTODIODE_PORT &= ~PHOTODIODE_OFFSET;
+			//start adc conversion
+			ADCSRA |= (1<<ADSC);
 			break;
+		default:  break;
+	}
+	tick++;
+	if (tick >= 125 + clock_offset) {              // t = 12.5 ms + slight offset for drift
+		tick = 0;                                  // next cycle
+	}
+}
+
+
+ISR(ADC_vect)
+{
+	static uint8_t count = 0;
+	static uint16_t integrate = 0;
+	
+	
+	uint16_t reading = ADC;
+	
+	//check shake resistor for short circuit
+	//Run mode can be determined by duration of short/open circuit 
+	if(count == 0){
+		//state change to short circuit
+		if(reading < 10 && !ADC_shorted){
+			ADC_shorted = true;
+			ADC_shorted_cycles = 1;
 		}
+		//state change to open circuit
+		else if(reading >= 10 && ADC_shorted){
+			ADC_shorted = false;
+			ADC_shorted_cycles = 1;
+		}		
+		ADC_shorted_cycles++;
+		if(ADC_shorted_cycles >= 1000) ADC_shorted_cycles = 1000;
+		
+		//if ADC hasn't been shorted recently run in program mode
+		if(!ADC_shorted && ADC_shorted_cycles > 100) run_mode = 0;
+		//if ADC is continuously shorted display error
+		else if(ADC_shorted && ADC_shorted_cycles > 10) run_mode = 2;
+		//if ADC shorted run in animation mode for
+		else run_mode = 1;
 		
 	}
+
+	integrate += ADC;								// ADC is a macro that does ADCL then ADCH
+	count++;										//increment integration step
 	
-	if(data_started != 3){
-		return 0;
+	if (count < INTEGRATION_COUNT){
+		ADCSRA |= (1<<ADSC);						//trigger new ADC reading
+	}
+	else {
+		newSample_available = true;					//flag indicates new data ready
+		//newSample = integrate >> INTEGRATION_SHIFT;	//divide by total samples for average
+		newSample = integrate;
+		integrate = 0;								//reset integration
+		count = 0;									//reset count
 	}
 	
 	
-	// validate data
-	
-	// check we got data to fill a whole number of frames
-	
-	if((current_byte + 1) % FRAME_WIDTH != 0){
-		return 0;	// not a full frame detected
-	}
-	if(current_bit != 6){
-		return 0;	// didn't end on a full vertical line (minus the stop bit)
-	}
-	if((current_byte+1) / FRAME_WIDTH > MAX_FRAMES){
-		return 0;	// too many frames
-	}
-	
-	// good enough, probably not worth trying to do any real data validation
-	
-	// copy to eeprom
-	
-	EEPROM_write(0, 0);	// 0x0 is used as the frame count, set to zero while writing
-	
-	for(uint8_t i = 0; i < current_byte+1; i++){
-		EEPROM_write(i+1, data_buf[i]);
-	}
-	
-	// now write the size
-	EEPROM_write(0, (current_byte+1)/FRAME_WIDTH);
-	
-	return 1;
+}
+
+//----------EEPROM---------------	
+
+void EEPROM_write(uint8_t ucAddress, uint8_t ucData)
+{
+	/* Wait for completion of previous write */
+	while(EECR & (1<<EEPE))
+	;
+	/* Set Programming mode */
+	EECR = (0<<EEPM1)|(0>>EEPM0);
+	/* Set up address and data registers */
+	EEARL = ucAddress;
+	EEDR = ucData;
+	/* Write logical one to EEMPE */
+	EECR |= (1<<EEMPE);
+	/* Start eeprom write by setting EEPE */
+	EECR |= (1<<EEPE);
+}
+
+uint8_t EEPROM_read(uint8_t ucAddress)
+{
+	/* Wait for completion of previous write */
+	while(EECR & (1<<EEPE))
+	;
+	/* Set up address register */
+	EEARL = ucAddress;
+	/* Start eeprom read by writing EERE */
+	EECR |= (1<<EERE);
+	/* Return data from data register */
+	return EEDR;
 }
 
 void load_frames(void){
@@ -585,9 +448,242 @@ void load_frames(void){
 	}
 }
 
-uint8_t animate_left(uint8_t frame){
-	uint8_t total_cols = FRAME_WIDTH * data_frame_count;	
+//---------- Running Modes ---------------	
+
+bool user_program(void){
+	/* Allows users to upload custom pixels to the display using the OpenSauce web interface
+	https://opensauce.com/badge-25/
+	*/
 	
+	uint8_t total_bytes = 0;
+	
+	bool seekData = true;
+	bool state_now = 0;
+	bool state_prev = 0;
+	bool signal_available = false;
+	uint8_t rx = 0;						//incoming bitstream storage
+	bool newbit_available = false;
+	bool data_incoming = false;
+	bool first_read = true;
+	
+	const uint8_t led_signal_steady = 1;
+	const uint8_t led_state_now = 0;
+	
+	// ------------- Seek until successful transfer ------------------
+	while(seekData)
+	{
+		static uint8_t stablewhen0 = 10;
+		
+		if(run_mode != 0) return 0; //exit programming mode early
+		
+		//------------ Process ADC Sample -----------------
+		if(newSample_available)
+		{
+			static float data_smooth = 0;
+			static float data_max = 0;
+			static float data_min = 0;
+			static uint16_t max_bucket[SAMPLE_HISTORY];
+			static uint16_t min_bucket[SAMPLE_HISTORY];
+			static uint8_t bucket_sample = 0;
+			static uint8_t bucket_writepos = 0;
+				
+			newSample_available = false;
+			
+			if(first_read){
+				first_read = false;
+				data_smooth = newSample;
+				data_max = newSample;
+				data_min = newSample;
+				for(uint8_t block = 0; block < SAMPLE_HISTORY; block++){
+					max_bucket[block] = newSample;
+					min_bucket[block] = newSample;
+				}
+			}
+			
+			data_smooth = data_smooth * 0.5 + (float)newSample * 0.5;			
+			
+			// windowed historic maximum/minimum over a large number of samples without storing every sample
+			// each bucket contains a max/min that represents 8 previous samples
+			// old buckets are overwritten, so historic data generally follows the signal
+			if(data_smooth > max_bucket[bucket_writepos]) max_bucket[bucket_writepos] = data_smooth;
+			else if(data_smooth < min_bucket[bucket_writepos]) min_bucket[bucket_writepos] = data_smooth;
+			
+			bucket_sample++;
+			
+			if(bucket_sample >= OVERSAMPLE){
+				bucket_sample = 0;
+				bucket_writepos++;
+				if(bucket_writepos >= SAMPLE_HISTORY) bucket_writepos = 0;
+				max_bucket[bucket_writepos] = data_smooth;
+				min_bucket[bucket_writepos] = data_smooth;
+			}
+			
+			//lock the max/min values if data transfer is active
+			if(!data_incoming)
+			{
+				data_max = max_bucket[0];
+				data_min = min_bucket[0];
+			
+				for(uint8_t block = 1; block < SAMPLE_HISTORY; block++)
+				{
+					if(max_bucket[block] > data_max) data_max = max_bucket[block];
+					else if(min_bucket[block] < data_min) data_min = min_bucket[block];
+				}
+			}
+
+			float amplitude = (data_max - data_min);
+			float midline = amplitude / 2 + data_min;	//threshold between high and low
+							
+			//good signal if optical signal has large enough contrast
+			//OR
+			//good signal if data transfer is active
+			if( data_incoming || amplitude >= data_max * (SIGNAL_STRENGTH_FACTOR / 100.0) ) signal_available = true;
+			else{
+				led_off(led_signal_steady);
+				stablewhen0 = 10;
+				signal_available = false;
+			}
+			
+			//convert analog signal to boolean
+			if (data_smooth < midline) state_now = 1;  //invert the reading
+			else state_now = 0;
+
+		}
+		
+		//------------ Convert to Bitstream -----------------
+		if (signal_available)
+		{
+			//calculate bit width
+			static uint8_t period = 8;
+			static uint8_t halfperiod = 4;
+			static uint8_t bit_count = 0;
+			static uint8_t width = 0;
+			static uint8_t next_bit = 0;
+			static uint8_t stable_counter = 0;
+			
+			signal_available = false;
+			
+			if(state_now) led_on(led_state_now);
+			else led_off(led_state_now);
+
+			//detect bit on edge
+			if (state_now != state_prev) 
+			{
+				if(stablewhen0 != 0){
+					stablewhen0--;
+					led_off(led_signal_steady);
+				}
+				else led_on(led_signal_steady);
+				
+				state_prev = state_now;
+				//write the first bit
+				rx = (rx << 1) | state_now;  //load next bit
+				newbit_available = true;
+				next_bit = period + halfperiod + 1;
+				bit_count = 1;
+				width = 1;
+				stable_counter++;
+			}
+
+			//detect bit on center
+			else if (width == next_bit) 
+			{
+				rx = (rx << 1) | state_now;  //load next bit
+				newbit_available = true;
+				next_bit += period;
+				bit_count++;
+				stable_counter = 0;
+			}
+			width++;
+		}
+		
+		//------------ Process Bitstream -----------------
+		if (newbit_available) 
+		{			
+			newbit_available = false;
+			
+			//start flag detected
+			if(stablewhen0 != 0){
+				 rx = 0b0;  //clear RX
+				 led_off(led_signal_steady);
+			}
+			else if ((!data_incoming) && (rx & (0b1111)) == START_FLAG ) 
+			{
+				data_incoming = true;
+				rx = 0b0;  //clear RX
+				data_buf[0] = 0b0;
+			}			
+
+			else if (data_incoming) 
+			{
+				static uint8_t current_bit = 0;
+				static uint8_t current_byte = 0;
+				
+				data_buf[current_byte] |= (state_now << current_bit);
+
+				current_bit++;
+
+				if (current_bit > 5) {
+					//if 5th bit is 0, data is over, or read is corrupted
+					if (!(rx & 0b1)) {
+						//data read is finished, or data is corrupted
+						data_incoming = false;
+						seekData = false;						
+						total_bytes = current_byte;
+						
+						// not a full frame detected
+						if ((current_byte + 1) % FRAME_WIDTH != 0) {
+							led_error(0);
+							seekData = true;
+						} 
+						// didn't end on a full vertical line (minus the stop bit)
+						else if (current_bit != 6) {
+							led_error(0);
+							seekData = true;
+						} 
+						// too many frames
+						else if ((current_byte + 1) / FRAME_WIDTH > MAX_FRAMES) {
+							led_error(0);
+							seekData = true;
+						}
+						
+						//reset for new data transmission
+						current_byte = 0;
+						current_bit = 0;
+						
+					}
+					//finished reading column, move onto next byte
+					else {
+						current_byte++;
+						current_bit = 0;
+						data_buf[current_byte] = 0b0;
+					}
+				}
+			}
+		}		
+	}
+					
+	timer0_tick_100us_disable();
+	
+	EEPROM_write(0, 0);	// 0x0 is used as the frame count, set to zero while writing
+	
+	for(uint8_t i = 0; i < total_bytes+1; i++){
+		EEPROM_write(i+1, data_buf[i]);
+	}
+	
+	// now write the size
+	EEPROM_write(0, (total_bytes+1)/FRAME_WIDTH);
+	
+	//flash LED for success
+	led_success(2);
+
+	return 1;
+}
+
+
+
+uint8_t animate_left(uint8_t frame){
+
 	#ifdef DISPLAY_MODE_FULL
 		_delay_ms(20);
 		// all frames at once
@@ -690,33 +786,18 @@ void animate2(void){
 	
 	uint8_t cycles = 0;
 	
-	//uint16_t consecutive_bump_detects = 0;
-	
-	uint8_t last_starting_col = FRAME_WIDTH * data_frame_count;
-	
 	while(1){
-		
+		if(run_mode != 1) return;
 		// read bump sensor and adjust shake timing
-		bump = bump_hit();
-		/*
-		if(bump){
-			consecutive_bump_detects++;
-		}
-		else{
-			consecutive_bump_detects = 0;
-		}
-		if(consecutive_bump_detects > 2000){
-			all_on();
-		}
-		*/
+		if(ADC_shorted) bump = 1;
+		else bump = 0;
+
 		if(bump & !last_bump){
 			// rising edge
-			//consecutive_bump_detects = 0;
 			_delay_ms(55);
 			uint8_t ret = animate_left(frame_num);
 			if (ret >= data_frame_count)
 				ret = 0;
-			//frame_num = ret;
 			all_off();
 			_delay_ms(80);
 			cycles++;
@@ -735,18 +816,43 @@ void animate2(void){
 	}
 }
 
+void run(void){
+	//setup ADC and ISR
+	
+	init_adc();
+	timer0_tick_100us_init();
+	sei();
+	
+	load_frames();
+	
+	while(1){
+		all_off();
+		
+		//run_mode is determined in timer0_tick_100us_init ISR routine
+		switch(run_mode){
+			case 0:
+				user_program();
+				break;
+			case 1:
+				animate2();
+				break;
+			case 2:
+				led_error(0);
+				break;
+			default:
+				led_error(0);
+				break;
+		}
+	}
+}
+
 
 void init(void){
-
-	
 	// set main clock prescaler to 1 for highest cpu speed
-	CLKPR = 0b10000000;
+	CLKPR = (1<<CLKPCE);
 	CLKPR = 0;
 	
 	init_leds();
-	//init_bumpers();
-	init_adc();
-	init_timer();
 }
 
 int main(void)
@@ -759,9 +865,10 @@ int main(void)
 	
 	// handle quick power on/off to select a mode
 	uint8_t mode = EEPROM_read(0xff);
-	led_on(mode);
+	if(mode < 4) led_on(0);
+	else led_on(4);
 	
-	if(mode+1 > 3){
+	if(mode+1 > 4){
 		EEPROM_write(0xff, 0);
 	}
 	else{
@@ -778,41 +885,22 @@ int main(void)
     while(1) 
     {
 		switch(mode){
-			case 0:	// normal animation mode
-				load_frames();
-				BUMP_PORT |= BUMP_OFFSET;	// enable bump sensor pull-up
-				animate2();
-				break;
-			case 1:	// bump sensor alignment mode
-				BUMP_PORT |= BUMP_OFFSET;	// enable bump sensor pull-up
-				while(1){
-					if(bump_hit()){
-						led_on(0);
-					}
-					else{
-						led_off(0);
-					}
-					_delay_us(10);
-				}
-				break;
-			case 2:	// program mode
-				if(user_program()){
-					all_on();
-					_delay_ms(500);
-					all_off();
-					mode = 0;
-				}
-				test_leds();
-				break;
-			case 3:	// erase EEPROM
-				for(uint8_t i = 0; i < 10; i++){
-					all_on();
-					_delay_ms(200);
-					all_off();
-					_delay_ms(200);
-				}
+			
+			// erase EEPROM after 5 button presses
+			case 4:	
 				EEPROM_write(0, 0xff);	// just clear the frame size, no need to clear the entire frame memory
 				mode = 0;
+				for(uint8_t i = 0; i < 5; i++){
+					led_on(4);
+					_delay_ms(200);
+					led_off(4);
+					_delay_ms(200);
+				}
+				break;
+			// normal mode
+			default:
+				mode = 0;
+				run();
 				break;
 		}		
 	}
