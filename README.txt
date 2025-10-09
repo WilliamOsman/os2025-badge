@@ -43,7 +43,7 @@ ___________ USE INSTRUCTIONS _______________
 	* Try to make the resistor just barely not touch the metal side of the slot
 
 - Reset Message -
-	1) Press the button quickly 5 times to reset to the message to default 'SAUCE'
+	1) Press the button quickly 5 times and hold to reset to the message to default 'SAUCE'
 
 
 ______________ FIRMWARE FLASHING INSTRUCTIONS ______________
