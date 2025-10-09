@@ -5,7 +5,7 @@ Open Sauce 2025 Badge: Persistence of Vision firmware v2
 	Otherwise you will need a High Voltage programmer to reset the hfuse, something like the 'HV Rescue Shield 2' by MightyOhm.
 
 	2) THE PHOTO DIODE SILK SCREEN IS WRONG ON SOME OF THE BADGES
-	The correct orientation on all badges is: LONG LEG THROUGH ROUND HOLE
+	The correct orientation on all badges is: LONG LEG THROUGH OVAL
 
 	3) DO NOT SOLDER YOUR RESISTOR TO THE SLOT (only the small hole)
 	****************************************
